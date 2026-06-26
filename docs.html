@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دليل كوش سمارت | KUSH SMART Docs</title>
+<meta name="description" content="دليل كوش سمارت خطوة بخطوة — الإعداد، إضافة الأجهزة، الكونفيجريشن، المجموعات، المؤقتات، الأتمتة، والحسّاسات.">
+<link rel="icon" href="assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="KUSH SMART">
+      <span>كوش سمارت<small>KUSH SMART</small></span></a>
+    <button class="menu-btn">☰</button>
+    <nav class="nav-links" id="nl">
+      <a href="index.html#features">المميزات</a>
+      <a href="docs.html" class="active">الدليل</a>
+      <a href="setup.html">الإعداد الفني</a>
+      <a class="btn" href="index.html#download">تحميل التطبيق</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs">
+  <!-- sidebar -->
+  <aside class="toc">
+    <nav id="toc">
+      <h4>البداية</h4>
+      <a href="#install">تثبيت التطبيق والحساب</a>
+      <a href="#add">إضافة أول جهاز</a>
+      <a href="#config">الإعدادات العامة (كونفيجريشن)</a>
+      <h4>الاستخدام اليومي</h4>
+      <a href="#control">التحكم في الأجهزة</a>
+      <a href="#rename">تسمية الأجهزة</a>
+      <a href="#groups">المجموعات</a>
+      <a href="#timers">المؤقتات والإطفاء التلقائي</a>
+      <a href="#schedule">الجدولة بالوقت</a>
+      <h4>المتقدّم</h4>
+      <a href="#automations">الأتمتة</a>
+      <a href="#sensors">الحسّاسات والإشعارات</a>
+      <a href="#remote">الريموت 433MHz / IR</a>
+      <a href="#hidden">المفاتيح المخفية</a>
+      <h4>مساعدة</h4>
+      <a href="#faq">حل المشاكل</a>
+    </nav>
+  </aside>
+
+  <!-- content -->
+  <main class="doc-main">
+    <h1>دليل كوش سمارت</h1>
+    <p class="sub">كل اللي محتاج تعرفه لإعداد بيتك الذكي — خطوة بخطوة، وبدون أي تعقيد.</p>
+
+    <section id="install">
+      <h2><span class="n">1</span> تثبيت التطبيق وعمل حساب</h2>
+      <div class="card"><ol class="steps">
+        <li>نزّل تطبيق <b>كوش سمارت</b> من Google Play (أندرويد) أو App Store (آيفون).</li>
+        <li>افتح التطبيق واضغط <b>إنشاء حساب</b>.</li>
+        <li>اكتب إيميلك واختار باسورد، وأكّد الحساب من الإيميل.</li>
+        <li>سجّل دخولك — وخلاص، حسابك جاهز.</li>
+      </ol></div>
+      <div class="callout tip"><span class="em">🔒</span><div>كل أجهزتك بترتبط بحسابك وحده. محدش غيرك يقدر يشوفها أو يتحكم فيها.</div></div>
+    </section>
+
+    <section id="add">
+      <h2><span class="n">2</span> إضافة أول جهاز (التوصيل بالواي فاي)</h2>
+      <p>الوحدة أول مرة بتطلع شبكة واي فاي خاصة بيها للإعداد، والتطبيق بيمشّيك خطوة خطوة.</p>
+      <div class="card"><ol class="steps">
+        <li>تأكد إن الوحدة شغّالة وإن باسورد الواي فاي بتاع البيت معاك.</li>
+        <li>من الشاشة الرئيسية اضغط <b>➕ إضافة جهاز</b>.</li>
+        <li>التطبيق هيلاقي الوحدة الجديدة — اختارها.</li>
+        <li>اختار <b>شبكة الواي فاي</b> (2.4 جيجا) واكتب الباسورد.</li>
+        <li>اضغط <b>حفظ / توصيل</b> — الوحدة هتعيد التشغيل وتتصل.</li>
+        <li>بعد ثواني هتلاقي الوحدة وكل مفاتيحها ظهرت في قائمة أجهزتك. ✅</li>
+      </ol></div>
+      <div class="callout info"><span class="em">📶</span><div>الأجهزة الذكية بتشتغل على واي فاي <b>2.4 جيجا</b> (مش 5 جيجا). لو راوترك بيدمج الشبكتين، يفضّل تفصلهم وقت الإعداد.</div></div>
+    </section>
+
+    <section id="config">
+      <h2><span class="n">3</span> الإعدادات العامة (الكونفيجريشن)</h2>
+      <p>من صفحة <b>الإعدادات / Configuration</b> للوحدة، تقدر تظبط طريقة عمل المفاتيح حسب تركيبتك الكهربائية. افتح تفاصيل الوحدة ← <b>الإعدادات العامة</b>.</p>
+      <table>
+        <tr><th>الإعداد</th><th>بيعمل إيه</th></tr>
+        <tr><td>وضع المفتاح</td><td>عادي / مفتاح ثلاثي (Three-way) / ضغطة (Push)</td></tr>
+        <tr><td>توصيل المفتاح</td><td>Pull-up أو Pull-down حسب التوصيلة</td></tr>
+        <tr><td>الريليه</td><td>Active-High أو Active-Low</td></tr>
+        <tr><td>اسم نقطة الواي فاي (AP)</td><td>اسم الشبكة اللي الوحدة بتطلعها وقت الإعداد</td></tr>
+        <tr><td>زر الكونفيج</td><td>توصيلة زر الإعداد على الوحدة</td></tr>
+      </table>
+      <div class="callout warn"><span class="em">⚠️</span><div>لو المفاتيح الخارجية مش شغّالة صح، جرّب تغيّر <b>وضع المفتاح</b> أو <b>التوصيل (Pull-up/Pull-down)</b>. ولو الريليه شغّال بالعكس، غيّر <b>Active-High/Low</b>.</div></div>
+      <div class="callout tip"><span class="em">💾</span><div>أي إعداد بتغيّره بيتسجّل على الوحدة نفسها، فبيفضل محفوظ حتى بعد فصل الكهربا.</div></div>
+    </section>
+
+    <section id="control">
+      <h2><span class="n">4</span> التحكم في الأجهزة</h2>
+      <div class="shot"><img src="assets/screens/home.png" alt="الشاشة الرئيسية للتحكم"></div>
+      <p class="shot-cap">الشاشة الرئيسية — كل أجهزتك وحالتها وأزرار التحكم.</p>
+      <table>
+        <tr><th>الإجراء</th><th>الطريقة</th></tr>
+        <tr><td>تشغيل/إطفاء</td><td>اضغط على زر الجهاز</td></tr>
+        <tr><td>خفت الإضاءة (Dimmer)</td><td>حرّك الشريط لأعلى/لأسفل</td></tr>
+        <tr><td>سرعة المروحة</td><td>حرّك شريط السرعة</td></tr>
+        <tr><td>الألوان (RGB)</td><td>اختار اللون من دائرة الألوان</td></tr>
+        <tr><td>الستائر / الشتر</td><td>أزرار فتح / قفل / إيقاف</td></tr>
+        <tr><td>التفاصيل الكاملة</td><td>اضغط مطوّلًا على الجهاز</td></tr>
+      </table>
+    </section>
+
+    <section id="rename">
+      <h2><span class="n">5</span> تسمية الأجهزة</h2>
+      <div class="card"><ol class="steps">
+        <li>اضغط مطوّلًا على الجهاز ← <b>إعادة تسمية</b>.</li>
+        <li>اكتب اسم واضح زي «نور الصالة».</li>
+        <li>احفظ.</li>
+      </ol></div>
+      <div class="callout tip"><span class="em">💡</span><div>الاسم بيتسجّل على الجهاز نفسه، فبيظهر بنفس الاسم في كل مكان في التطبيق.</div></div>
+    </section>
+
+    <section id="groups">
+      <h2><span class="n">6</span> المجموعات</h2>
+      <p>اجمع كذا جهاز في مجموعة وتحكّم فيهم كلهم بضغطة واحدة (مثلًا «إضاءة الدور الأول»).</p>
+      <div class="shots-grid">
+        <figure><div class="shot"><img src="assets/screens/groups.png" alt="صفحة المجموعات"></div><p class="shot-cap">صفحة المجموعات</p></figure>
+        <figure><div class="shot"><img src="assets/screens/group_edit.png" alt="إنشاء/تعديل مجموعة"></div><p class="shot-cap">إنشاء وتعديل مجموعة</p></figure>
+      </div>
+      <div class="card"><ol class="steps">
+        <li>افتح صفحة <b>المجموعات</b> ← <b>➕ مجموعة جديدة</b>.</li>
+        <li>اكتب اسم المجموعة واختار الأجهزة اللي فيها.</li>
+        <li>احفظ — دلوقتي تقدر تشغّل/تطفّي المجموعة كلها مرة واحدة.</li>
+      </ol></div>
+    </section>
+
+    <section id="timers">
+      <h2><span class="n">7</span> المؤقتات والإطفاء التلقائي</h2>
+      <h3>عدّاد تنازلي (مرة واحدة)</h3>
+      <div class="card"><ol class="steps">
+        <li>افتح تفاصيل الجهاز ← <b>مؤقّت</b>.</li>
+        <li>اختار المدة (مثلًا يطفّي بعد 30 دقيقة).</li>
+        <li>تأكيد — والمؤقت الفعّال بيظهر جوه صفحة الجهاز.</li>
+      </ol></div>
+      <h3>إطفاء تلقائي دائم</h3>
+      <p>«كل ما يشتغل، يطفّي بعد كذا ثانية» — مفيدة لسخان المياه أو إضاءة الحمام.</p>
+      <div class="card"><ol class="steps">
+        <li>افتح تفاصيل الجهاز ← <b>إطفاء تلقائي</b>.</li>
+        <li>حدّد المدة بالثواني واحفظ — هيشتغل كل مرة الجهاز يتشغّل.</li>
+      </ol></div>
+    </section>
+
+    <section id="schedule">
+      <h2><span class="n">8</span> الجدولة بالوقت</h2>
+      <p>خلّي الأجهزة تشتغل/تطفّي في مواعيد ثابتة (مثلًا النور يولّع 6 مساءً ويطفّي 11).</p>
+      <div class="card"><ol class="steps">
+        <li>افتح صفحة <b>الجدولة</b> ← <b>➕ موعد جديد</b>.</li>
+        <li>اختار الجهاز، الوقت، والأيام.</li>
+        <li>اختار الإجراء (تشغيل / إطفاء) واحفظ.</li>
+      </ol></div>
+    </section>
+
+    <section id="automations">
+      <h2><span class="n">9</span> الأتمتة (لما يحصل كذا اعمل كذا)</h2>
+      <p>اربط الحسّاسات بالأفعال تلقائيًا — من غير ما تلمس موبايلك.</p>
+      <div class="card"><ol class="steps">
+        <li>افتح صفحة <b>الأتمتة</b> ← <b>➕ أتمتة جديدة</b>.</li>
+        <li>اختار <b>الشرط</b> (مثلًا: الحرارة أكبر من 30، أو حسّاس الباب اتفتح).</li>
+        <li>اختار <b>النتيجة</b>: تشغيل/إطفاء جهاز، و/أو إرسال إشعار.</li>
+        <li>احفظ — الأتمتة بتشتغل لوحدها.</li>
+      </ol></div>
+      <div class="callout tip"><span class="em">🤖</span><div>أمثلة: «لو الحرارة عَلِت شغّل المروحة»، «لو الباب اتفتح ابعتلي إشعار وشغّل النور».</div></div>
+    </section>
+
+    <section id="sensors">
+      <h2><span class="n">10</span> الحسّاسات والإشعارات</h2>
+      <p>كوش سمارت بيدعم حسّاسات الحرارة والرطوبة (DHT)، الأبواب/الحركة، والحسّاسات اللاسلكية 433MHz.</p>
+      <div class="card"><ol class="steps">
+        <li>الحسّاس بيظهر تلقائيًا مع قراءته في التطبيق.</li>
+        <li>عشان توصلك إشعارات: افتح الحسّاس ← فعّل <b>إرسال إشعار عند حدث</b> (أو من صفحة الأتمتة).</li>
+        <li>تأكد إن إشعارات التطبيق مفعّلة من إعدادات الموبايل.</li>
+      </ol></div>
+      <div class="callout info"><span class="em">🔔</span><div>الإشعارات بتوصلك حتى والتطبيق مقفول.</div></div>
+    </section>
+
+    <section id="remote">
+      <h2><span class="n">11</span> الريموت 433MHz و IR (أشعة)</h2>
+      <div class="card"><ol class="steps">
+        <li>افتح صفحة <b>الريموتات</b>.</li>
+        <li>اضغط <b>تعلّم زر جديد</b>، واختار الجهاز اللي الزر هيتحكم فيه (وإجراء: تشغيل/إطفاء/تبديل، أو إشعار للحسّاسات).</li>
+        <li>اضغط الزر على الريموت — الوحدة هتتعلّم الكود.</li>
+        <li>خلاص، بقى الزر يتحكم في الجهاز اللي اخترته.</li>
+      </ol></div>
+      <div class="callout tip"><span class="em">📡</span><div>تقدر كمان تربط حسّاسات 433MHz لاسلكية بإشعارات أو أتمتة بدل ما تتحكم في مفتاح.</div></div>
+    </section>
+
+    <section id="hidden">
+      <h2><span class="n">12</span> المفاتيح المخفية</h2>
+      <p>مفاتيح محمية بكلمة سر — متظهرش إلا بعد إدخال الكود، لخصوصية وأمان أكتر.</p>
+      <div class="card"><ol class="steps">
+        <li>افتح صفحة <b>المفاتيح المخفية</b> وحدّد كلمة سر.</li>
+        <li>اختار المفاتيح اللي عايز تخفيها.</li>
+        <li>دلوقتي مش هتظهر إلا لما تدخل الكود.</li>
+      </ol></div>
+    </section>
+
+    <section id="faq">
+      <h2><span class="n">?</span> حل المشاكل</h2>
+      <div class="card">
+        <h3>الجهاز ظاهر «غير متصل»؟</h3>
+        <p>تأكد إن الكهربا واصلة والواي فاي شغّال، والإشارة كويسة مكان الجهاز. جرّب تطفّي الراوتر وتشغّله واستنّى دقيقة.</p>
+        <h3>جهاز جديد مش ظاهر؟</h3>
+        <p>تأكد إنك خلّصت خطوات الإضافة وإن الوحدة اتصلت بالواي فاي. اقفل التطبيق وافتحه تاني.</p>
+        <h3>المفاتيح الخارجية مش شغّالة صح؟</h3>
+        <p>من <a href="#config">الإعدادات العامة</a> غيّر وضع المفتاح أو التوصيل (Pull-up/Pull-down)، ولو الريليه بالعكس غيّر Active-High/Low.</p>
+        <h3>الجهاز بيستجيب ببطء؟</h3>
+        <p>وانت في البيت التحكم بيبقى محلي وفوري. لو بطيء، تأكد إن موبايلك على نفس شبكة الواي فاي بتاعت الأجهزة.</p>
+        <h3>نسيت الباسورد؟</h3>
+        <p>من شاشة الدخول اضغط «نسيت كلمة السر» واتبع الخطوات على إيميلك.</p>
+      </div>
+      <div class="cta-band">
+        <div><b>محتاج مساعدة أكتر؟</b> كلّم الدعم الفني ومعاك اسم/سيريال الوحدة (من صفحة تفاصيل الجهاز).</div>
+        <a class="btn" href="index.html#download">تحميل التطبيق</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-bottom">© 2026 كوش سمارت — KUSH SMART · بيتك أذكى، وحياتك أسهل 🏠✨</div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
