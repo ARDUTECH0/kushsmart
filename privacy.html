@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy | KUSH SMART</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="index.html"><img src="assets/icon.png" alt="KUSH SMART">
+      <span>KUSH SMART<small>KUSH SMART</small></span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="docs.html">Docs</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs">
+  <main class="doc-main" style="grid-column:1/-1;max-width:820px;margin:0 auto">
+    <h1>Privacy Policy</h1>
+    <p class="sub">KUSH SMART — last updated 27 June 2026.</p>
+
+    <p>KUSH SMART (“we”, “the app”) lets you control your smart-home devices. This
+    policy explains what we collect, why, and your choices. We keep data to the
+    minimum needed to run the service.</p>
+
+    <h2><span class="n">1</span> Information we collect</h2>
+    <table>
+      <tr><th>Data</th><th>Why</th></tr>
+      <tr><td>Account email</td><td>To create and secure your account (Firebase Authentication).</td></tr>
+      <tr><td>Your devices &amp; their names/settings</td><td>To show and control your units, and sync across your phones.</td></tr>
+      <tr><td>Notification (FCM) token</td><td>To send you push alerts (e.g. a sensor or lock event).</td></tr>
+      <tr><td>Wi-Fi network name (during setup only)</td><td>To provision a new device onto your network. We never store your Wi-Fi password on our servers — it goes only to your device.</td></tr>
+      <tr><td>Voice input (only when you use the mic)</td><td>To recognize a spoken command on your phone.</td></tr>
+    </table>
+    <p>We do <b>not</b> sell your data, use it for advertising, or track you across
+    other apps.</p>
+
+    <h2><span class="n">2</span> Permissions</h2>
+    <ul>
+      <li><b>Location</b> — used <i>only during device setup</i> to read the
+        current Wi-Fi name (Android requires location to access the SSID). No
+        background location, no tracking.</li>
+      <li><b>Microphone</b> — only while you actively use voice control.</li>
+      <li><b>Notifications</b> — to deliver alerts you enable.</li>
+      <li><b>Local network / nearby Wi-Fi</b> — to discover and talk to your
+        devices on the same network.</li>
+    </ul>
+
+    <h2><span class="n">3</span> How data is stored</h2>
+    <p>Account and device data are stored in Google Firebase (Authentication,
+    Cloud Firestore, Cloud Messaging) under industry-standard security. Device
+    state flows over an MQTT broker scoped so you only ever see your own devices.</p>
+
+    <h2><span class="n">4</span> Data sharing</h2>
+    <p>We share data only with the infrastructure providers needed to run the
+    app (Google Firebase). If you link Google Home or Amazon Alexa, the linked
+    service receives only your device list and states to fulfil voice commands.</p>
+
+    <h2><span class="n">5</span> Deleting your account &amp; data</h2>
+    <p>You can delete your account and all associated data at any time from the
+    app: <b>Profile → Delete account</b>. This permanently removes your account,
+    device records and tokens. You can also request deletion by email (below).
+    See the <a href="account-deletion.html">account &amp; data deletion page</a>.</p>
+
+    <h2><span class="n">6</span> Children</h2>
+    <p>KUSH SMART is not directed to children under 13 and we do not knowingly
+    collect their data.</p>
+
+    <h2><span class="n">7</span> Contact</h2>
+    <p>Questions or requests: <a href="mailto:seifemadat@gmail.com">seifemadat@gmail.com</a>.</p>
+
+    <div class="cta-band" style="margin-top:30px">
+      <div><b>Need to remove your data?</b> Delete it in-app, or email us — we respond within 7 days.</div>
+      <a class="btn" href="account-deletion.html">Account deletion</a>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap"><div class="foot-bottom">© 2026 KUSH SMART · <a href="privacy.html" style="color:#9fc7e6">Privacy</a></div></div>
+</footer>
+</body>
+</html>
