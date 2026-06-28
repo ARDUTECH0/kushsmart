@@ -1,10 +1,12 @@
 import './globals.css';
-import { Cairo } from 'next/font/google';
+import localFont from 'next/font/local';
 import { asset } from '@/lib/site';
 
-const cairo = Cairo({
-  subsets: ['latin', 'arabic'],
-  weight: ['400', '600', '700', '800'],
+// Self-hosted Cairo (variable font) — no build-time network fetch, so CI/Pages
+// builds are reliable and there's no runtime Google Fonts dependency.
+const cairo = localFont({
+  src: './fonts/Cairo.ttf',
+  weight: '400 800',
   variable: '--font-cairo',
   display: 'swap',
 });
