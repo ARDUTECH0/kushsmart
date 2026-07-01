@@ -55,7 +55,7 @@ export default function AccountDeletionPage() {
           </table>
           <p style={{ color: 'var(--muted)' }}>
             Note: deleting your account does not erase settings saved <i>on the physical
-            devices</i> themselves — factory-reset a unit (hold its button 10s) to wipe it.
+            devices</i> themselves — to wipe a unit, re-flash its firmware.
           </p>
         </main>
       </div>

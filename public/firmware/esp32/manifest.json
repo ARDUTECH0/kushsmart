@@ -1,0 +1,16 @@
+{
+  "name": "KUSH SMART",
+  "version": "1.0.5",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "atsmart_smarthome.ino.bootloader.bin", "offset": 4096 },
+        { "path": "atsmart_smarthome.ino.partitions.bin", "offset": 32768 },
+        { "path": "boot_app0.bin", "offset": 57344 },
+        { "path": "atsmart_smarthome.ino.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

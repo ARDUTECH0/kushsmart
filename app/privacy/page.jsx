@@ -37,6 +37,7 @@ export default function PrivacyPage() {
               <tr><td>Account email</td><td>To create and secure your account (Firebase Authentication).</td></tr>
               <tr><td>Your devices &amp; their names/settings</td><td>To show and control your units, and sync across your phones.</td></tr>
               <tr><td>Notification (FCM) token</td><td>To send you push alerts (e.g. a sensor or lock event).</td></tr>
+              <tr><td>Purchase records (if you buy a unit licence)</td><td>The transaction (product, store order id, device serial) to verify and activate the licence. Payment is handled by Google Play / the App Store — we never see your card details.</td></tr>
               <tr><td>Wi-Fi network name (during setup only)</td><td>To provision a new device onto your network. We never store your Wi-Fi password on our servers — it goes only to your device.</td></tr>
               <tr><td>Voice input (only when you use the mic)</td><td>To recognize a spoken command on your phone.</td></tr>
             </tbody>
@@ -57,7 +58,10 @@ export default function PrivacyPage() {
           <h2><span className="n">4</span> Data sharing</h2>
           <p>We share data only with the infrastructure providers needed to run the app (Google Firebase). If you link Google Home or Amazon Alexa, the linked service receives only your device list and states to fulfil voice commands.</p>
 
-          <h2><span className="n">5</span> Deleting your account &amp; data</h2>
+          <h2><span className="n">5</span> Terms &amp; licensing</h2>
+          <p>Each unit runs on a licence tied to its serial number. You agree to use the app and devices lawfully and fairly. We may suspend or revoke a unit&apos;s licence at any time in case of fraud, abuse, tampering, resale violations, or any unfair or unauthorized use.</p>
+
+          <h2><span className="n">6</span> Deleting your account &amp; data</h2>
           <p>
             You can delete your account and all associated data at any time from the
             app: <b>Profile → Delete account</b>. This permanently removes your account,
@@ -65,10 +69,10 @@ export default function PrivacyPage() {
             See the <Link href="/account-deletion">account &amp; data deletion page</Link>.
           </p>
 
-          <h2><span className="n">6</span> Children</h2>
+          <h2><span className="n">7</span> Children</h2>
           <p>KUSH SMART is not directed to children under 13 and we do not knowingly collect their data.</p>
 
-          <h2><span className="n">7</span> Contact</h2>
+          <h2><span className="n">8</span> Contact</h2>
           <p>Questions or requests: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p>
 
           <div className="cta-band" style={{ marginTop: '30px' }}>
