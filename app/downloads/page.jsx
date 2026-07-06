@@ -2,40 +2,26 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import { asset } from '@/lib/site';
-import { Android, Apple, Download, Cpu, Bell } from '@/components/Icons';
-import EspWebFlasher from '@/components/EspWebFlasher';
+import { Android, Apple, Download, Bell } from '@/components/Icons';
+import WebFlasher from '@/components/WebFlasher';
+import FirmwareVersions from '@/components/FirmwareVersions';
+import L from '@/components/L';
 
 export const metadata = {
-  title: 'التحميل ورفع السوفت وير | كوش سمارت — KUSH SMART',
+  title: 'Download & flash | KUSH SMART — كوش سمارت',
   description:
-    'حمّل تطبيق كوش سمارت لأندرويد وآيفون، وارفع السوفت وير على بوردة ESP32 مباشرةً من المتصفح بضغطة واحدة — أو يدويًا عبر esptool. شرح احترافي خطوة بخطوة بالعربي.',
+    'Download the KUSH SMART app for Android and iPhone, and flash an ESP32 board straight from your browser in one click — no tools, no code.',
 };
 
 const NAV = [
-  { href: '/#features', label: 'المميزات' },
-  { href: '/#how', label: 'كيف يعمل' },
-  { href: '/docs', label: 'الدليل' },
-  { href: '/downloads', label: 'التحميل', active: true, btn: true },
+  { href: '/#features', label: 'المميزات', en: 'Features' },
+  { href: '/#how', label: 'كيف يعمل', en: 'How it works' },
+  { href: '/docs', label: 'الدليل', en: 'Guide' },
+  { href: '/downloads', label: 'التحميل', en: 'Download', active: true, btn: true },
 ];
 
 // App release — edit the version + links, drop the APK at public/downloads/.
 const APP = { version: 'v1.0.5', apk: '/downloads/kushsmart.apk', play: '#', appstore: '#' };
-
-// The four ESP32 flash files + their addresses (Arduino/ESP-IDF layout).
-const FW_DIR = '/firmware/esp32';
-const FW_FILES = [
-  { file: 'atsmart_smarthome.ino.bootloader.bin', offset: '0x1000', desc: 'البوت لودر (Bootloader)' },
-  { file: 'atsmart_smarthome.ino.partitions.bin', offset: '0x8000', desc: 'جدول الأقسام (Partitions)' },
-  { file: 'boot_app0.bin', offset: '0xe000', desc: 'مُحدِّد الإقلاع (OTA boot)' },
-  { file: 'atsmart_smarthome.ino.bin', offset: '0x10000', desc: 'البرنامج الرئيسي (Application)' },
-];
-
-const ESPTOOL_CMD =
-  'esptool --chip esp32 --port COM3 --baud 921600 write_flash ' +
-  '0x1000 atsmart_smarthome.ino.bootloader.bin ' +
-  '0x8000 atsmart_smarthome.ino.partitions.bin ' +
-  '0xe000 boot_app0.bin ' +
-  '0x10000 atsmart_smarthome.ino.bin';
 
 export default function DownloadsPage() {
   return (
@@ -46,18 +32,20 @@ export default function DownloadsPage() {
       <header className="page-head">
         <div className="wrap dlhero">
           <div>
-            <span className="eyebrow">التحميل</span>
-            <h1>حمّل تطبيق <span className="accent">كوش سمارت</span></h1>
-            <p>تحكّم في منزلك من هاتفك. سجّل ببريدك الإلكتروني وابدأ خلال دقائق — متاح لأندرويد وآيفون.</p>
+            <span className="eyebrow"><L ar="التحميل" en="Download" /></span>
+            <h1 data-ar="">حمّل تطبيق <span className="accent">كوش سمارت</span></h1>
+            <h1 data-en="">Download the <span className="accent">KUSH SMART</span> app</h1>
+            <L tag="p" ar="تحكّم في منزلك من هاتفك. سجّل ببريدك الإلكتروني وابدأ خلال دقائق — متاح لأندرويد وآيفون."
+              en="Control your home from your phone. Sign up with your email and get started in minutes — for Android and iPhone." />
             <div className="store-row">
-              <a className="btn lg" href={asset(APP.apk)} download><Android /> تحميل APK</a>
+              <a className="btn lg" href={asset(APP.apk)} download><Android /> <L ar="تحميل APK" en="Download APK" /></a>
               <a className="btn ghost lg" href={APP.play}><Android /> Google Play</a>
               <a className="btn ghost lg" href={APP.appstore}><Apple /> App Store</a>
             </div>
             <div className="meta-note">
-              <span><Download /> الإصدار {APP.version}</span>
-              <span><Bell /> تحديثات مستمرّة</span>
-              <span>أندرويد و iOS</span>
+              <span><Download /> <L ar={`الإصدار ${APP.version}`} en={`Version ${APP.version}`} /></span>
+              <span><Bell /> <L ar="تحديثات مستمرّة" en="Regular updates" /></span>
+              <span><L ar="أندرويد و iOS" en="Android & iOS" /></span>
             </div>
           </div>
           <div className="dlhero-art">
@@ -66,107 +54,97 @@ export default function DownloadsPage() {
         </div>
       </header>
 
+      {/* LATEST FIRMWARE — live from the server */}
+      <section className="section" style={{ paddingBottom: 0 }}>
+        <div className="wrap" style={{ maxWidth: '760px' }}>
+          <div className="h-center" style={{ marginBottom: '20px' }}>
+            <span className="eyebrow"><L ar="أحدث الإصدارات" en="Latest releases" /></span>
+            <L tag="h2" ar="آخر تحديثات السوفت وير" en="Latest firmware" />
+            <L tag="p" ar="أحدث نسخة منشورة لكل بوردة — تُحدَّث الأجهزة إليها لاسلكيًا من داخل التطبيق."
+              en="The newest published version for each board — devices update to it wirelessly from the app." />
+          </div>
+          <div className="card">
+            <FirmwareVersions />
+          </div>
+        </div>
+      </section>
+
       {/* WEB FLASHER — primary path */}
       <section className="section">
         <div className="wrap" style={{ maxWidth: '900px' }}>
           <div className="h-center" style={{ marginBottom: '30px' }}>
-            <span className="eyebrow">رفع السوفت وير</span>
-            <h2>ارفع السوفت وير على البوردة من المتصفح</h2>
-            <p>وصّل بوردة <b>ESP32</b> بالكمبيوتر عبر USB وارفع السوفت وير مباشرةً — بدون تثبيت أي برنامج، وبدون أي أكواد.</p>
+            <span className="eyebrow"><L ar="رفع السوفت وير" en="Flashing" /></span>
+            <L tag="h2" ar="ارفع السوفت وير على البوردة من المتصفح" en="Flash the board from your browser" />
+            <p data-ar="">وصّل بوردة <b>ESP32</b> بالكمبيوتر عبر USB وارفع السوفت وير مباشرةً — بدون تثبيت أي برنامج، وبدون أي أكواد.</p>
+            <p data-en="">Connect an <b>ESP32</b> board to your computer over USB and flash it directly — no software to install, no code.</p>
           </div>
 
           <div className="card">
             <div className="callout tip" style={{ marginTop: 0 }}>
               <span className="em">✅</span>
-              <div><b>أسهل طريقة:</b> بضغطة واحدة من المتصفح. لا تحتاج إلى esptool ولا Arduino ولا أي خبرة تقنية.</div>
+              <div data-ar=""><b>أسهل طريقة:</b> بضغطة واحدة من المتصفح. لا تحتاج إلى esptool ولا Arduino ولا أي خبرة تقنية.</div>
+              <div data-en=""><b>Easiest way:</b> one click in the browser. No esptool, no Arduino, no technical skills.</div>
             </div>
 
-            <h3>الخطوات</h3>
-            <ol className="steps">
+            <L tag="h3" ar="الخطوات" en="Steps" />
+            <ol className="steps" data-ar="">
               <li>وصّل بوردة <b>ESP32</b> بالكمبيوتر بكابل <b>USB</b> (تأكّد أنه كابل بيانات وليس شحن فقط).</li>
               <li>اضغط زر <b>«ارفع السوفت وير الآن»</b> بالأسفل.</li>
               <li>ستظهر نافذة لاختيار <b>منفذ البوردة (Serial Port)</b> — اخترها ثم اضغط <b>Connect</b>.</li>
               <li>اضغط <b>Install</b> وأكّد، ثم انتظر اكتمال الرفع. <b>لا تفصل الكابل أثناء العملية.</b></li>
               <li>بعد الانتهاء، أعِد تشغيل البوردة، ثم افتح التطبيق و<b>أضِف الجهاز</b> ووصّله بالواي فاي.</li>
             </ol>
+            <ol className="steps" data-en="">
+              <li>Connect the <b>ESP32</b> board to your computer with a <b>USB</b> cable (make sure it's a data cable, not charge-only).</li>
+              <li>Press the <b>“Flash now”</b> button below.</li>
+              <li>A window opens to pick the board's <b>serial port</b> — choose it and press <b>Connect</b>.</li>
+              <li>Press <b>Install</b> and confirm, then wait for it to finish. <b>Don't unplug the cable during the process.</b></li>
+              <li>When it's done, restart the board, then open the app, <b>add the device</b> and connect it to Wi-Fi.</li>
+            </ol>
 
-            <div style={{ textAlign: 'center', margin: '22px 0 8px' }}>
-              <EspWebFlasher manifest={asset(`${FW_DIR}/manifest.json`)} />
+            <div style={{ margin: '22px 0 8px' }}>
+              <WebFlasher />
             </div>
 
             <div className="callout info">
               <span className="em">🌐</span>
-              <div>الرفع المباشر يعمل على <b>Google Chrome</b> أو <b>Microsoft Edge</b> على <b>كمبيوتر</b> (ويندوز / ماك / لينكس). لا يعمل من الهاتف، ويتطلّب اتصالًا آمنًا (HTTPS).</div>
+              <div data-ar="">الرفع المباشر يعمل على <b>Google Chrome</b> أو <b>Microsoft Edge</b> على <b>كمبيوتر</b> (ويندوز / ماك / لينكس). لا يعمل من الهاتف، ويتطلّب اتصالًا آمنًا (HTTPS).</div>
+              <div data-en="">Browser flashing works in <b>Google Chrome</b> or <b>Microsoft Edge</b> on a <b>computer</b> (Windows / Mac / Linux). It doesn't work on phones, and needs a secure (HTTPS) connection.</div>
             </div>
             <div className="callout warn">
               <span className="em">🔌</span>
-              <div>لو لم يظهر منفذ البوردة، فقد تحتاج إلى تثبيت <b>تعريف USB</b> الخاص بالشريحة (CP2102 أو CH340) على الكمبيوتر، ثم أعد المحاولة.</div>
+              <div data-ar="">لو لم يظهر منفذ البوردة، فقد تحتاج إلى تثبيت <b>تعريف USB</b> الخاص بالشريحة (CP2102 أو CH340) على الكمبيوتر، ثم أعد المحاولة.</div>
+              <div data-en="">If the board's port doesn't show up, you may need to install the chip's <b>USB driver</b> (CP2102 or CH340) on your computer, then try again.</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* MANUAL — esptool for advanced users */}
+      {/* Post-flash guidance */}
       <section className="section" style={{ background: 'var(--surface)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)', paddingTop: '60px' }}>
-        <div className="wrap" style={{ maxWidth: '860px' }}>
+        <div className="wrap" style={{ maxWidth: '760px' }}>
           <div className="h-center" style={{ marginBottom: '24px' }}>
-            <span className="eyebrow">للمتقدّمين</span>
-            <h2>الرفع اليدوي عبر esptool</h2>
-            <p>إن كنت تفضّل أداة esptool، حمّل الملفات الأربعة وارفعها على العناوين الموضّحة.</p>
+            <span className="eyebrow"><L ar="بعد الرفع" en="After flashing" /></span>
+            <L tag="h2" ar="وبعد رفع السوفت وير؟" en="What's next?" />
+            <L tag="p" ar="الرفع يتمّ من المتصفح مباشرةً بضغطة واحدة — لا حاجة لتحميل أي ملفات أو أدوات."
+              en="Flashing happens right in the browser with one click — no files or tools to download." />
           </div>
-
-          {/* The four files */}
-          <div className="fw-grid">
-            {FW_FILES.map((f) => (
-              <div className="fw" key={f.file}>
-                <span className="ic"><Cpu /></span>
-                <div className="info">
-                  <h3>{f.desc}</h3>
-                  <p><span className="chip">{f.offset}</span><code>{f.file}</code></p>
-                </div>
-                <a className="dlbtn" href={asset(`${FW_DIR}/${f.file}`)} download>
-                  <Download /> تحميل
-                </a>
-              </div>
-            ))}
-          </div>
-
-          {/* Address table */}
-          <h3 style={{ marginTop: '28px' }}>عناوين الرفع (Flash offsets)</h3>
-          <table>
-            <tbody>
-              <tr><th>العنوان</th><th>الملف</th><th>الوظيفة</th></tr>
-              {FW_FILES.map((f) => (
-                <tr key={f.file}>
-                  <td><code>{f.offset}</code></td>
-                  <td><code>{f.file}</code></td>
-                  <td>{f.desc}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Command */}
-          <h3 style={{ marginTop: '28px' }}>الأمر الكامل</h3>
           <div className="card">
-            <ol className="steps">
-              <li>ثبّت الأداة: <code>pip install esptool</code></li>
-              <li>وصّل البوردة وحدّد منفذها (مثل <code>COM3</code> على ويندوز أو <code>/dev/ttyUSB0</code> على لينكس).</li>
-              <li>نفّذ الأمر التالي بعد تعديل المنفذ:</li>
+            <ol className="steps" data-ar="">
+              <li>بعد اكتمال الرفع، أعِد تشغيل البوردة.</li>
+              <li>راجع <Link href="/docs/configuration">دليل إعداد البوردة</Link> لتعريف القنوات (مفاتيح / حسّاسات / إضاءة…).</li>
+              <li>افتح التطبيق و<Link href="/docs#add">أضِف الجهاز</Link> ووصّله بالواي فاي.</li>
             </ol>
-            <pre style={{ overflowX: 'auto', background: 'var(--bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--line)', direction: 'ltr', textAlign: 'left' }}>
-              <code>{ESPTOOL_CMD}</code>
-            </pre>
+            <ol className="steps" data-en="">
+              <li>When flashing finishes, restart the board.</li>
+              <li>See the <Link href="/docs/configuration">board setup guide</Link> to define the channels (switches / sensors / lights…).</li>
+              <li>Open the app, <Link href="/docs#add">add the device</Link>, and connect it to Wi-Fi.</li>
+            </ol>
           </div>
-
-          <div className="callout warn">
-            <span className="em">⚠️</span>
-            <div>هذه الملفات مخصّصة لشريحة <b>ESP32</b>. تأكّد من اختيار البوردة الصحيحة والعناوين الصحيحة قبل الرفع. عند أول تشغيل تكون الوحدة «غير مُعدّة» حتى تُكمل الإعداد من التطبيق.</div>
-          </div>
-
           <div className="callout info">
-            <span className="em"><Cpu /></span>
-            <div>بعد الرفع، راجع <Link href="/docs/configuration">دليل إعداد البوردة</Link> لتعريف القنوات، و<Link href="/docs#add">الدليل</Link> لإضافة الجهاز للتطبيق.</div>
+            <span className="em">🔄</span>
+            <div data-ar="">التحديثات القادمة تصل للأجهزة <b>لاسلكيًا</b> من داخل التطبيق — لا تحتاج إلى إعادة الرفع من الموقع. راجع <Link href="/docs#update">دليل التحديث عن بُعد</Link>.</div>
+            <div data-en="">Future updates reach your devices <b>wirelessly</b> from inside the app — no need to re-flash from the website. See the <Link href="/docs#update">over-the-air update guide</Link>.</div>
           </div>
         </div>
       </section>

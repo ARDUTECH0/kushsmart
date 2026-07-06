@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { asset } from '@/lib/site';
+import LangToggle from './LangToggle';
 
 /**
- * Sticky site header with the brand and nav. `links` is an array of
- * { href, label, active?, btn? }. The mobile menu toggles open/closed.
+ * Sticky site header with the brand, nav and a language toggle. `links` is an
+ * array of { href, label, en?, active?, btn? } — when `en` is given the label
+ * shows in both languages. The mobile menu toggles open/closed.
  */
 export default function SiteHeader({ links }) {
   const [open, setOpen] = useState(false);
@@ -17,12 +19,14 @@ export default function SiteHeader({ links }) {
         <Link className="brand" href="/" onClick={() => setOpen(false)}>
           <img src={asset('/assets/icon.png')} alt="KUSH SMART" />
           <span>
-            كوش سمارت<small>KUSH SMART</small>
+            <span data-ar="">كوش سمارت</span>
+            <span data-en="">KUSH SMART</span>
+            <small data-ar="">KUSH SMART</small>
           </span>
         </Link>
         <button
           className="menu-btn"
-          aria-label="القائمة"
+          aria-label="Menu"
           onClick={() => setOpen((v) => !v)}
         >
           ☰
@@ -37,9 +41,17 @@ export default function SiteHeader({ links }) {
                 .join(' ')}
               onClick={() => setOpen(false)}
             >
-              {l.label}
+              {l.en ? (
+                <>
+                  <span data-ar="">{l.label}</span>
+                  <span data-en="">{l.en}</span>
+                </>
+              ) : (
+                l.label
+              )}
             </Link>
           ))}
+          <LangToggle />
         </nav>
       </div>
     </header>

@@ -30,14 +30,20 @@ export default function DocsToc({ groups }) {
       <nav>
         {groups.map((g) => (
           <div key={g.title}>
-            <h4>{g.title}</h4>
+            <h4>
+              {g.titleEn ? (
+                <><span data-ar="">{g.title}</span><span data-en="">{g.titleEn}</span></>
+              ) : g.title}
+            </h4>
             {g.items.map((it) => (
               <a
                 key={it.href}
                 href={it.href}
                 className={activeId === it.href.slice(1) ? 'active' : ''}
               >
-                {it.label}
+                {it.en ? (
+                  <><span data-ar="">{it.label}</span><span data-en="">{it.en}</span></>
+                ) : it.label}
               </a>
             ))}
           </div>
