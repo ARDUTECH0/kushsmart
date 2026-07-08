@@ -20,8 +20,14 @@ const NAV = [
   { href: '/downloads', label: 'التحميل', en: 'Download', active: true, btn: true },
 ];
 
-// App release — edit the version + links, drop the APK at public/downloads/.
-const APP = { version: 'v1.0.5', apk: '/downloads/kushsmart.apk', play: '#', appstore: '#' };
+// App release — the APK is published as a GitHub release (public), so it isn't
+// committed to this repo. Bump `version` + the release URL for each new build.
+const APP = {
+  version: 'v1.0.6',
+  apk: 'https://github.com/ARDUTECH0/kushsmart/releases/download/v1.0.6/KushSmart.apk',
+  play: '#',
+  appstore: '#',
+};
 
 export default function DownloadsPage() {
   return (
@@ -38,7 +44,7 @@ export default function DownloadsPage() {
             <L tag="p" ar="تحكّم في منزلك من هاتفك. سجّل ببريدك الإلكتروني وابدأ خلال دقائق — متاح لأندرويد وآيفون."
               en="Control your home from your phone. Sign up with your email and get started in minutes — for Android and iPhone." />
             <div className="store-row">
-              <a className="btn lg" href={asset(APP.apk)} download><Android /> <L ar="تحميل APK" en="Download APK" /></a>
+              <a className="btn lg" href={APP.apk} download="KUSH SMART.apk"><Android /> <L ar="تحميل APK" en="Download APK" /></a>
               <a className="btn ghost lg" href={APP.play}><Android /> Google Play</a>
               <a className="btn ghost lg" href={APP.appstore}><Apple /> App Store</a>
             </div>
