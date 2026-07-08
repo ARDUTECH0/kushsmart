@@ -126,17 +126,17 @@ export default function HomeAssistantPage() {
             <div className="ha-step">
               <span className="ha-step-n">1</span>
               <L tag="h3" ar="أضِف كوش سمارت" en="Add KUSH SMART" />
-              <L tag="p" ar="من داخل Home Assistant، اختر إضافة «كوش سمارت»." en="In Home Assistant, choose to add “KUSH SMART”." />
+              <L tag="p" ar="من داخل Home Assistant، أضِف تكامل «كوش سمارت» واختر «الربط عن طريق التطبيق»." en="In Home Assistant, add the “KUSH SMART” integration and choose “Link with the app”." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">2</span>
-              <L tag="h3" ar="سجّل بحسابك" en="Sign in" />
-              <L tag="p" ar="أدخل بريدك وكلمة المرور نفسها التي تستخدمها في التطبيق." en="Enter the same email and password you use in the app." />
+              <L tag="h3" ar="امسح الرمز" en="Scan the code" />
+              <L tag="p" ar="يظهر رمز QR وكود قصير. افتح التطبيق ← الملف الشخصي ← «ربط Home Assistant»، وامسح الرمز أو اكتب الكود." en="A QR and short code appear. Open the app → Profile → “Link Home Assistant”, then scan the QR or type the code." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">3</span>
-              <L tag="h3" ar="استمتع" en="Enjoy" />
-              <L tag="p" ar="تظهر كل أجهزتك تلقائيًا وجاهزة للتحكّم. هذا كل شيء!" en="All your devices appear, ready to control. That's it!" />
+              <L tag="h3" ar="يربط تلقائيًا" en="Links itself" />
+              <L tag="p" ar="يتأكّد الربط تلقائيًا وتظهر كل أجهزتك جاهزة للتحكّم — بدون كتابة أي كلمة سر في Home Assistant." en="It confirms on its own and all your devices appear, ready to control — with no password typed into Home Assistant." />
             </div>
           </div>
 
