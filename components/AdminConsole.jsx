@@ -19,6 +19,7 @@ const FW_BOARDS = [
   { key: 'esp8266',   label: 'مفاتيح/إضاءة ESP8266', match: (d) => d.board === 'ESP8266' },
   { key: 'lock',      label: 'القفل الذكي',          match: (d) => d.type === 'lock' },
   { key: 'power',     label: 'عدّاد الطاقة',         match: (d) => d.type === 'power' },
+  { key: 'ir',        label: 'ريموت IR (تكييف/رسيفر/تلفزيون)', match: (d) => d.type === 'ir' || (d.board || '').includes('IR') },
 ];
 // Each firmware file goes into its OWN slot — the SLOT decides the offset, so any
 // file works (no filename matching). Filled status comes from meta.slots[key].
@@ -49,6 +50,7 @@ function rel(date, suffix) {
 const TYPE = {
   power: { Ic: Bolt, label: 'عدّاد طاقة' },
   lock: { Ic: Lock, label: 'قفل' },
+  ir: { Ic: Signal, label: 'ريموت IR' },
   relay: { Ic: Bulb, label: 'مفاتيح' },
 };
 
@@ -260,9 +262,14 @@ export default function AdminConsole() {
         if (topic.endsWith('/status')) {
           setLiveStatus((m) => ({ ...m, [serial]: j.status === 'online' }));
         } else if (topic.endsWith('/state')) {
-          const type = j.type === 'power' ? 'power' : j.type === 'lock' ? 'lock' : 'relay';
+          const type = j.type === 'power' ? 'power'
+            : j.type === 'lock' ? 'lock'
+            : j.type === 'ir' ? 'ir'
+            : 'relay';
           const channels = type === 'power'
             ? (Array.isArray(j.meters) ? j.meters.length : null)
+            : type === 'ir'
+            ? (Array.isArray(j.buttons) ? j.buttons.length : null)
             : (Array.isArray(j.states) ? j.states.length : null);
           setLiveState((m) => ({
             ...m,
@@ -864,6 +871,7 @@ export default function AdminConsole() {
                     <option value="esp8266">مفاتيح وإضاءة — ESP8266</option>
                     <option value="lock">القفل الذكي</option>
                     <option value="power">عدّاد الطاقة</option>
+                    <option value="ir">ريموت IR (تكييف/رسيفر/تلفزيون)</option>
                   </select>
                 </div>
               )}
