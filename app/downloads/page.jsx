@@ -23,8 +23,8 @@ const NAV = [
 // App release — the APK is published as a GitHub release (public), so it isn't
 // committed to this repo. Bump `version` + the release URL for each new build.
 const APP = {
-  version: 'v1.0.7',
-  apk: 'https://github.com/ARDUTECH0/kushsmart/releases/download/v1.0.7/KushSmart.apk',
+  version: 'v1.0.9',
+  apk: 'https://github.com/ARDUTECH0/kushsmart/releases/download/v1.0.9/KushSmart.apk',
   play: '#',
   appstore: '#',
 };
