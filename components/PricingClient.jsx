@@ -80,6 +80,7 @@ export default function PricingClient() {
         )}
         <ul className="pr-feats">
           <li>✅ {t('تفعيل دائم للجهاز — دفعة واحدة', 'Lifetime activation — one payment')}</li>
+          <li>✅ {t('يشمل كل الوحدات: مفاتيح وإضاءة، ريموت IR، عدّاد طاقة، وقفل ذكي', 'Covers every unit: switches & lighting, IR remote, power meter and smart lock')}</li>
           <li>✅ {t('تحكّم كامل من التطبيق ومن Home Assistant', 'Full control from the app and Home Assistant')}</li>
           <li>✅ {t('تحديثات لاسلكية مجّانية', 'Free over-the-air updates')}</li>
           <li>✅ {t('دعم فنّي', 'Technical support')}</li>
