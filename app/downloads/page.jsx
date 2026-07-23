@@ -2,9 +2,9 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import { asset } from '@/lib/site';
-import { Android, Apple, Download, Bell } from '@/components/Icons';
 import WebFlasher from '@/components/WebFlasher';
 import FirmwareVersions from '@/components/FirmwareVersions';
+import AppDownload from '@/components/AppDownload';
 import L from '@/components/L';
 
 export const metadata = {
@@ -20,11 +20,13 @@ const NAV = [
   { href: '/downloads', label: 'التحميل', en: 'Download', active: true, btn: true },
 ];
 
-// App release — the APK is published as a GitHub release (public), so it isn't
-// committed to this repo. Bump `version` + the release URL for each new build.
+// Fallback app release, baked into the static HTML. The live version + APK link
+// come from the bridge (published from the admin console), so shipping a new
+// build no longer needs a site rebuild. Keep this roughly current anyway — it is
+// what visitors get before the fetch resolves, or if the bridge is unreachable.
 const APP = {
-  version: 'v1.0.9',
-  apk: 'https://github.com/ARDUTECH0/kushsmart/releases/download/v1.0.9/KushSmart.apk',
+  version: 'v1.0.11',
+  apk: 'https://github.com/ARDUTECH0/kushsmart/releases/download/v1.0.11/KushSmart.apk',
   play: '#',
   appstore: '#',
 };
@@ -43,16 +45,7 @@ export default function DownloadsPage() {
             <h1 data-en="">Download the <span className="accent">KUSH SMART</span> app</h1>
             <L tag="p" ar="تحكّم في منزلك من هاتفك. سجّل ببريدك الإلكتروني وابدأ خلال دقائق — متاح لأندرويد وآيفون."
               en="Control your home from your phone. Sign up with your email and get started in minutes — for Android and iPhone." />
-            <div className="store-row">
-              <a className="btn lg" href={APP.apk} download="KUSH SMART.apk"><Android /> <L ar="تحميل APK" en="Download APK" /></a>
-              <a className="btn ghost lg" href={APP.play}><Android /> Google Play</a>
-              <a className="btn ghost lg" href={APP.appstore}><Apple /> App Store</a>
-            </div>
-            <div className="meta-note">
-              <span><Download /> <L ar={`الإصدار ${APP.version}`} en={`Version ${APP.version}`} /></span>
-              <span><Bell /> <L ar="تحديثات مستمرّة" en="Regular updates" /></span>
-              <span><L ar="أندرويد و iOS" en="Android & iOS" /></span>
-            </div>
+            <AppDownload fallback={APP} />
           </div>
           <div className="dlhero-art">
             <div className="dl-glass"><img src={asset('/assets/icon.png')} alt="KUSH SMART" /></div>

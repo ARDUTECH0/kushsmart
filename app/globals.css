@@ -316,7 +316,14 @@ th{background:var(--mist);font-weight:800;color:var(--ink)}tr:last-child td{bord
     var(--o-bg);
   color:var(--o-text);font-feature-settings:"tnum" 1;
 }
-.ops .mono{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;direction:ltr;letter-spacing:.01em}
+/* Machine values — serials, IPs, MACs, versions, emails — are always read
+   left-to-right, in EITHER language. `unicode-bidi:embed` keeps them intact when
+   they sit inside an Arabic sentence (otherwise "192.168.1.10" reorders), and
+   `text-align:start` keeps them aligned with whichever direction the page is in. */
+.ops .mono{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;
+  direction:ltr;unicode-bidi:embed;text-align:start;letter-spacing:.01em}
+/* Inputs that take a machine value type left-to-right in both languages. */
+.ops input.mono,.ops .ops-add input{direction:ltr;text-align:start}
 .ops-center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:var(--o-muted)}
 
 /* login */
@@ -355,20 +362,83 @@ th{background:var(--mist);font-weight:800;color:var(--ink)}tr:last-child td{bord
 .seal.ok{background:rgba(18,164,94,.10);color:#0c7c46;border-color:rgba(18,164,94,.30)}
 .seal.warn{background:rgba(224,138,34,.10);color:#a8641a;border-color:rgba(224,138,34,.30)}
 
-/* command bar */
-.ops-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-  background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--o-line);padding:13px 22px}
-.ops-id{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:var(--o-muted)}
-.ops-id b{color:var(--o-ink)}
-.ops-mark{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+/* Command bar — one slim line. It used to be a heavy banner with a wordmark
+   shouting across the top; the console knows what it is. */
+.ops-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--o-line);padding:9px 22px}
+.ops-id{display:flex;align-items:center;gap:9px;font-weight:800;font-size:14px;color:var(--o-ink)}
+.ops-id b{color:var(--o-ink);letter-spacing:.02em}
+.ops-mark{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
   background:rgba(24,104,168,.12);border:1px solid rgba(24,104,168,.25);color:var(--o-blue)}
-.ops-mark svg{width:16px;height:16px}
-.ops-sub{font-size:11px;font-weight:700;color:var(--o-faint);border-inline-start:1px solid var(--o-line);padding-inline-start:10px;margin-inline-start:2px}
-.ops-link{display:inline-flex;align-items:center;gap:9px;background:var(--o-panel2);border:1px solid var(--o-line);
-  color:var(--o-muted);border-radius:999px;padding:6px 14px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
-.ops-link.on{color:#0c7c46;border-color:rgba(18,164,94,.30)}
+.ops-mark svg{width:14px;height:14px}
+.ops-sub{font-size:11.5px;font-weight:700;color:var(--o-faint);
+  border-inline-start:1px solid var(--o-line);padding-inline-start:10px}
+
+/* language switch — the console owns its own direction */
+.langsw{display:inline-flex;background:var(--o-panel2);border:1px solid var(--o-line);
+  border-radius:9px;padding:2px;gap:2px}
+.langsw button{border:0;background:transparent;color:var(--o-faint);cursor:pointer;
+  font-family:inherit;font-weight:800;font-size:11.5px;padding:4px 9px;border-radius:7px;
+  min-width:30px;transition:.14s}
+.langsw button:hover{color:var(--o-text)}
+.langsw button.on{background:var(--o-panel);color:var(--o-blue);
+  box-shadow:0 1px 3px rgba(12,30,48,.10)}
+/* Status light, not a button — the feed connects itself and opens nothing. */
+.ops-link{display:inline-flex;align-items:center;gap:8px;background:var(--o-panel2);
+  border:1px solid var(--o-line);color:var(--o-muted);border-radius:999px;padding:5px 12px;
+  font-size:12px;font-weight:700;user-select:none}
+.ops-link.on{color:#0c7c46;border-color:rgba(18,164,94,.30);background:rgba(18,164,94,.07)}
+
+/* ── The bell: units waiting to be licensed ───────────────────────────────── */
+.bell-wrap{position:relative}
+.bell{position:relative;display:grid;place-items:center;width:34px;height:34px;
+  background:var(--o-panel2);border:1px solid var(--o-line);border-radius:10px;
+  color:var(--o-muted);cursor:pointer;transition:.14s}
+.bell:hover{color:var(--o-blue);border-color:var(--o-blue)}
+.bell svg{width:17px;height:17px}
+.bell.has{color:var(--o-amber);border-color:rgba(224,138,34,.40);background:rgba(224,138,34,.08)}
+.bell-n{position:absolute;top:-6px;inset-inline-end:-6px;min-width:17px;height:17px;padding:0 4px;
+  display:grid;place-items:center;border-radius:99px;background:var(--o-amber);color:#fff;
+  font-size:10.5px;font-weight:800;border:2px solid var(--o-panel)}
+
+.bell-scrim{position:fixed;inset:0;z-index:24}
+.bell-pop{position:absolute;top:calc(100% + 10px);inset-inline-end:0;z-index:25;
+  width:min(340px,calc(100vw - 28px));max-height:min(430px,70vh);overflow:auto;
+  background:var(--o-panel);border:1px solid var(--o-line);border-radius:14px;
+  box-shadow:0 24px 60px rgba(12,30,48,.20);animation:opspop .16s ease}
+.bell-h{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 14px;border-bottom:1px solid var(--o-line);position:sticky;top:0;
+  background:var(--o-panel)}
+.bell-h b{font-size:13.5px;color:var(--o-ink)}
+.bell-note{font-size:11.5px;color:var(--o-amber)}
+.bell-empty{padding:26px 14px;text-align:center;color:var(--o-faint);font-size:13px}
+.bell-item{display:flex;flex-direction:column;gap:3px;width:100%;text-align:start;
+  background:transparent;border:0;border-bottom:1px solid var(--o-line);
+  padding:12px 14px;cursor:pointer;font-family:inherit;transition:.12s}
+.bell-item:last-child{border-bottom:0}
+.bell-item:hover{background:var(--o-panel2)}
+.bell-item-t{display:flex;align-items:baseline;gap:8px;min-width:0}
+.bell-item-t b{font-size:13px;color:var(--o-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bell-item-t small{font-size:11px;color:var(--o-blue);flex:0 0 auto}
+.bell-item-m{font-size:11.5px;color:var(--o-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bell-item-a{font-size:11.5px;font-weight:800;color:var(--o-blue)}
 .ops-id-r{margin-inline-start:auto;display:flex;align-items:center;gap:12px}
+.ops-me{display:flex;flex-direction:column;align-items:flex-end;gap:2px;line-height:1.3}
 .ops-who{color:var(--o-faint);font-size:12.5px;font-family:ui-monospace,Consolas,monospace;direction:ltr}
+.ops-role{font-size:11px;font-weight:800;color:var(--o-muted);background:var(--o-panel2);
+  border:1px solid var(--o-line);border-radius:999px;padding:1px 9px}
+.ops-role.super{color:var(--o-blue);background:rgba(24,104,168,.10);border-color:rgba(24,104,168,.25)}
+
+/* A licensing admin's balance, in the bar — it's what they spend, so it should
+   never be more than a glance away. Amber when it's gone. */
+.ops-credit{display:inline-flex;align-items:baseline;gap:4px;padding:5px 12px;
+  border-radius:999px;background:rgba(18,164,94,.09);border:1px solid rgba(18,164,94,.30)}
+.ops-credit b{font-size:14px;font-weight:800;color:#0c7c46;line-height:1}
+.ops-credit small{font-size:10.5px;font-weight:700;color:#0c7c46;opacity:.75}
+.ops-credit.empty{background:rgba(224,138,34,.10);border-color:rgba(224,138,34,.38)}
+.ops-credit.empty b,.ops-credit.empty small{color:#a8641a}
+@media(max-width:640px){.ops-credit{padding:4px 9px}.ops-credit small{display:none}}
 
 .ops-mbar{background:var(--o-panel);border-bottom:1px solid var(--o-line);padding:11px 22px;display:flex;gap:10px;
   align-items:center;flex-wrap:wrap;font-size:13px;color:var(--o-muted)}
@@ -376,13 +446,99 @@ th{background:var(--mist);font-weight:800;color:var(--ink)}tr:last-child td{bord
   color:var(--o-text);font-family:ui-monospace,Consolas,monospace;font-size:12.5px;direction:ltr}
 .ops-mbar small{color:var(--o-faint);width:100%}
 
-/* main */
-.ops-main{max-width:1160px;margin:0 auto;padding:24px 22px 80px}
+/* ── Shell: a persistent side rail + the working area ──────────────────────────
+   Horizontal tabs made every section feel like a browser tab. A rail is how an
+   operator actually works: the whole board is in view, and where you are is
+   never in question. */
+.ops-shell{display:grid;grid-template-columns:236px minmax(0,1fr);
+  gap:26px;max-width:1400px;margin:0 auto;padding:24px 22px 80px;align-items:start}
 
-/* readouts */
-.ops-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.ops-rail{position:sticky;top:80px;display:flex;flex-direction:column;gap:3px;
+  background:var(--o-panel);border:1px solid var(--o-line);border-radius:16px;
+  padding:8px;box-shadow:var(--o-shadow)}
+.rail-item{position:relative;display:flex;align-items:center;gap:11px;width:100%;
+  background:transparent;border:0;border-radius:11px;padding:11px 12px;cursor:pointer;
+  font-family:inherit;font-size:14px;font-weight:700;color:var(--o-muted);
+  text-align:start;transition:.14s;overflow:hidden}
+.rail-item:hover{background:var(--o-panel2);color:var(--o-text)}
+.rail-item.active{background:rgba(24,104,168,.08);color:var(--o-blue)}
+
+/* the lamp: the active section is "live", exactly like a connected unit */
+.rail-bar{position:absolute;inset-block:9px;inset-inline-start:0;width:3px;border-radius:3px;
+  background:transparent;transition:.14s}
+.rail-item.active .rail-bar{background:var(--o-blue);
+  box-shadow:0 0 8px rgba(24,104,168,.55)}
+
+.rail-ic{width:20px;height:20px;display:grid;place-items:center;flex:0 0 auto;color:currentColor}
+.rail-ic svg{width:17px;height:17px}
+.rail-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rail-n{font-size:11.5px;font-weight:800;color:var(--o-muted);background:var(--o-panel2);
+  border:1px solid var(--o-line);border-radius:999px;padding:1px 8px;flex:0 0 auto}
+.rail-item.active .rail-n{color:var(--o-blue);background:rgba(24,104,168,.10);
+  border-color:rgba(24,104,168,.25)}
+
+/* page header — every section says what it is and what you can do here */
+.page-h{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  margin-bottom:22px;flex-wrap:wrap}
+.page-h-t{min-width:0}
+.page-h h1{font-size:26px;font-weight:800;color:var(--o-ink);letter-spacing:-.02em;line-height:1.2}
+.page-h p{margin-top:6px;font-size:14px;color:var(--o-muted);max-width:70ch}
+
+.ops-main{min-width:0}
+
+@media(max-width:900px){
+  /* The rail becomes a scrolling strip — still one row, still always visible.
+     It sticks under the bar so navigation never scrolls out of reach. */
+  .ops-shell{grid-template-columns:1fr;gap:16px;padding:14px 14px 70px}
+  .ops-rail{position:sticky;top:52px;z-index:18;flex-direction:row;overflow-x:auto;
+    padding:6px;gap:4px;border-radius:12px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .ops-rail::-webkit-scrollbar{display:none}
+  .rail-item{flex:0 0 auto;padding:9px 12px}
+  .rail-bar{inset-block:auto;inset-inline:8px;bottom:0;top:auto;height:3px;width:auto}
+  .rail-label{max-width:none}
+  .page-h h1{font-size:22px}
+}
+
+/* ── Phone ────────────────────────────────────────────────────────────────────
+   The bar carried a wordmark, a status pill, a language switch, an email, a role
+   chip and a sign-out button — on a phone that wrapped into a stack taller than
+   the content. Drop what a phone can't use, keep what it needs. */
+@media(max-width:640px){
+  .ops-bar{padding:8px 14px;gap:10px}
+  .ops-sub{display:none}            /* the mark already says where you are */
+  .ops-link-t{display:none}         /* the light alone reports the feed */
+  .ops-link{padding:5px 8px}
+  .ops-who{display:none}            /* the role chip is the useful half */
+  .ops-me{align-items:center}
+  .ops-id-r{gap:8px}
+  .page-h{margin-bottom:16px}
+  .page-h h1{font-size:20px}
+  .page-h p{font-size:13px}
+  .ops-panel{padding:16px;border-radius:15px}
+  .ops-kpis{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .kpi{padding:14px 15px;border-radius:13px}
+  .kpi-n{font-size:24px}
+  .kpi-l{font-size:12px}
+  .kpi-ic{display:none}             /* the number is the point */
+  .dev-grid{grid-template-columns:1fr;gap:10px}
+  .ops-cmd{gap:8px}
+  .ops-search{min-width:0}
+  .ops-add{width:100%}
+  /* A modal on a phone is a full-height sheet, not a floating card. */
+  .ops-modal-wrap{padding:0;align-items:flex-end}
+  .ops-modal{width:100%;max-height:92vh;border-radius:20px 20px 0 0}
+  .ops-mfoot{flex-direction:column}
+  .ops-mfoot .ops-btn,.ops-mfoot .ops-ghost{width:100%}
+  .bell-pop{position:fixed;top:auto;bottom:0;inset-inline:0;width:100%;
+    max-height:74vh;border-radius:18px 18px 0 0}
+}
+
+/* readouts — wrap instead of squashing four across a narrow screen */
+.ops-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
 .kpi{position:relative;background:var(--o-panel);border:1px solid var(--o-line);
-  border-radius:15px;padding:18px 20px;overflow:hidden;box-shadow:var(--o-shadow)}
+  border-radius:15px;padding:18px 20px;overflow:hidden;box-shadow:var(--o-shadow);transition:.15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(12,30,48,.10)}
 .kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--o-blue)}
 .kpi.ok::before{background:var(--o-green)}.kpi.warn::before{background:var(--o-amber)}.kpi.live::before{background:var(--o-green)}
 .kpi-ic{position:absolute;inset-inline-end:16px;top:16px;color:var(--o-faint);opacity:.55}
@@ -392,6 +548,19 @@ th{background:var(--mist);font-weight:800;color:var(--ink)}tr:last-child td{bord
 
 /* command row */
 .ops-cmd{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+
+/* Filters narrow the fleet; they never reorder it, so a card can't move out from
+   under your cursor when a unit reconnects. */
+.fl-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.fl-chip{display:inline-flex;align-items:center;gap:7px;background:var(--o-panel);
+  border:1px solid var(--o-line);color:var(--o-muted);border-radius:999px;
+  padding:7px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  transition:.14s}
+.fl-chip:hover{border-color:var(--o-blue);color:var(--o-blue)}
+.fl-chip.on{background:rgba(24,104,168,.09);border-color:var(--o-blue);color:var(--o-blue)}
+.fl-chip span{font-size:11.5px;font-weight:800;background:var(--o-panel2);
+  border-radius:999px;padding:1px 7px;color:var(--o-faint)}
+.fl-chip.on span{background:var(--o-blue);color:#fff}
 .ops-search{flex:1;min-width:260px;display:flex;align-items:center;gap:10px;background:var(--o-panel);
   border:1px solid var(--o-line);border-radius:12px;padding:0 14px}
 .ops-search:focus-within{border-color:var(--o-blue)}
@@ -407,50 +576,191 @@ th{background:var(--mist);font-weight:800;color:var(--ink)}tr:last-child td{bord
 .ops-add input:focus{outline:none;border-color:var(--o-blue)}
 
 /* fleet grid */
-.ops-grid{background:var(--o-panel);border:1px solid var(--o-line);border-radius:15px;overflow:hidden;box-shadow:var(--o-shadow)}
-.ops-row{display:grid;grid-template-columns:130px 150px 1.5fr 1fr 1fr 28px;align-items:center;gap:14px;
-  width:100%;text-align:start;background:transparent;border:0;border-top:1px solid var(--o-line);
-  padding:13px 18px;color:var(--o-text);font-family:inherit;font-size:13.5px;cursor:pointer}
-.ops-row:first-child{border-top:0}
-.ops-head{position:sticky;top:0;background:var(--o-panel2);color:var(--o-faint);font-size:11.5px;font-weight:800;
-  letter-spacing:.04em;cursor:default;padding-top:11px;padding-bottom:11px}
-.ops-grid button.ops-row:hover{background:var(--o-panel2)}
-.ops-row.sel{background:rgba(24,104,168,.08)}
-.c-stat{display:inline-flex;align-items:center;gap:8px;color:var(--o-muted);font-size:12.5px}
-.c-serial{color:var(--o-blue);font-weight:700}
-.c-unit{display:flex;flex-direction:column;min-width:0}
-.c-unit b{font-size:13.5px;color:var(--o-ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.c-unit small{color:var(--o-faint);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.c-type{display:inline-flex;align-items:center;gap:7px;color:var(--o-muted);font-size:12.5px}
-.c-type svg{width:16px;height:16px;color:var(--o-blue)}
-.c-lic{justify-self:start}
-.c-chev{color:var(--o-faint);font-size:19px;text-align:center}
-.ops-empty{padding:30px;text-align:center;color:var(--o-faint);border-top:1px solid var(--o-line)}
+/* fleet — a card per unit. The columns used to squeeze a serial, an owner and a
+   licence chip into fixed widths, which truncated everything into mush. */
+.dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+/* Logical padding: the extra room is always on the side the status stripe is on,
+   in EITHER direction — no per-language override to fall out of sync. */
+.dev-card{position:relative;display:flex;flex-direction:column;gap:11px;overflow:hidden;
+  background:var(--o-panel);border:1px solid var(--o-line);border-radius:15px;
+  padding-block:16px;padding-inline-start:22px;padding-inline-end:18px;
+  text-align:start;cursor:pointer;font-family:inherit;
+  box-shadow:var(--o-shadow);transition:.15s}
+.dev-card:hover{transform:translateY(-2px);border-color:var(--o-blue);
+  box-shadow:0 14px 30px rgba(12,30,48,.10)}
+.dev-card.sel{border-color:var(--o-blue);background:rgba(24,104,168,.05)}
 
-/* spec-sheet drawer */
-.ops-scrim{position:fixed;inset:0;background:rgba(20,40,60,.35);z-index:30;animation:opsfade .15s ease}
+/* the stripe down the side — the unit's state at a glance */
+.dev-bar{position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:var(--o-line)}
+.dev-card.on   .dev-bar{background:var(--o-green)}
+.dev-card.off  .dev-bar{background:var(--o-faint)}
+.dev-card.idle .dev-bar{background:var(--o-amber)}
+
+.dev-top{display:flex;align-items:center;gap:11px}
+.dev-ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(24,188,242,.11);color:var(--o-blue)}
+.dev-ic svg{width:18px;height:18px}
+.dev-name{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px}
+.dev-name b{font-size:14px;color:var(--o-ink);font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dev-name small{font-size:11.5px;color:var(--o-blue);direction:ltr;text-align:start;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dev-live{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+  color:var(--o-faint);flex:0 0 auto}
+.dev-live.on{color:var(--o-green)}
+
+.dev-owner{font-size:12.5px;color:var(--o-muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* how long the unit has actually been running */
+.dev-run{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  padding:8px 10px;border-radius:9px;background:var(--o-panel2);border:1px solid var(--o-line)}
+.dev-run-l{font-size:11px;font-weight:700;color:var(--o-faint);letter-spacing:.04em}
+.dev-run-v{font-size:13px;font-weight:800;color:var(--o-ink)}
+
+.dev-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.ops-empty{padding:30px;text-align:center;color:var(--o-faint);
+  background:var(--o-panel);border:1px solid var(--o-line);border-radius:15px;grid-column:1/-1}
+
+/* registry docs that aren't real units */
+.junk-box{margin-top:18px;background:rgba(224,138,34,.06);border:1px solid rgba(224,138,34,.30);
+  border-radius:15px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.junk-h b{font-size:14px;color:var(--o-ink)}
+.junk-h p{margin:3px 0 0;font-size:12.5px;color:var(--o-muted)}
+.junk-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--o-panel);border:1px solid var(--o-line);border-radius:10px;padding:9px 12px}
+.junk-row .mono{font-size:11.5px;color:var(--o-muted);direction:ltr;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* device sheet — a centred modal, not an edge drawer */
 @keyframes opsfade{from{opacity:0}to{opacity:1}}
-.ops-drawer{position:fixed;inset-block:0;inset-inline-end:0;width:400px;max-width:93vw;z-index:31;overflow:auto;
-  background:var(--o-panel);border-inline-start:1px solid var(--o-line);
-  box-shadow:-30px 0 70px rgba(30,60,90,.18);padding:22px;display:flex;flex-direction:column;gap:16px;animation:opsslide .2s ease}
-@keyframes opsslide{from{transform:translateX(var(--sx,40px));opacity:.4}to{transform:none;opacity:1}}
-html[dir="rtl"] .ops-drawer{--sx:-40px}
-.ops-dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.ops-dserial{font-size:18px;color:var(--o-ink)}
-.ops-dname{color:var(--o-muted);font-size:13px;margin-top:3px}
-.ops-x{background:var(--o-panel2);border:0;border-radius:10px;width:34px;height:34px;font-size:20px;color:var(--o-muted);cursor:pointer;flex:0 0 auto}
+@keyframes opspop{from{transform:translateY(14px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+.ops-modal-wrap{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(14,32,48,.55);backdrop-filter:blur(3px);animation:opsfade .15s ease;overflow:auto}
+.ops-modal{width:min(720px,100%);max-height:88vh;background:var(--o-panel);border:1px solid var(--o-line);
+  border-radius:20px;box-shadow:0 34px 80px rgba(12,30,48,.34);display:flex;flex-direction:column;
+  animation:opspop .18s cubic-bezier(.2,.8,.3,1)}
+
+/* header + footer stay put; only the facts scroll */
+.ops-mhead{display:flex;align-items:center;gap:13px;padding:18px 20px;border-bottom:1px solid var(--o-line);flex:0 0 auto}
+.ops-mic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(24,188,242,.12);color:var(--o-blue)}
+.ops-mic svg{width:21px;height:21px}
+.ops-mtitle{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ops-mtitle b{font-size:16px;color:var(--o-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ops-mtitle .mono{font-size:12.5px;color:var(--o-blue);direction:ltr;text-align:start}
+.ops-x{background:var(--o-panel2);border:0;border-radius:10px;width:34px;height:34px;font-size:20px;
+  color:var(--o-muted);cursor:pointer;flex:0 0 auto;line-height:1}
 .ops-x:hover{color:var(--o-ink);background:var(--o-line)}
-.ops-dtags{display:flex;align-items:center;gap:10px;color:var(--o-muted);font-size:12.5px;flex-wrap:wrap}
+
+.ops-mtags{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--o-line);flex:0 0 auto}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;border-radius:8px;
+  padding:5px 11px;background:var(--o-panel2);border:1px solid var(--o-line);color:var(--o-muted)}
+.chip.live{color:var(--o-ink)}
+
+/* The headline numbers. Runtime first — it's what an operator asks about a unit
+   before anything else, and it was buried in a list of thirteen rows. */
+.ops-mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;flex:0 0 auto;
+  background:var(--o-line);border-bottom:1px solid var(--o-line)}
+.mstat{background:var(--o-panel2);padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.mstat-l{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--o-faint);
+  text-transform:uppercase}
+.mstat-v{font-size:17px;font-weight:800;color:var(--o-ink);line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mstat-v.mono{font-size:15px;direction:ltr;text-align:start;unicode-bidi:embed}
+@media(max-width:520px){.ops-mstats{grid-template-columns:1fr}}
+
+/* the facts, two columns on a wide screen */
+.ops-mbody{padding:18px 20px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:18px 24px}
+.ops-mgroup h4{margin:0 0 6px;font-size:11.5px;font-weight:800;letter-spacing:.06em;
+  color:var(--o-faint);text-transform:uppercase}
 .ops-spec{display:flex;flex-direction:column}
-.ops-srow{display:flex;justify-content:space-between;gap:14px;padding:12px 2px;border-bottom:1px solid var(--o-line);font-size:13.5px}
-.ops-srow>span:first-child{color:var(--o-muted)}
-.ops-srow>span:last-child{color:var(--o-ink);font-weight:700;text-align:end}
-.ops-dact{margin-top:auto;padding-top:8px}
+.ops-srow{display:flex;justify-content:space-between;gap:14px;padding:10px 2px;border-bottom:1px solid var(--o-line);font-size:13px}
+.ops-srow:last-child{border-bottom:0}
+.ops-srow>span:first-child{color:var(--o-muted);flex:0 0 auto}
+.ops-srow>span:last-child{color:var(--o-ink);font-weight:700;text-align:end;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ops-srow>span.mono{direction:ltr;unicode-bidi:embed}
+
+.ops-mfoot{padding:16px 20px;border-top:1px solid var(--o-line);flex:0 0 auto;display:flex;gap:10px}
+.ops-mfoot .ops-btn,.ops-mfoot .ops-ghost{flex:1}
+.ops-ghost.danger{color:#b4331f;border-color:rgba(200,60,35,.35);background:rgba(200,60,35,.06)}
+.ops-ghost.danger:hover{background:rgba(200,60,35,.12);border-color:rgba(200,60,35,.55)}
+@media(max-width:640px){
+  .ops-modal-wrap{padding:12px}
+  .ops-mbody{grid-template-columns:1fr;gap:16px}
+}
 .ops-ghost.sm{padding:6px 12px;font-size:12.5px;border-radius:9px}
 .ops-admins{display:flex;flex-direction:column;gap:8px}
 .ops-admin{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--o-panel2);
   border:1px solid var(--o-line);border-radius:11px;padding:11px 13px;font-size:13px;color:var(--o-text)}
 .ops-admin .mono{color:var(--o-blue);overflow:hidden;text-overflow:ellipsis}
+
+/* one scoped admin + the permissions granted to them */
+.adm-card{background:var(--o-panel2);border:1px solid var(--o-line);border-radius:13px;
+  padding:14px;margin-top:10px;display:flex;flex-direction:column;gap:12px}
+.adm-new{border-color:var(--o-blue);background:rgba(24,188,242,.05);margin-bottom:18px}
+.adm-card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.adm-card-h b{font-size:14px;color:var(--o-text)}
+.adm-card-h .mono{color:var(--o-blue);font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.adm-card-a{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* ── Credit: one card per admin who can license ───────────────────────────── */
+.cr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.cr-card{position:relative;display:flex;flex-direction:column;gap:13px;overflow:hidden;
+  background:var(--o-panel2);border:1px solid var(--o-line);border-radius:15px;
+  padding:16px 18px 16px 22px}
+html[dir="rtl"] .cr-card{padding:16px 22px 16px 18px}
+/* the same stripe the fleet uses: green = they can work, amber = they can't */
+.cr-bar-l{position:absolute;inset-block:0;inset-inline-start:0;width:4px}
+.cr-card.ok    .cr-bar-l{background:var(--o-green)}
+.cr-card.empty .cr-bar-l{background:var(--o-amber)}
+
+.cr-card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cr-card-h .mono{font-size:12.5px;color:var(--o-blue);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+.cr-card-n{display:flex;gap:22px}
+.cr-card-n small{display:block;font-size:11.5px;color:var(--o-faint)}
+.cr-card-n b{display:block;font-size:22px;font-weight:800;color:var(--o-ink);line-height:1.25}
+.cr-card-n i{font-style:normal;font-size:12px;font-weight:700;color:var(--o-muted)}
+
+.cr-card-a{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cr-card-a .nt-input{flex:1;min-width:88px}
+
+/* out of credit — one plain statement, and who fixes it */
+.cr-warn{display:flex;flex-direction:column;gap:2px;margin-bottom:18px;
+  padding:14px 18px;border-radius:14px;
+  background:rgba(224,138,34,.08);border:1px solid rgba(224,138,34,.35)}
+.cr-warn b{font-size:14.5px;color:#a8641a}
+.cr-warn span{font-size:13px;color:var(--o-muted)}
+
+/* a unit that asked to be licensed */
+.wait-who{display:flex;flex-direction:column;gap:2px;min-width:0}
+.wait-who b{font-size:14px;color:var(--o-ink);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.wait-who small{font-size:12px;color:var(--o-muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.cr-card .chip svg{width:14px;height:14px}
+
+/* the balance bar at the top of the licence tab */
+.cr-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.cr-item{flex:1;min-width:132px;display:flex;flex-direction:column;gap:2px;
+  padding:13px 15px;border-radius:13px;background:var(--o-panel2);
+  border:1px solid var(--o-line)}
+.cr-item small{font-size:11.5px;color:var(--o-faint)}
+.cr-item b{font-size:18px;color:var(--o-ink);font-weight:800}
+
+.adm-perms{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.adm-perm{display:flex;align-items:flex-start;gap:9px;cursor:pointer;padding:10px 11px;
+  border:1px solid var(--o-line);border-radius:10px;background:var(--o-panel);transition:.15s}
+.adm-perm:hover{border-color:var(--o-blue)}
+.adm-perm.on{border-color:var(--o-blue);background:rgba(24,188,242,.08)}
+.adm-perm input{margin:2px 0 0;accent-color:var(--o-blue);flex-shrink:0;cursor:pointer}
+.adm-perm b{display:block;font-size:13px;color:var(--o-text);font-weight:700}
+.adm-perm small{display:block;font-size:11.5px;color:var(--o-muted);line-height:1.45;margin-top:2px}
+@media(max-width:900px){.adm-perms{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.adm-perms{grid-template-columns:1fr}}
 .ops-inv{background:var(--o-panel2);border:1px solid var(--o-line);border-radius:11px;padding:11px 13px;display:flex;flex-direction:column;gap:7px}
 .ops-inv-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ops-inv-serial{background:transparent;border:0;color:var(--o-blue);font-weight:700;font-size:13px;cursor:pointer;padding:0;direction:ltr}
@@ -463,9 +773,8 @@ html[dir="rtl"] .ops-drawer{--sx:-40px}
 
 @media(max-width:820px){
   .ops-kpis{grid-template-columns:1fr 1fr}
-  .ops-row{grid-template-columns:104px 1fr 1fr 26px}
-  .ops-row .c-unit,.ops-head span:nth-child(3){display:none}
-  .ops-head span:nth-child(4){display:none}.ops-row .c-type{display:none}
+  /* The fleet is a card grid now — it reflows on its own, and nothing has to be
+     hidden to make it fit (the old table dropped the owner and type columns). */
 }
 
 /* ---------- responsive ---------- */
@@ -588,24 +897,52 @@ html[dir="rtl"] .ops-drawer{--sx:-40px}
 .lic-req-act button.danger:hover{border-color:rgba(192,57,43,.5)}
 @media(max-width:640px){.lic-reqs{grid-template-columns:1fr}}
 
-/* Admin — tabs + panels (professional light layout) */
-.ops-tabs{position:sticky;top:57px;z-index:19;display:flex;gap:4px;flex-wrap:wrap;
-  background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--o-line);padding:0 22px}
-.ops-tab{position:relative;background:transparent;border:0;color:var(--o-muted);font-family:inherit;
-  font-weight:700;font-size:14px;cursor:pointer;padding:14px 16px;display:inline-flex;align-items:center;gap:8px}
-.ops-tab:hover{color:var(--o-text)}
-.ops-tab.active{color:var(--o-blue)}
-.ops-tab.active::after{content:"";position:absolute;inset-inline:12px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--o-blue)}
-.ops-tab-n{font-size:11.5px;font-weight:800;color:var(--o-muted);background:var(--o-panel2);border:1px solid var(--o-line);border-radius:999px;padding:1px 8px}
-.ops-tab.active .ops-tab-n{color:var(--o-blue);background:rgba(24,104,168,.10);border-color:rgba(24,104,168,.25)}
-
-.ops-panel{background:var(--o-panel);border:1px solid var(--o-line);border-radius:16px;padding:22px;box-shadow:var(--o-shadow)}
-.ops-panel-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
-.ops-panel-h h2{font-size:19px;color:var(--o-ink);font-weight:800}
-.ops-panel-h p{color:var(--o-muted);font-size:13.5px;margin-top:4px}
+/* Admin — panels. Every box is a framed card: the sections used to bleed into
+   the page background, which is what made the console read as unfinished. */
+.ops-panel{background:var(--o-panel);border:1px solid var(--o-line);border-radius:18px;padding:24px;box-shadow:var(--o-shadow)}
+.ops-panel + .ops-panel{margin-top:18px}
+/* A rule under the title separates the heading from the panel's content, so a
+   long panel doesn't read as one undifferentiated block. */
+.ops-panel-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  margin:-4px 0 20px;padding-bottom:16px;border-bottom:1px solid var(--o-line)}
+.ops-panel-h h2{font-size:19px;color:var(--o-ink);font-weight:800;letter-spacing:-.01em}
+.ops-panel-h p{color:var(--o-muted);font-size:13.5px;margin-top:5px;max-width:70ch}
 .ops-list{display:flex;flex-direction:column;gap:8px}
 .ops-note{margin-top:16px;padding:13px 15px;background:var(--o-panel2);border:1px solid var(--o-line);
   border-radius:12px;color:var(--o-muted);font-size:12px;line-height:1.8}
+
+/* published mobile-app release (admin) */
+.app-rel{background:var(--o-panel2);border:1px solid var(--o-line);border-radius:14px;
+  padding:18px;margin-bottom:18px;display:flex;flex-direction:column;gap:14px}
+.app-rel-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.app-rel-h b{font-size:15px}
+.app-rel-h p{margin:4px 0 0;font-size:13px;color:var(--o-muted,#6b7a89);max-width:60ch}
+.app-rel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.app-rel-grid label{display:flex;flex-direction:column;gap:6px}
+.app-rel-grid label.wide{grid-column:1/-1}
+.app-rel-grid label span{font-size:12.5px;font-weight:700}
+.app-rel-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.app-rel-link{font-size:12px;color:var(--o-blue);text-decoration:none;direction:ltr;
+  word-break:break-all;flex:1;min-width:0}
+.app-rel-link:hover{text-decoration:underline}
+@media(max-width:640px){.app-rel-grid{grid-template-columns:1fr}}
+
+/* pick the .apk — the whole box is the button */
+.apk-drop{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+  padding:22px 16px;border:1.5px dashed var(--o-line);border-radius:13px;
+  background:var(--o-panel);text-align:center;transition:.15s}
+.apk-drop:hover{border-color:var(--o-blue);background:rgba(24,188,242,.05)}
+.apk-drop input{display:none}
+.apk-drop b{font-size:14px;color:var(--o-blue)}
+.apk-drop small{font-size:12px;color:var(--o-muted)}
+
+/* upload progress */
+.apk-prog{display:flex;flex-direction:column;gap:8px;padding:18px 16px;
+  border:1px solid var(--o-line);border-radius:13px;background:var(--o-panel)}
+.apk-prog-bar{height:8px;border-radius:99px;background:var(--o-panel2);overflow:hidden}
+.apk-prog-bar i{display:block;height:100%;border-radius:99px;background:var(--o-blue);
+  transition:width .2s ease}
+.apk-prog span{font-size:12.5px;color:var(--o-muted);text-align:center}
 
 /* firmware cards grid */
 .fw-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
@@ -617,7 +954,7 @@ html[dir="rtl"] .ops-drawer{--sx:-40px}
 .fw-card-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:2px}
 .fw-card-act input{flex:1;min-width:110px;background:var(--o-panel);border:1px solid var(--o-line);
   color:var(--o-text);border-radius:9px;padding:9px 11px;font-size:12.5px}
-@media(max-width:820px){ .ops-tabs{top:0} .fw-cards{grid-template-columns:1fr} }
+@media(max-width:820px){ .fw-cards{grid-template-columns:1fr} }
 
 /* firmware — individual file slots */
 .fw-slots{display:flex;flex-direction:column;gap:7px}
@@ -710,6 +1047,36 @@ html[dir="rtl"] .ops-drawer{--sx:-40px}
 .ha-install-alt{font-size:13px;color:var(--muted)}
 .ha-install-alt code{background:var(--brand-soft);color:var(--brand-deep);border:1px solid var(--brand-line);
   border-radius:7px;padding:2px 8px;font-size:12.5px;direction:ltr;display:inline-block}
+
+/* connection settings reference (MQTT) */
+.ha-cfg{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.ha-cfg-row{display:grid;grid-template-columns:minmax(140px,240px) 1fr;gap:14px;
+  padding:14px 18px;border-bottom:1px solid var(--line);align-items:center}
+.ha-cfg-row:last-child{border-bottom:0}
+.ha-cfg-row b{font-size:14px;color:var(--ink);font-weight:700}
+.ha-cfg-row span{font-size:13.5px;color:var(--muted);line-height:1.6}
+.ha-cfg-row code{background:var(--brand-soft);color:var(--brand-deep);border:1px solid var(--brand-line);
+  border-radius:7px;padding:2px 8px;font-size:12.5px;direction:ltr;display:inline-block;
+  word-break:break-all;unicode-bidi:embed}
+@media(max-width:640px){.ha-cfg-row{grid-template-columns:1fr;gap:5px}}
+
+/* copyable shell command — a small terminal window */
+.ha-cmd{margin-top:16px;background:#0C1B27;border:1px solid #1E3547;border-radius:16px;
+  overflow:hidden;box-shadow:0 14px 34px rgba(8,26,40,.28)}
+.ha-cmd-bar{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:#132433;border-bottom:1px solid #1E3547}
+.ha-cmd-dots{display:inline-flex;gap:6px;flex:0 0 auto}
+.ha-cmd-dots i{width:10px;height:10px;border-radius:50%;background:#31485c;display:block}
+.ha-cmd-title{flex:1;font-size:12px;font-weight:700;letter-spacing:.04em;color:#7E97AC;
+  direction:ltr;text-align:center}
+.ha-cmd-btn{flex:0 0 auto;background:#2E8FD8;color:#fff;border:0;border-radius:9px;
+  padding:7px 14px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;
+  transition:background .15s,transform .15s}
+.ha-cmd-btn:hover{background:#3FA3EC;transform:translateY(-1px)}
+.ha-cmd-btn.done{background:var(--ok);}
+.ha-cmd pre{margin:0;padding:18px 20px;overflow-x:auto;direction:ltr;text-align:left}
+.ha-cmd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px;line-height:1.9;color:#EAF3FA;white-space:pre}
 
 /* benefits */
 .ha-ben{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
