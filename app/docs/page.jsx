@@ -55,6 +55,7 @@ const TOC = [
       { href: '#hidden', label: 'المفاتيح المخفيّة والقفل بالرمز', en: 'Hidden switches & PIN' },
       { href: '#update', label: 'تحديث الأجهزة لاسلكيًا (OTA)', en: 'Over-the-air updates' },
       { href: '/docs/home-assistant', label: 'الربط مع Home Assistant', en: 'Home Assistant' },
+      { href: '/docs/google-home', label: 'الربط مع Google Home', en: 'Google Home' },
     ],
   },
   {

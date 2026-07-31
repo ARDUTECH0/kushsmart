@@ -3,6 +3,7 @@ import SiteHeader from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import { asset } from '@/lib/site';
 import HaLogo from '@/components/HaLogo';
+import GoogleHomeLogo from '@/components/GoogleHomeLogo';
 import L from '@/components/L';
 import {
   Bulb, Fan, Sensor, Timer, Automation, Groups, Remote, Bell, Lock,
@@ -222,6 +223,21 @@ export default function HomePage() {
               ar="اكتشاف تلقائي لكل أجهزتك — مفاتيح، إضاءة، RGB، ستائر، حسّاسات، قفل وعدّاد طاقة. تحكّم محلي فوري داخل المنزل وسحابي من أي مكان، في آنٍ واحد."
               en="Every device is found automatically — switches, lights, RGB, curtains, sensors, locks and power meters. Control it locally at home and over the cloud away, at the same time." />
             <Link className="btn lg" href="/docs/home-assistant"><L ar="دليل الربط مع Home Assistant ←" en="Home Assistant setup guide →" /></Link>
+          </div>
+        </div>
+      </section>
+
+      {/* WORKS WITH GOOGLE HOME */}
+      <section className="section ha-band">
+        <div className="wrap ha-band-in">
+          <div className="ha-band-badge"><GoogleHomeLogo size={72} /></div>
+          <div className="ha-band-txt">
+            <span className="eyebrow"><L ar="يعمل مع Google Home" en="Works with Google Home" /></span>
+            <L tag="h2" ar="تحكّم بصوتك مع Google Home" en="Control it by voice with Google Home" />
+            <L tag="p"
+              ar="اربطه بحساب Google بتاعك واطلب من جوجل تشغيل النور أو المفتاح أو تسألها عن الحرارة — متزامن لحظيًا مع التطبيق."
+              en="Link it to your Google Account and ask Google to turn on a light or switch, or ask for the temperature — synced live with the app." />
+            <Link className="btn lg" href="/docs/google-home"><L ar="دليل الربط مع Google Home ←" en="Google Home setup guide →" /></Link>
           </div>
         </div>
       </section>

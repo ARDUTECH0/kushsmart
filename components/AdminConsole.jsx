@@ -220,6 +220,10 @@ const STR = {
   fState: ['الحالة', 'State'],
   fLicSince: ['مرخّص من', 'Licensed for'],
   fLicDate: ['تاريخ الترخيص', 'Licensed on'],
+  gSharing: ['المشاركة', 'Sharing'],
+  fSharedWith: ['مُشارك مع', 'Shared with'],
+  noShares: ['مش متشارك مع حد', 'Not shared with anyone'],
+  sharedBadge: ['مُشارك', 'Shared'],
   yes: ['نعم', 'Yes'],
   noBroadcastOnly: ['لا (من البث فقط)', 'No (live feed only)'],
   revoke: ['سحب الترخيص', 'Revoke licence'],
@@ -319,6 +323,7 @@ export default function AdminConsole() {
   const [busy, setBusy] = useState(false);
 
   const [registry, setRegistry] = useState([]);   // Firestore licence authority
+  const [sharesBySerial, setSharesBySerial] = useState({}); // serial -> [{ email, uid, createdAt }]
   const [liveState, setLiveState] = useState({});  // serial -> telemetry (MQTT)
   const [liveStatus, setLiveStatus] = useState({}); // serial -> online (MQTT)
   const [q, setQ] = useState('');
@@ -537,6 +542,33 @@ export default function AdminConsole() {
         };
       })),
       (e) => flash('خطأ قراءة: ' + e.code),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, allowList]);
+
+  // ---- device sharing stream (app's /device/share grants) ----
+  // firestore.rules lets an admin read every device_shares doc (not just the
+  // ones naming them) for the same reason device_registry is readable by any
+  // signed-in user — the console needs fleet-wide visibility.
+  useEffect(() => {
+    if (!fb.current || !allowed) { setSharesBySerial({}); return; }
+    return onSnapshot(
+      collection(fb.current.db, 'device_shares'),
+      (qs) => {
+        const m = {};
+        qs.forEach((d) => {
+          const x = d.data();
+          const serial = x.serial || '';
+          if (!serial) return;
+          (m[serial] ||= []).push({
+            uid: x.sharedUid || '',
+            email: x.sharedEmail || '',
+            createdAt: toDate(x.createdAt),
+          });
+        });
+        setSharesBySerial(m);
+      },
+      () => setSharesBySerial({}),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, allowList]);
@@ -1251,6 +1283,7 @@ export default function AdminConsole() {
         // device's own country field first, then the owner account's country.
         country: d.country || u.country || '',
         online: serialOnline(d.serial, liveStatus, d.lastSeen, liveState),
+        sharedWith: sharesBySerial[d.serial] || [],
       };
     });
 
@@ -1274,7 +1307,7 @@ export default function AdminConsole() {
     // `tick` is in here on purpose: "online" depends on how long ago we last
     // heard from a unit, so it has to be re-evaluated as time passes — not only
     // when a message happens to arrive.
-  }, [registry, liveState, liveStatus, usersMap, tick]);
+  }, [registry, liveState, liveStatus, usersMap, sharesBySerial, tick]);
 
   // Registry docs that aren't real units — see the note in `devices`.
   const junk = useMemo(
@@ -1613,6 +1646,9 @@ export default function AdminConsole() {
                       : d.licenseRequested
                         ? <span className="seal warn">{t('licRequested')}</span>
                         : <span className="seal">{t('unlicensed')}</span>}
+                    {d.sharedWith.length > 0 && (
+                      <span className="seal share">{t('sharedBadge')}<i>{d.sharedWith.length}</i></span>
+                    )}
                   </span>
                 </button>
               );
@@ -2413,6 +2449,21 @@ export default function AdminConsole() {
                     <Row k={t('fLicSince')} v={selected.licensed ? rel(selected.licensedAt, lang) : '—'} />
                     <Row k={t('fLicDate')}
                       v={selected.licensedAt ? selected.licensedAt.toLocaleDateString(locale) : '—'} />
+                  </div>
+                </div>
+
+                {/* Who the OWNER shared this unit with — read-only here; the
+                    console doesn't grant/revoke shares, only the app does. */}
+                <div className="ops-mgroup">
+                  <h4>{t('gSharing')}</h4>
+                  <div className="ops-spec">
+                    {selected.sharedWith.length
+                      ? selected.sharedWith.map((sw, i) => (
+                          <Row key={sw.uid || i}
+                            k={selected.sharedWith.length > 1 ? `${t('fSharedWith')} ${i + 1}` : t('fSharedWith')}
+                            v={sw.email || '—'} mono />
+                        ))
+                      : <Row k={t('fSharedWith')} v={t('noShares')} />}
                   </div>
                 </div>
               </div>
