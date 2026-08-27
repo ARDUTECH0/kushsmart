@@ -50,12 +50,14 @@ const TOC = [
     title: 'المتقدّم', titleEn: 'Advanced',
     items: [
       { href: '#automations', label: 'الأتمتة', en: 'Automations' },
+      { href: '#geofence', label: 'الوصول والمغادرة تلقائيًا (GPS)', en: 'Automatic arrive / leave (GPS)' },
       { href: '#sensors', label: 'الحسّاسات والإشعارات', en: 'Sensors & alerts' },
       { href: '#remote', label: 'التحكّم 433MHz / IR', en: '433MHz / IR remotes' },
       { href: '#hidden', label: 'المفاتيح المخفيّة والقفل بالرمز', en: 'Hidden switches & PIN' },
       { href: '#update', label: 'تحديث الأجهزة لاسلكيًا (OTA)', en: 'Over-the-air updates' },
       { href: '/docs/home-assistant', label: 'الربط مع Home Assistant', en: 'Home Assistant' },
       { href: '/docs/google-home', label: 'الربط مع Google Home', en: 'Google Home' },
+      { href: '/docs/alexa', label: 'الربط مع Alexa', en: 'Alexa' },
     ],
   },
   {
@@ -432,23 +434,59 @@ export default function DocsPage() {
             <div className="card" data-ar="">
               <ol className="steps">
                 <li>اضغط على القناة أو الحسّاس لفتح صفحته ← <b>الأتمتة</b> ← <b>➕ أتمتة جديدة</b>.</li>
-                <li>اختر <b>الشرط</b> (مثلًا: الحرارة أكبر من 30، أو فتح حسّاس الباب).</li>
-                <li>اختر <b>النتيجة</b>: تشغيل/إطفاء جهاز، و/أو إرسال إشعار.</li>
-                <li>احفظ — وتعمل الأتمتة تلقائيًا.</li>
+                <li>اختر <b>الشرط</b> (مثلًا: الحرارة أكبر من 30، أو فتح حسّاس الباب، أو معاد الشروق/الغروب).</li>
+                <li>اختر <b>النتيجة</b>: تشغيل/إطفاء جهاز، أو إرسال <b>أمر ريموت (IR/433MHz)</b> لزرّ اتعلّم من قبل، و/أو إرسال إشعار.</li>
+                <li>تقدر كمان تضيف <b>شروطًا إضافية</b> («وكمان») و<b>استثناءات</b> («إلا إذا»)، وتحصر القاعدة في <b>نافذة زمنية</b> معيّنة (مثلًا بالليل بس).</li>
+                <li>احفظ — وتعمل الأتمتة تلقائيًا حتى والتطبيق مقفول (تشتغل على السيرفر).</li>
               </ol>
             </div>
             <div className="card" data-en="">
               <ol className="steps">
                 <li>Tap the channel or sensor to open its page → <b>Automation</b> → <b>➕ New automation</b>.</li>
-                <li>Pick the <b>condition</b> (e.g. temperature above 30, or the door sensor opens).</li>
-                <li>Pick the <b>result</b>: turn a device on/off, and/or send an alert.</li>
-                <li>Save — the automation runs on its own.</li>
+                <li>Pick the <b>condition</b> (e.g. temperature above 30, the door sensor opens, or sunrise/sunset).</li>
+                <li>Pick the <b>result</b>: turn a device on/off, send a stored <b>remote command (IR/433MHz)</b> to a learned button, and/or send an alert.</li>
+                <li>You can also add <b>extra conditions</b> (“and also”) and <b>exceptions</b> (“unless”), and limit the rule to a <b>time window</b> (e.g. nighttime only).</li>
+                <li>Save — the automation runs on its own, even with the app closed (it runs on the server).</li>
               </ol>
             </div>
             <div className="callout tip">
               <span className="em">🤖</span>
-              <div data-ar="">أمثلة: «إذا ارتفعت الحرارة شغّل المروحة»، «إذا فُتح الباب أرسل لي إشعارًا وشغّل الإضاءة».</div>
-              <div data-en="">Examples: “If it gets hot, turn on the fan.” “If the door opens, alert me and turn on the light.”</div>
+              <div data-ar="">أمثلة: «إذا ارتفعت الحرارة شغّل المروحة»، «إذا فُتح الباب أرسل لي إشعارًا وشغّل الإضاءة»، «عند الغروب شغّل زرّ التكييف المتعلَّم في ريموت الصالة».</div>
+              <div data-en="">Examples: “If it gets hot, turn on the fan.” “If the door opens, alert me and turn on the light.” “At sunset, fire the learned A/C-power button on the living-room remote.”</div>
+            </div>
+          </section>
+
+          <section id="geofence">
+            <h2><span className="n">9b</span> <L ar="الوصول والمغادرة تلقائيًا (الجيوفنسنج)" en="Automatic arrive / leave scenes (Geofencing)" /></h2>
+            <p data-ar="">اجعل أجهزتك تستجيب لمكانك أنت — تشتغل تلقائيًا لما توصل البيت، وتُطفأ لما تخرج، من غير ما تلمس التطبيق. على أندرويد فقط، ومطفّاة افتراضيًا.</p>
+            <p data-en="">Have your devices react to where YOU are — turn on the moment you arrive home, off the moment you leave, without touching the app. Android only, off by default.</p>
+            <div className="card" data-ar="">
+              <ol className="steps">
+                <li>افتح تبويب <b>حسابي</b> ← <b>الجيوفنسنج</b>.</li>
+                <li>اضغط <b>«استخدم موقعي الحالي»</b> وأنت في البيت لتحديد إحداثياته — أفضل نتيجة في الهواء الطلق أو قرب شبّاك.</li>
+                <li>اضبط <b>نطاق الاكتشاف</b> (من 50 إلى 500 متر).</li>
+                <li>تحت <b>«لما أوصل»</b> و<b>«لما أخرج»</b>، حدّد لكل مفتاح: تجاهل / شغّل / أطفي.</li>
+                <li>فعّل المفتاح العلوي — سيطلب التطبيق إذن الموقع مرّتين: أثناء الاستخدام، ثم <b>«السماح طول الوقت»</b> (لازم عشان تشتغل والتطبيق مقفول).</li>
+              </ol>
+            </div>
+            <div className="card" data-en="">
+              <ol className="steps">
+                <li>Open the <b>Account</b> tab → <b>Geofencing</b>.</li>
+                <li>Tap <b>“Use my current location”</b> while you're home to set its coordinates — works best outdoors or near a window.</li>
+                <li>Set the <b>detection radius</b> (50–500 metres).</li>
+                <li>Under <b>“When I arrive”</b> and <b>“When I leave”</b>, pick per switch: Ignore / On / Off.</li>
+                <li>Turn on the top switch — the app asks for location permission twice: while using the app, then <b>“Allow all the time”</b> (needed so it still works with the app closed).</li>
+              </ol>
+            </div>
+            <div className="callout info">
+              <span className="em">📍</span>
+              <div data-ar="">إزّاي بيعرف إنّك «وصلت» أو «خرجت»؟ التطبيق بيستخدم خدمة الـ Geofencing المدمجة في أندرويد نفسه — بتراقب دخولك وخروجك من دائرة حوالين إحداثيات بيتك في الخلفية، من غير استهلاك بطارية زي تتبّع GPS المستمر. عند الخروج، بينتظر حوالي دقيقة قبل ما يعتبرها مغادرة فعلية، عشان لحظة إشارة ضعيفة عند حافة الدائرة متتفسّرش غلط إنّك خرجت ورجعت فورًا.</div>
+              <div data-en="">How does it know you “arrived” or “left”? The app uses Android's own built-in Geofencing service — it watches for your phone entering/exiting a circle around your home coordinates in the background, without the battery cost of continuous GPS tracking. On exit it waits about a minute before treating it as a real departure, so one weak-signal moment right at the edge of the circle doesn't get misread as leaving and instantly coming back.</div>
+            </div>
+            <div className="callout warn">
+              <span className="em">🔋</span>
+              <div data-ar="">الميزة تحتاج إذن «السماح طول الوقت» للموقع، وده بيستهلك بطارية أكتر شوية — تقدر توقفها في أي وقت من نفس الصفحة.</div>
+              <div data-en="">This needs "Allow all the time" location access, which uses a bit more battery — you can turn it off any time from the same page.</div>
             </div>
           </section>
 
@@ -501,6 +539,11 @@ export default function DocsPage() {
               <span className="em">📡</span>
               <div data-ar="">يمكنك أيضًا ربط حسّاسات 433MHz لاسلكية بإشعارات أو أتمتة بدلًا من التحكّم في مفتاح.</div>
               <div data-en="">You can also link 433MHz wireless sensors to alerts or automations instead of controlling a switch.</div>
+            </div>
+            <div className="callout info">
+              <span className="em">🔗</span>
+              <div data-ar="">أي زرّ اتعلّمته هنا يظهر كخيار <b>«أمر ريموت (IR)»</b> عند اختيار نتيجة أتمتة — يعني قاعدة زي «عند الغروب» أو «لما ترتفع الحرارة» تقدر تُطلق زرّ من الريموت نفسه، مش بس تشغّل/تطفي مفتاحًا. راجع <a href="#automations">الأتمتة</a>.</div>
+              <div data-en="">Any button you learn here shows up as an <b>“IR command”</b> option when picking an automation's result — so a rule like "at sunset" or "when it gets hot" can fire a remote's own button, not just switch a relay on/off. See <a href="#automations">Automations</a>.</div>
             </div>
           </section>
 
@@ -615,6 +658,8 @@ export default function DocsPage() {
               <p>امنح التطبيق إذن الميكروفون، وانطق <b>اسم الجهاز كما هو مكتوب</b> في التطبيق. تحقّق أيضًا من وجود خدمة تعرّف صوتي على هاتفك.</p>
               <h3>لم يظهر التحديث الجديد للجهاز؟</h3>
               <p>اضغط مطوّلًا على الجهاز ← «فحص التحديث». راجع <a href="#update">تحديث الأجهزة لاسلكيًا</a>.</p>
+              <h3>الجيوفنسنج مش عارف يحدد موقعي الحالي؟</h3>
+              <p>جرّب برّه أو قرب شبّاك مفتوح — الموقع بيعتمد على GPS الهاتف، وممكن ياخد لحظات لو الإشارة ضعيفة (جوّه مبنى كبير مثلًا). تأكّد كمان إن إذن الموقع للتطبيق ممنوح، وإن خدمة الموقع مفعّلة في إعدادات الهاتف نفسه.</p>
               <h3>نسيت كلمة المرور؟</h3>
               <p>من شاشة الدخول اضغط «نسيت كلمة المرور» واتبع الخطوات الواردة في بريدك.</p>
             </div>
@@ -633,6 +678,8 @@ export default function DocsPage() {
               <p>Grant the app microphone permission, and say the <b>device name exactly as written</b> in the app. Also check your phone has a speech-recognition service.</p>
               <h3>A new update isn't showing?</h3>
               <p>Long-press the device → “Check for update”. See <a href="#update">Over-the-air updates</a>.</p>
+              <h3>Geofencing can't determine my current location?</h3>
+              <p>Try stepping outside or near an open window — location relies on the phone's GPS and can take a moment with a weak signal (e.g. deep inside a large building). Also check the app's location permission is granted and that location services are turned on in your phone's own settings.</p>
               <h3>Forgot your password?</h3>
               <p>On the sign-in screen tap “Forgot password” and follow the steps in your email.</p>
             </div>

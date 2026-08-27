@@ -25,7 +25,9 @@ export default function PrivacyPage() {
           <p className="sub">KUSH SMART — last updated 27 June 2026.</p>
 
           <p>
-            KUSH SMART (“we”, “the app”) lets you control your smart-home devices. This
+            KUSH SMART is a smart-home product line — hardware devices (switches, IR/RF
+            controllers, sensors and locks) designed and manufactured by <b>ATGENX</b>,
+            paired with the KUSH SMART app that controls them (“we”, “KUSH SMART”). This
             policy explains what we collect, why, and your choices. We keep data to the
             minimum needed to run the service.
           </p>
@@ -73,7 +75,10 @@ export default function PrivacyPage() {
           <p>KUSH SMART is not directed to children under 13 and we do not knowingly collect their data.</p>
 
           <h2><span className="n">8</span> Contact</h2>
-          <p>Questions or requests: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p>
+          <p>
+            KUSH SMART is manufactured and operated by our company, <b>ATGENX</b>.
+            Questions or requests: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+          </p>
 
           <div className="cta-band" style={{ marginTop: '30px' }}>
             <div><b>Need to remove your data?</b> Delete it in-app, or email us — we respond within 7 days.</div>

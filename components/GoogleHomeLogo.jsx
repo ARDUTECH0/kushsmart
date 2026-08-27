@@ -1,8 +1,9 @@
-// "Works with Google Home" mark — self-contained inline SVG (no external asset;
-// works under the site's strict CSP). An original smart-speaker silhouette in
-// Google's own four-colour palette, not a trace of Google's protected logo —
-// same approach as HaLogo. `size` controls the pixel box; `plain` drops the
-// white tile background for use on coloured surfaces.
+import { asset } from '@/lib/site';
+
+// Google's own "Google Home" app logo (public/assets/logos/google-home.svg —
+// official 2025 mark, sourced from Wikimedia Commons, PD-shape/trademarked).
+// `size` controls the pixel box; `plain` drops the white tile background for
+// use on coloured surfaces.
 export default function GoogleHomeLogo({ size = 40, plain = false }) {
   return (
     <svg
@@ -14,16 +15,11 @@ export default function GoogleHomeLogo({ size = 40, plain = false }) {
       style={{ display: 'block', flexShrink: 0 }}
     >
       {!plain && <rect width="48" height="48" rx="11" fill="#fff" />}
-      {/* speaker body */}
-      <circle cx="24" cy="24" r="14" fill="none" stroke="#5F6368" strokeWidth="2.2" />
-      {/* four coloured dots around the ring, evenly spaced — the "works with
-          Google" cue, without reproducing Google's own logotype */}
-      <circle cx="24" cy="10.5" r="3.4" fill="#4285F4" />
-      <circle cx="37.5" cy="24" r="3.4" fill="#EA4335" />
-      <circle cx="24" cy="37.5" r="3.4" fill="#FBBC05" />
-      <circle cx="10.5" cy="24" r="3.4" fill="#34A853" />
-      {/* centre mic dot */}
-      <circle cx="24" cy="24" r="4.2" fill="#5F6368" />
+      <image
+        href={asset('/assets/logos/google-home.svg')}
+        x="5" y="5" width="38" height="38"
+        preserveAspectRatio="xMidYMid meet"
+      />
     </svg>
   );
 }

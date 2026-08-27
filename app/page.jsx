@@ -4,6 +4,7 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { asset } from '@/lib/site';
 import HaLogo from '@/components/HaLogo';
 import GoogleHomeLogo from '@/components/GoogleHomeLogo';
+import AlexaLogo from '@/components/AlexaLogo';
 import L from '@/components/L';
 import {
   Bulb, Fan, Sensor, Timer, Automation, Groups, Remote, Bell, Lock,
@@ -212,32 +213,35 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* WORKS WITH HOME ASSISTANT */}
-      <section className="section ha-band">
-        <div className="wrap ha-band-in">
-          <div className="ha-band-badge"><HaLogo size={72} /></div>
-          <div className="ha-band-txt">
-            <span className="eyebrow"><L ar="يعمل مع Home Assistant" en="Works with Home Assistant" /></span>
-            <L tag="h2" ar="اربطه بـ Home Assistant — محلي وسحابي معًا" en="Connect it to Home Assistant — local and cloud together" />
+      {/* INTEGRATIONS — Home Assistant, Google Home, Alexa side by side */}
+      <section className="section int-band">
+        <div className="wrap">
+          <div className="h-center">
+            <span className="eyebrow"><L ar="يتكامل مع" en="Integrates with" /></span>
+            <L tag="h2" ar="يعمل مع الأنظمة اللي بتحبها" en="Works with the systems you already use" />
             <L tag="p"
-              ar="اكتشاف تلقائي لكل أجهزتك — مفاتيح، إضاءة، RGB، ستائر، حسّاسات، قفل وعدّاد طاقة. تحكّم محلي فوري داخل المنزل وسحابي من أي مكان، في آنٍ واحد."
-              en="Every device is found automatically — switches, lights, RGB, curtains, sensors, locks and power meters. Control it locally at home and over the cloud away, at the same time." />
-            <Link className="btn lg" href="/docs/home-assistant"><L ar="دليل الربط مع Home Assistant ←" en="Home Assistant setup guide →" /></Link>
+              ar="اربطه بأي واحد منها في دقائق — اكتشاف تلقائي للأجهزة وتزامن لحظي مع التطبيق."
+              en="Link it to any of them in minutes — automatic device discovery and live sync with the app." />
           </div>
-        </div>
-      </section>
-
-      {/* WORKS WITH GOOGLE HOME */}
-      <section className="section ha-band">
-        <div className="wrap ha-band-in">
-          <div className="ha-band-badge"><GoogleHomeLogo size={72} /></div>
-          <div className="ha-band-txt">
-            <span className="eyebrow"><L ar="يعمل مع Google Home" en="Works with Google Home" /></span>
-            <L tag="h2" ar="تحكّم بصوتك مع Google Home" en="Control it by voice with Google Home" />
-            <L tag="p"
-              ar="اربطه بحساب Google بتاعك واطلب من جوجل تشغيل النور أو المفتاح أو تسألها عن الحرارة — متزامن لحظيًا مع التطبيق."
-              en="Link it to your Google Account and ask Google to turn on a light or switch, or ask for the temperature — synced live with the app." />
-            <Link className="btn lg" href="/docs/google-home"><L ar="دليل الربط مع Google Home ←" en="Google Home setup guide →" /></Link>
+          <div className="int-grid">
+            <Link className="int-card" href="/docs/home-assistant">
+              <span className="int-badge"><HaLogo size={56} /></span>
+              <h3>Home Assistant</h3>
+              <p><L ar="محلي وسحابي معًا، لكل أجهزتك" en="Local and cloud control, for every device" /></p>
+              <span className="int-cta"><L ar="دليل الربط ←" en="Setup guide →" /></span>
+            </Link>
+            <Link className="int-card" href="/docs/google-home">
+              <span className="int-badge"><GoogleHomeLogo size={56} /></span>
+              <h3>Google Home</h3>
+              <p><L ar="تحكّم بصوتك مع Google" en="Voice control with Google" /></p>
+              <span className="int-cta"><L ar="دليل الربط ←" en="Setup guide →" /></span>
+            </Link>
+            <Link className="int-card" href="/docs/alexa">
+              <span className="int-badge"><AlexaLogo size={56} /></span>
+              <h3>Amazon Alexa</h3>
+              <p><L ar="تحكّم بصوتك مع Alexa" en="Voice control with Alexa" /></p>
+              <span className="int-cta"><L ar="دليل الربط ←" en="Setup guide →" /></span>
+            </Link>
           </div>
         </div>
       </section>

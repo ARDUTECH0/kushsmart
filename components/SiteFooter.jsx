@@ -35,8 +35,8 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="foot-bottom">
-          <L ar="© 2026 كوش سمارت — KUSH SMART · منزلك أذكى، وحياتك أسهل 🏠✨"
-             en="© 2026 KUSH SMART · A smarter home, an easier life 🏠✨" />
+          <L ar="© 2026 KUSH SMART — الشركة المصنّعة والمشغّلة: ATGENX · منزلك أذكى، وحياتك أسهل 🏠✨"
+             en="© 2026 KUSH SMART — Manufactured and operated by ATGENX · A smarter home, an easier life 🏠✨" />
         </div>
       </div>
     </footer>

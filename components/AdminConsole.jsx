@@ -208,6 +208,8 @@ const STR = {
   fName: ['الاسم', 'Name'],
   fEmail: ['الإيميل', 'Email'],
   fCountry: ['الدولة', 'Country'],
+  fManufacturer: ['الشركة المصنّعة', 'Manufacturer'],
+  fModel: ['الموديل', 'Model'],
   fBoard: ['البورد', 'Board'],
   fChannels: ['القنوات', 'Channels'],
   fFw: ['الإصدار', 'Firmware'],
@@ -701,36 +703,50 @@ export default function AdminConsole() {
       c.on('close', () => setMqttState((s) => (s === 'on' ? 'off' : s)));
       c.on('message', (topic, payload) => {
         let j; try { j = JSON.parse(payload.toString()); } catch { return; }
-        const serial = j.device || j.serial || topic.split('/').slice(-2, -1)[0];
+        // Firmware may send the old full-word state/status keys or the new
+        // short ones (see "the JSON key-shortening plan" — same aliasing
+        // bridge/registry.js does in normalizeStateKeys()) — read whichever
+        // is present so the fleet view doesn't go blank the moment a unit
+        // gets reflashed ahead of the others.
+        const serial = j.device || j.d || j.serial || j.sr || topic.split('/').slice(-2, -1)[0];
         if (!serial) return;
         if (topic.endsWith('/status')) {
-          setLiveStatus((m) => ({ ...m, [serial]: j.status === 'online' }));
+          const status = j.status ?? j.s;
+          setLiveStatus((m) => ({ ...m, [serial]: status === 'online' }));
         } else if (topic.endsWith('/state')) {
+          const jType = j.type ?? j.t;
           // "irrf" (ATGENX HALO: IR + RF + status ring + buzzer) shares the
           // plain "ir" remote's page and channel shape (a buttons[] array) —
           // fold it into the same display category here. Its OWN firmware
           // image is still a separate FW_BOARDS/BOARDS key ('halo'), matched
           // by board name below, since the binary itself does differ.
-          const type = j.type === 'power' ? 'power'
-            : j.type === 'lock' ? 'lock'
-            : (j.type === 'ir' || j.type === 'irrf') ? 'ir'
+          const type = jType === 'power' ? 'power'
+            : jType === 'lock' ? 'lock'
+            : (jType === 'ir' || jType === 'irrf') ? 'ir'
             : 'relay';
+          const meters = j.meters || j.mt;
+          const buttons = j.buttons || j.bn;
+          const states = j.states || j.st;
           const channels = type === 'power'
-            ? (Array.isArray(j.meters) ? j.meters.length : null)
+            ? (Array.isArray(meters) ? meters.length : null)
             : type === 'ir'
-            ? (Array.isArray(j.buttons) ? j.buttons.length : null)
-            : (Array.isArray(j.states) ? j.states.length : null);
+            ? (Array.isArray(buttons) ? buttons.length : null)
+            : (Array.isArray(states) ? states.length : null);
+          const uptime = j.uptime ?? j.up;
+          const heap = j.heap ?? j.hp;
+          const licensed = j.licensed ?? j.lc;
           setLiveState((m) => ({
             ...m,
             [serial]: {
-              name: j.project || j.name || '', board: j.board || '', type, channels,
-              fw: j.fw != null ? String(j.fw) : '', ip: j.ip || '', rssi: j.rssi,
+              name: j.project || j.pj || j.name || j.n || '', board: j.board || j.bd || '', type, channels,
+              manufacturer: j.manufacturer || j.mf || '', model: j.model || j.md || '',
+              fw: j.fw != null ? String(j.fw) : '', ip: j.ip || '', rssi: j.rssi ?? j.rs,
               // Cumulative runtime in seconds. The unit persists it across
               // reboots, so it answers "how long has this device been working",
               // not just "how long since it last restarted".
-              uptime: typeof j.uptime === 'number' ? j.uptime : null,
-              heap: typeof j.heap === 'number' ? j.heap : null,
-              boardLicensed: j.licensed === true,
+              uptime: typeof uptime === 'number' ? uptime : null,
+              heap: typeof heap === 'number' ? heap : null,
+              boardLicensed: licensed === true,
               owner: topic.split('/')[0] || '', // first topic segment is the owner uid
               // When we last actually heard from it — this, not the retained
               // last-will, is what decides "online" (see serialOnline).
@@ -2427,6 +2443,8 @@ export default function AdminConsole() {
                 <div className="ops-mgroup">
                   <h4>{t('gDevice')}</h4>
                   <div className="ops-spec">
+                    <Row k={t('fManufacturer')} v={selected.live?.manufacturer || '—'} />
+                    <Row k={t('fModel')} v={selected.live?.model || '—'} mono />
                     <Row k={t('fBoard')} v={selected.board || '—'} mono />
                     <Row k={t('fChannels')} v={selected.live?.channels != null ? String(selected.live.channels) : '—'} mono />
                     <Row k={t('fFw')} v={selected.live?.fw || '—'} mono />

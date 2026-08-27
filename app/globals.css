@@ -798,7 +798,7 @@ html[dir="rtl"] .cr-card{padding:16px 22px 16px 18px}
 }
 @media(max-width:600px){
   .section{padding:60px 0}
-  .fgrid,.steps3,.stats{grid-template-columns:1fr}
+  .fgrid,.steps3,.stats,.int-grid{grid-template-columns:1fr}
   .hero h1{font-size:36px}.h-center h2,.dl h2,.doc-main h1{font-size:27px}
   .foot-grid{grid-template-columns:1fr}
 }
@@ -1138,12 +1138,16 @@ html[dir="rtl"] .cr-card{padding:16px 22px 16px 18px}
   .pr-row{grid-template-columns:1fr}
 }
 
-/* a "works with HA" band for the homepage */
-.ha-band{background:linear-gradient(180deg, var(--surface), var(--brand-soft));
+/* "works with" integrations band for the homepage — one row, three cards */
+.int-band{background:linear-gradient(180deg, var(--surface), var(--brand-soft));
   border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.ha-band-in{display:flex;gap:26px;align-items:center;flex-wrap:wrap;justify-content:center;text-align:center}
-.ha-band-badge{display:inline-flex;padding:12px;border-radius:18px;background:#fff;
-  box-shadow:0 10px 30px rgba(24,188,242,.26)}
-.ha-band h2{font-size:27px;color:var(--ink);margin:0 0 8px}
-.ha-band p{color:var(--muted);font-size:16px;max-width:560px;margin:0 auto 16px}
-.ha-band-txt{max-width:600px}
+.int-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:920px;margin:0 auto}
+.int-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:28px 20px;text-decoration:none;transition:transform .18s,box-shadow .18s,border-color .18s}
+.int-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--brand-line)}
+.int-badge{display:inline-flex;padding:10px;border-radius:16px;background:#fff;
+  box-shadow:0 10px 24px rgba(24,188,242,.2);margin-bottom:6px}
+.int-card h3{font-size:18px;color:var(--ink);margin:0}
+.int-card p{color:var(--muted);font-size:14px;margin:0}
+.int-cta{color:var(--brand);font-size:14px;font-weight:700;margin-top:6px}
