@@ -9,23 +9,33 @@ import {
   arrayUnion, arrayRemove,
 } from 'firebase/firestore';
 import { initFirebase, ADMIN_EMAILS } from '@/lib/firebase';
-import { Cpu, Lock, Bell, Signal, Bolt, Bulb } from '@/components/Icons';
+import {
+  Cpu, Lock, Bell, Signal, Bolt, Bulb, Android, Sync, Download, Search, Upload, Trash,
+  Megaphone, Mail, Phone, Users, Globe, Receipt, Wallet, Menu, Close, Copy, Key, Logout,
+  Check, Plus, Alert,
+} from '@/components/Icons';
+// The console's own stylesheet. Every selector in it is kx- prefixed: global CSS
+// imported by a route stays loaded after client-side navigation, so anything
+// unprefixed here would leak onto the marketing pages.
+import './AdminConsole.css';
 
 const DEFAULT_MQTT = 'wss://smart.kushsmart.space/mqtt';
 // Firmware store + OTA (uploads go to the bridge; units download from /fw/).
 const FW_BASE = 'https://smart.kushsmart.space';
+// `label` is Arabic on purpose — it goes into the update notification customers
+// receive (announceUpdate). `en` is only for the console's English mode.
 const FW_BOARDS = [
-  { key: 'smarthome', label: 'المنزل الذكي (ESP32)', match: (d) => d.board === 'ESP32' && d.type === 'relay' },
-  { key: 'esp32',     label: 'مفاتيح/إضاءة ESP32',   match: (d) => d.board === 'ESP32' && d.type === 'relay' },
-  { key: 'esp8266',   label: 'مفاتيح/إضاءة ESP8266', match: (d) => d.board === 'ESP8266' },
-  { key: 'lock',      label: 'القفل الذكي',          match: (d) => d.type === 'lock' },
-  { key: 'power',     label: 'عدّاد الطاقة',         match: (d) => d.type === 'power' },
+  { key: 'smarthome', label: 'المنزل الذكي (ESP32)', en: 'Smart home (ESP32)', match: (d) => d.board === 'ESP32' && d.type === 'relay' },
+  { key: 'esp32',     label: 'مفاتيح/إضاءة ESP32',   en: 'Switches & lights — ESP32', match: (d) => d.board === 'ESP32' && d.type === 'relay' },
+  { key: 'esp8266',   label: 'مفاتيح/إضاءة ESP8266', en: 'Switches & lights — ESP8266', match: (d) => d.board === 'ESP8266' },
+  { key: 'lock',      label: 'القفل الذكي',          en: 'Smart lock', match: (d) => d.type === 'lock' },
+  { key: 'power',     label: 'عدّاد الطاقة',         en: 'Power meter', match: (d) => d.type === 'power' },
   // HALO must be matched (and thus excluded from the plain 'ir' row below)
   // BEFORE the 'ir' check — its own board name doesn't contain "IR" at all,
   // but its live-state type is folded into 'ir' upstream (see the mqtt 'state'
   // handler), so 'ir' would otherwise also claim it.
-  { key: 'halo',      label: 'ATGENX HALO (تكييف + RF + IR)', match: (d) => (d.board || '').toUpperCase().includes('HALO') },
-  { key: 'ir',        label: 'ريموت IR (تكييف/رسيفر/تلفزيون)', match: (d) => (d.type === 'ir' || (d.board || '').includes('IR')) && !(d.board || '').toUpperCase().includes('HALO') },
+  { key: 'halo',      label: 'ATGENX HALO (تكييف + RF + IR)', en: 'ATGENX HALO (AC + RF + IR)', match: (d) => (d.board || '').toUpperCase().includes('HALO') },
+  { key: 'ir',        label: 'ريموت IR (تكييف/رسيفر/تلفزيون)', en: 'IR remote (AC / receiver / TV)', match: (d) => (d.type === 'ir' || (d.board || '').includes('IR')) && !(d.board || '').toUpperCase().includes('HALO') },
 ];
 // Each firmware file goes into its OWN slot — the SLOT decides the offset, so any
 // file works (no filename matching). Filled status comes from meta.slots[key].
@@ -33,9 +43,9 @@ const ESP32_SLOTS = [
   { key: 'boot', label: 'Bootloader', hint: '0x1000' },
   { key: 'part', label: 'Partitions', hint: '0x8000' },
   { key: 'oboot', label: 'Boot app0', hint: '0xe000' },
-  { key: 'app', label: 'التطبيق', hint: '0x10000' },
+  { key: 'app', label: 'التطبيق', en: 'Application', hint: '0x10000' },
 ];
-const ESP8266_SLOTS = [{ key: 'app', label: 'التطبيق', hint: '0x0' }];
+const ESP8266_SLOTS = [{ key: 'app', label: 'التطبيق', en: 'Application', hint: '0x0' }];
 // Bootstrap super-admins (always allowed, can't be locked out). Everyone else is
 // managed live from Firestore: config/admins { emails: [...] }.
 const isBootstrap = (u) => !!u && ADMIN_EMAILS.includes((u.email || '').toLowerCase());
@@ -49,13 +59,18 @@ const isAllowed = (u, list) =>
 // 'admins' is deliberately absent: whoever manages the admin list could grant
 // themselves everything, so it stays with the super admins.
 const PERMS = [
-  ['fleet', 'الأسطول', 'يشوف الأجهزة وحالتها ويقدر يشيلها'],
-  ['firmware', 'التحديثات', 'يرفع سوفت وير للبوردات وينشر نسخة التطبيق'],
-  ['notify', 'الإشعارات', 'يبعت إشعارات للمستخدمين'],
-  ['licenses', 'التراخيص', 'يفعّل التراخيص ويتابع طلبات الشراء'],
-  ['invoices', 'الفواتير', 'يشوف الفواتير'],
-  ['countries', 'الدول', 'يغيّر الأسعار حسب الدولة'],
+  ['fleet', ['الأسطول', 'Fleet'], ['يشوف الأجهزة وحالتها ويقدر يشيلها', 'See every unit and its state, and remove units']],
+  ['firmware', ['التحديثات', 'Updates'], ['يرفع سوفت وير للبوردات وينشر نسخة التطبيق', 'Upload board firmware and publish the app']],
+  ['notify', ['الإشعارات', 'Notifications'], ['يبعت إشعارات للمستخدمين', 'Send notifications to customers']],
+  ['licenses', ['التراخيص', 'Licences'], ['يفعّل التراخيص ويتابع طلبات الشراء', 'Activate licences and handle purchase requests']],
+  ['invoices', ['الفواتير', 'Invoices'], ['يشوف الفواتير', 'View invoices']],
+  ['countries', ['الدول', 'Countries'], ['يشوف توزيع الأسطول على الدول', 'See where the fleet is']],
 ];
+// Purchase-request status → its label key and tag tone.
+const REQ_LABEL = { new: 'stNew', contacted: 'stContacted', done: 'stDone', rejected: 'stRejected' };
+// (`caution`/`shared` rather than warn/info: the site's globals.css styles bare
+// .warn and .info callouts, which would bleed into these.)
+const REQ_TONE = { new: 'brand', contacted: 'caution', done: 'ok', rejected: 'fault' };
 const PERM_KEYS = PERMS.map(([k]) => k);
 const toDate = (ts) => (ts && typeof ts.toDate === 'function' ? ts.toDate() : null);
 
@@ -74,7 +89,23 @@ const STR = {
   liveConnecting: ['جارٍ الاتصال…', 'Connecting…'],
   liveErr: ['البث الحيّ غير متاح', 'Live feed unavailable'],
   liveOff: ['غير متصل', 'Not connected'],
-  refresh: ['↻ تحديث', '↻ Refresh'],
+  refresh: ['تحديث', 'Refresh'],
+  nav: ['القائمة', 'Menu'],
+  close: ['إغلاق', 'Close'],
+  g_ops: ['التشغيل', 'Operations'],
+  g_biz: ['المبيعات', 'Business'],
+  g_access: ['الوصول', 'Access'],
+  loading: ['جارٍ التحميل…', 'Loading…'],
+  checking: ['جارٍ التحقّق من الصلاحية…', 'Checking your access…'],
+  loginT: ['تسجيل الدخول', 'Sign in'],
+  loginP: ['للمسؤولين المصرّح لهم فقط.', 'For authorised operators only.'],
+  passL: ['كلمة السر', 'Password'],
+  signin: ['دخول', 'Sign in'],
+  signingIn: ['جارٍ الدخول…', 'Signing in…'],
+  deniedT: ['الحساب ده مش مسؤول', 'This account isn’t an operator'],
+  deniedP: ['{0} مش مضاف لقائمة المسؤولين. اطلب من الأدمن الأساسي يضيفه.',
+            '{0} isn’t on the operator list. Ask the owner to add it.'],
+  copied: ['اتنسخ ✓', 'Copied ✓'],
   noPerms: ['مالكش صلاحيات لسه. كلّم الأدمن الأساسي يحدّد لك تعمل إيه.',
             'You have no permissions yet. Ask the owner to grant you access.'],
   // sections
@@ -254,6 +285,126 @@ const STR = {
   junkP: ['دي مش أجهزة — اتسجّلت بالغلط من نسخة قديمة من التطبيق. امسحها.',
           'These aren’t units — an older app build registered them by mistake. Delete them.'],
   del: ['حذف', 'Delete'],
+  // fleet (switchboard)
+  busT: ['حالة الأسطول', 'Fleet status'],
+  busOnline: ['متصلة', 'online'],
+  fLicensed: ['مرخّصة', 'Licensed'],
+  onlineOnly: ['المتصلة بس', 'Online only'],
+  colUnit: ['الوحدة', 'Unit'],
+  colType: ['النوع', 'Type'],
+  ch: ['قناة', 'ch'],
+  unnamed: ['بدون اسم', 'Unnamed'],
+  ago: [' مضت', ' ago'],
+  noUnits: ['مفيش وحدات لسه. أول ما جهاز يتوصل هيظهر هنا.',
+            'No units yet. A unit appears here the moment it connects.'],
+  clearFilters: ['مسح الفلاتر', 'Clear filters'],
+  alertsOn: ['التنبيهات شغّالة', 'Alerts on'],
+  // updates
+  apkT: ['نسخة التطبيق', 'App release'],
+  apkP: ['اكتب رقم النسخة واختار ملف الـ APK — بيترفع على سيرفرنا وبيتنشر في صفحة التحميل.',
+         'Enter the version, then choose the APK — it uploads to our server and goes live on the download page.'],
+  apkLive: ['المنشورة {0}', 'Live {0}'],
+  apkNone: ['مفيش نسخة منشورة', 'Nothing published'],
+  verL: ['رقم النسخة', 'Version'],
+  notesL: ['ملاحظات النسخة', 'Release notes'],
+  notesPh: ['أهم اللي اتغيّر (اختياري)', 'What changed (optional)'],
+  apkPick: ['اختار ملف الـ APK', 'Choose the APK'],
+  apkPickP: ['بيترفع على سيرفرنا والرابط بيتولّد لوحده.', 'It uploads to our server and the link is made for you.'],
+  uploading: ['جارٍ الرفع… {0}%', 'Uploading… {0}%'],
+  publishing: ['جارٍ النشر…', 'Publishing…'],
+  copyLink: ['نسخ الرابط', 'Copy link'],
+  boardsT: ['سوفت وير البوردات', 'Board firmware'],
+  boardsP: ['حط كل ملف في خانته، اكتب رقم النسخة، وانشر. بعدها بلّغ أصحاب البوردة أو حدّث الأجهزة المتصلة دلوقتي.',
+            'Put each file in its slot, set the version, and publish. Then tell the owners, or update the units online now.'],
+  uploaded: ['اترفع', 'Uploaded'],
+  chooseFile: ['اختار ملف', 'Choose file'],
+  verPh: ['النسخة — مثال 4.2', 'Version — e.g. 4.2'],
+  publish: ['نشر', 'Publish'],
+  published: ['منشورة {0}', 'Live {0}'],
+  publishedOn: ['منشورة', 'Published'],
+  announce: ['بلّغ أصحابها', 'Tell owners'],
+  announceP: ['يبعت إشعار بالنسخة الجديدة لكل أصحاب البوردة — بيحدّثوا من التطبيق.',
+              'Notifies every owner of this board — they update from the app.'],
+  pushOta: ['حدّث {0} متصل', 'Update {0} online'],
+  pushOtaP: ['يدفع التحديث فورًا للأجهزة المتصلة (محتاج حساب البث الحيّ).',
+             'Pushes the update to units online now (needs the live-feed account).'],
+  delVer: ['مسح النسخة', 'Delete this version'],
+  // notifications
+  audT: ['إلى مين؟', 'Send to'],
+  audAll: ['كل المستخدمين', 'Everyone'],
+  audAllP: ['كل اللي مثبّت التطبيق', 'Everyone with the app'],
+  audBoard: ['أصحاب بوردة', 'Board owners'],
+  audBoardP: ['اللي عنده جهاز بالبوردة دي', 'Owners of one board type'],
+  audUser: ['مستخدم واحد', 'One person'],
+  audUserP: ['بالإيميل', 'By email'],
+  boardL: ['البوردة', 'Board'],
+  userEmailL: ['إيميل المستخدم', 'Their email'],
+  titleL: ['العنوان', 'Title'],
+  titlePh: ['مثال: تحديث جديد متاح', 'e.g. A new update is ready'],
+  bodyL: ['النص', 'Message'],
+  bodyPh: ['اكتب نص الإشعار…', 'Write the message…'],
+  previewL: ['هيظهر كده على الموبايل', 'How it looks on a phone'],
+  previewTitle: ['عنوان الإشعار', 'Notification title'],
+  previewBody: ['النص هيظهر هنا.', 'Your message appears here.'],
+  now: ['الآن', 'now'],
+  send: ['ابعت الإشعار', 'Send notification'],
+  sending: ['جارٍ الإرسال…', 'Sending…'],
+  sentResult: ['اتبعت {0} إشعار لـ {1} مستخدم', 'Sent {0} notifications to {1} people'],
+  failedN: ['فشل {0}', '{0} failed'],
+  notifyNote: ['بيتبعت من السيرفر مباشرة (FCM)، فبيوصل حتى والتطبيق مقفول. التوكنات القديمة بتتشال لوحدها.',
+               'Sent from our server (FCM), so it arrives even when the app is closed. Stale tokens are cleaned up automatically.'],
+  // purchase requests
+  reqsT: ['طلبات الشراء', 'Purchase requests'],
+  reqsNone: ['مفيش طلبات شراء لسه.', 'No purchase requests yet.'],
+  stNew: ['جديد', 'New'],
+  stContacted: ['اتواصلنا', 'Contacted'],
+  stDone: ['اكتمل', 'Done'],
+  stRejected: ['مرفوض', 'Rejected'],
+  qty: ['الكمية', 'Qty'],
+  markAs: ['غيّر الحالة', 'Set status'],
+  // invoices
+  colSerial: ['السيريال', 'Serial'],
+  colSource: ['المصدر', 'Source'],
+  colAmount: ['المبلغ', 'Amount'],
+  colBy: ['بواسطة', 'By'],
+  colDate: ['التاريخ', 'Date'],
+  colStatus: ['الحالة', 'Status'],
+  invVerified: ['مفعّل', 'Activated'],
+  invReview: ['مراجعة', 'Review'],
+  invPending: ['معلّق', 'Pending'],
+  srcAdmin: ['الأدمن', 'Admin'],
+  srcTest: ['تجريبي', 'Test'],
+  noInvoices: ['مفيش فواتير لسه.', 'No invoices yet.'],
+  copySerial: ['نسخ السيريال', 'Copy serial'],
+  // countries
+  unknownCountry: ['غير معروف', 'Unknown'],
+  noData: ['مفيش بيانات لسه.', 'No data yet.'],
+  // credit
+  currencyL: ['العملة', 'Currency'],
+  noteL: ['ملاحظة', 'Note'],
+  notePh: ['مثال: ترخيص دائم لكل جهاز', 'e.g. Lifetime licence per unit'],
+  showOnSite: ['اعرض السعر وزر الشراء على الموقع', 'Show the price and buy button on the website'],
+  savePrice: ['حفظ السعر', 'Save price'],
+  saving: ['جارٍ الحفظ…', 'Saving…'],
+  colAdmin: ['المسؤول', 'Admin'],
+  amountPh: ['المبلغ', 'Amount'],
+  // admins
+  addAdminT: ['إضافة مسؤول', 'Add an admin'],
+  addAdminP: ['اعمل له دخول، واختار هو يقدر يعمل إيه بالظبط.', 'Create their sign-in, and choose exactly what they can do.'],
+  permsL: ['الصلاحيات', 'Permissions'],
+  addBtn: ['إضافة المسؤول', 'Add admin'],
+  adminsT: ['المسؤولون', 'Admins'],
+  adminsP: ['الأدمن الأساسي معاه كل حاجة. أي مسؤول تاني بيشوف ويعمل اللي إنت اديته له بس.',
+            'Owners can do everything. Everyone else sees and does only what you grant.'],
+  ownerTag: ['أساسي — كل الصلاحيات', 'Owner — full access'],
+  nPermsOf: ['{0} من {1} صلاحيات', '{0} of {1} permissions'],
+  noPermsTag: ['من غير صلاحيات', 'No access'],
+  remove: ['حذف', 'Remove'],
+  removeAdminQ: ['حذف {0} من المسؤولين؟ هيفقد الدخول للوحة.', 'Remove {0}? They lose access to the console.'],
+  noAdmins: ['مفيش مسؤولين إضافيين. أضف واحد من فوق.', 'No other admins yet. Add one above.'],
+  adminsNote: ['الأدمن الأساسي ثابت في الكود. الباقي متسجّل في config/admins وصلاحياته في admin_perms. الصلاحيات متطبّقة على السيرفر وفي قواعد Firestore، مش مجرد إخفاء في الواجهة — وإدارة المسؤولين للأدمن الأساسي بس، لأن اللي يعدّل القائمة يقدر يدّي نفسه أي صلاحية.',
+               'Owners are fixed in code. Everyone else is listed in config/admins, with permissions in admin_perms. Permissions are enforced on the server and in the Firestore rules, not just hidden here — and only owners manage admins, because whoever edits the list could grant themselves anything.'],
+  revokeQ: ['سحب ترخيص {0}؟ الجهاز هيقف عند العميل.', 'Revoke the licence on {0}? The unit stops working for its customer.'],
 };
 
 const isEn = (lang) => lang === 'en';
@@ -269,8 +420,10 @@ function fmtDur(sec, lang) {
     if (h >= 1) return `${h}h ${m}m`;
     return `${m}m`;
   }
-  if (d >= 1) return `${d} يوم و${h} ساعة`;
-  if (h >= 1) return `${h} ساعة و${m} دقيقة`;
+  // "و" gets a space after it: glued to a digit ("و0") the bidi algorithm puts
+  // the number on the wrong side of it. A zero second part is simply dropped.
+  if (d >= 1) return h ? `${d} يوم و ${h} ساعة` : `${d} يوم`;
+  if (h >= 1) return m ? `${h} ساعة و ${m} دقيقة` : `${h} ساعة`;
   return `${m} دقيقة`;
 }
 
@@ -310,11 +463,11 @@ export default function AdminConsole() {
   // The console owns its language (and therefore its direction) rather than
   // inheriting the marketing site's — an Arabic console laid out LTR is broken.
   const [lang, setLang] = useState('ar');
-  // `{0}` in a string is replaced by the argument, so a message can name the
-  // thing it happened to instead of being vague.
+  // `{0}`, `{1}` in a string are replaced by the argument(s), so a message can
+  // name the thing it happened to instead of being vague.
   const t = (k, a) => {
     const s = STR[k] ? STR[k][isEn(lang) ? 1 : 0] : k;
-    return a == null ? s : s.replace('{0}', a);
+    return a == null ? s : [].concat(a).reduce((out, v, i) => out.replace(`{${i}}`, v), s);
   };
   const tl = (pair) => (Array.isArray(pair) ? pair[isEn(lang) ? 1 : 0] : pair);
   const [authChecked, setAuthChecked] = useState(false);
@@ -329,7 +482,11 @@ export default function AdminConsole() {
   const [liveState, setLiveState] = useState({});  // serial -> telemetry (MQTT)
   const [liveStatus, setLiveStatus] = useState({}); // serial -> online (MQTT)
   const [q, setQ] = useState('');
-  const [view, setView] = useState('all'); // all | online | pending | unlicensed
+  const [view, setView] = useState('all'); // all | licensed | pending | unlicensed
+  const [onlineOnly, setOnlineOnly] = useState(false); // independent of the licence view
+  const [navOpen, setNavOpen] = useState(false);       // the rail, as a drawer on narrow screens
+  const searchRef = useRef(null);
+  const closeRef = useRef(null);
   const [newSerial, setNewSerial] = useState('');
   const [sel, setSel] = useState(null);
   const [toast, setToast] = useState('');
@@ -762,7 +919,8 @@ export default function AdminConsole() {
     window.localStorage.setItem('adm_mqtt_url', mqttUrl);
     window.localStorage.setItem('adm_mqtt_user', mqttUser);
     window.localStorage.setItem('adm_mqtt_pass', mqttPass);
-    setMqttEdit(false);
+    // (This used to call setMqttEdit(), which no longer exists — the throw meant
+    // "Connect" saved the credentials but never reconnected.)
     connectMqtt(mqttUrl, mqttUser, mqttPass);
   }
 
@@ -1346,9 +1504,12 @@ export default function AdminConsole() {
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     let out = devices;
-    if (view === 'online')   out = out.filter((d) => d.online);
-    if (view === 'pending')  out = out.filter((d) => d.licenseRequested && !d.licensed);
-    if (view === 'unlicensed') out = out.filter((d) => !d.licensed);
+    // The licence views partition the fleet (each unit is in exactly one), which
+    // is what lets the bus bar draw them as segments that add up to the total.
+    if (onlineOnly)            out = out.filter((d) => d.online);
+    if (view === 'licensed')   out = out.filter((d) => d.licensed);
+    if (view === 'pending')    out = out.filter((d) => d.licenseRequested && !d.licensed);
+    if (view === 'unlicensed') out = out.filter((d) => !d.licensed && !d.licenseRequested);
     if (!t) return out;
     return out.filter((d) =>
       d.serial.toLowerCase().includes(t) ||
@@ -1356,7 +1517,7 @@ export default function AdminConsole() {
       (d.ownerName || '').toLowerCase().includes(t) ||
       (d.country || '').toLowerCase().includes(t) ||
       (d.name || '').toLowerCase().includes(t));
-  }, [devices, q, view]);
+  }, [devices, q, view, onlineOnly]);
 
   const stats = useMemo(() => ({
     total: devices.length,
@@ -1368,20 +1529,21 @@ export default function AdminConsole() {
   const selected = sel ? devices.find((d) => d.serial === sel) : null;
 
   // Every section: what it's called, what it's for, and the live count worth
-  // seeing before you open it. The subtitle is the page's promise — it says what
-  // you can do here, not what the system stores.
+  // seeing before you open it. Grouped by the kind of work — running the fleet,
+  // the money, and who gets in — so the rail reads as a map of the job.
+  const newReqs = licReqs.filter((r) => r.status === 'new').length;
   const SECTIONS = [
-    { k: 'fleet', Ic: Cpu, label: t('s_fleet'), sub: t('s_fleet_sub'), n: stats.total },
-    { k: 'firmware', Ic: Signal, label: t('s_firmware'), sub: t('s_firmware_sub'), n: null },
-    { k: 'notify', Ic: Bell, label: t('s_notify'), sub: t('s_notify_sub'), n: null },
-    { k: 'license', Ic: Lock, label: t('s_license'), sub: t('s_license_sub'),
-      n: licReqs.filter((r) => r.status === 'new').length || null },
-    { k: 'invoices', Ic: Bolt, label: t('s_invoices'), sub: t('s_invoices_sub'),
+    { k: 'fleet', g: 'ops', Ic: Cpu, label: t('s_fleet'), sub: t('s_fleet_sub'), n: stats.total },
+    { k: 'license', g: 'ops', Ic: Key, label: t('s_license'), sub: t('s_license_sub'),
+      n: (stats.pending + newReqs) || null, alert: true },
+    { k: 'firmware', g: 'ops', Ic: Upload, label: t('s_firmware'), sub: t('s_firmware_sub'), n: null },
+    { k: 'notify', g: 'ops', Ic: Megaphone, label: t('s_notify'), sub: t('s_notify_sub'), n: null },
+    { k: 'invoices', g: 'biz', Ic: Receipt, label: t('s_invoices'), sub: t('s_invoices_sub'),
       n: invoices.length || null },
-    { k: 'countries', Ic: Bulb, label: t('s_countries'), sub: t('s_countries_sub'),
+    { k: 'countries', g: 'biz', Ic: Globe, label: t('s_countries'), sub: t('s_countries_sub'),
       n: byCountry.length || null },
-    { k: 'credit', Ic: Bolt, label: t('s_credit'), sub: t('s_credit_sub'), n: null },
-    { k: 'admins', Ic: Lock, label: t('s_admins'), sub: t('s_admins_sub'), n: null },
+    { k: 'credit', g: 'biz', Ic: Wallet, label: t('s_credit'), sub: t('s_credit_sub'), n: null },
+    { k: 'admins', g: 'access', Ic: Users, label: t('s_admins'), sub: t('s_admins_sub'), n: null },
   ].filter(({ k }) => {
     // Money and the admin list both stay with the supers. Whoever sets the price
     // or hands out balances decides what every licence is worth; whoever edits
@@ -1390,46 +1552,100 @@ export default function AdminConsole() {
     if (k === 'license') return can('licenses');
     return can(k);
   });
+  const GROUPS = [['ops', t('g_ops')], ['biz', t('g_biz')], ['access', t('g_access')]];
   // Land on a section they're allowed to see: the default is 'fleet', which a
   // licences-only admin must never open.
   const activeTab = SECTIONS.some((s) => s.k === tab) ? tab : (SECTIONS[0]?.k || '');
   const section = SECTIONS.find((s) => s.k === activeTab);
 
+  // "/" jumps to the fleet search, as in most operator tools; Esc closes the
+  // popovers. Typing a "/" into a field is left alone.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setBellOpen(false); setNavOpen(false); return; }
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target;
+      if (el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable)) return;
+      if (!searchRef.current) return;
+      e.preventDefault();
+      searchRef.current.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Opening a unit moves focus into its sheet, so Esc and Tab work from there.
+  useEffect(() => { if (sel) closeRef.current?.focus(); }, [sel]);
+
+  const dir = isEn(lang) ? 'ltr' : 'rtl';
+  // Latin digits in both languages: serials, versions and counts are read as
+  // machine values, and a column of numbers has to line up.
+  const locale = isEn(lang) ? 'en-GB' : 'ar-EG-u-nu-latn';
+  const copy = (text) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text);
+    flash(t('copied'));
+  };
+
   // ---- render ----
-  if (!authChecked) return <div className="ops" dir={isEn(lang) ? "ltr" : "rtl"}><div className="ops-center">جارٍ التحميل…</div></div>;
+  if (!authChecked) {
+    return <Gate dir={dir}><div className="kx-wait"><i className="kx-lamp connecting" />{t('loading')}</div></Gate>;
+  }
 
   if (!user) {
     return (
-      <div className="ops" dir={isEn(lang) ? "ltr" : "rtl"}>
-        <div className="ops-center">
-          <form className="ops-login" onSubmit={login}>
-            <div className="ops-seal"><Lock /></div>
-            <h1>لوحة العمليات</h1>
-            <p>دخول مصرّح به — أدمن كوش سمارت</p>
-            <input type="email" placeholder="الإيميل" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
-            <input type="password" placeholder="كلمة السر" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete="current-password" />
-            {authErr && <div className="ops-err">{authErr}</div>}
-            <button className="ops-btn lg" disabled={busy} type="submit">{busy ? '…' : 'دخول'}</button>
-          </form>
-        </div>
-      </div>
+      <Gate dir={dir}>
+        <form className="kx-login" onSubmit={login}>
+          <div className="kx-login-brand">
+            <span className="kx-mark" aria-hidden="true"><Bolt /></span>
+            <span><b>KUSH SMART</b><small>{t('console')}</small></span>
+            <LangSwitch lang={lang} onChange={switchLang} />
+          </div>
+          <div>
+            <h1>{t('loginT')}</h1>
+            <p>{t('loginP')}</p>
+          </div>
+          <label className="kx-field">
+            <span>{t('fEmail')}</span>
+            <input className="kx-input" type="email" dir="ltr" required value={email}
+              onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
+          </label>
+          <label className="kx-field">
+            <span>{t('passL')}</span>
+            <input className="kx-input" type="password" dir="ltr" required value={pass}
+              onChange={(e) => setPass(e.target.value)} autoComplete="current-password" />
+          </label>
+          {authErr && <div className="kx-alert fault" role="alert"><Alert /><span>{authErr}</span></div>}
+          <button className="kx-btn primary lg block" disabled={busy} type="submit">
+            {busy ? t('signingIn') : t('signin')}
+          </button>
+        </form>
+      </Gate>
     );
   }
 
-  if (allowList === null) return <div className="ops" dir={isEn(lang) ? "ltr" : "rtl"}><div className="ops-center">جارٍ التحقّق من الصلاحية…</div></div>;
+  if (allowList === null) {
+    return <Gate dir={dir}><div className="kx-wait"><i className="kx-lamp connecting" />{t('checking')}</div></Gate>;
+  }
 
   if (!allowed) {
     return (
-      <div className="ops" dir={isEn(lang) ? "ltr" : "rtl"}>
-        <div className="ops-center">
-          <form className="ops-login" onSubmit={(e) => e.preventDefault()}>
-            <div className="ops-seal"><Lock /></div>
-            <h1>غير مصرّح</h1>
-            <p>الحساب <span className="mono">{user.email}</span> مش مضاف لقائمة الأدمن.</p>
-            <button className="ops-ghost lg" onClick={() => signOut(fb.current.auth)}>تسجيل خروج</button>
-          </form>
+      <Gate dir={dir}>
+        <div className="kx-login">
+          <div className="kx-login-brand">
+            <span className="kx-mark" aria-hidden="true"><Lock /></span>
+            <span><b>KUSH SMART</b><small>{t('console')}</small></span>
+            <LangSwitch lang={lang} onChange={switchLang} />
+          </div>
+          <div>
+            <h1>{t('deniedT')}</h1>
+            <p>{t('deniedP', user.email)}</p>
+          </div>
+          <button className="kx-btn ghost lg block" onClick={() => signOut(fb.current.auth)}>
+            <Logout />{t('signout')}
+          </button>
         </div>
-      </div>
+      </Gate>
     );
   }
 
@@ -1438,939 +1654,988 @@ export default function AdminConsole() {
     : mqttState === 'error' ? t('liveErr')
     : t('liveOff');
 
-  return (
-    <div className="ops" dir={isEn(lang) ? "ltr" : "rtl"}>
-      {/* Command bar — one slim line. It used to shout the wordmark; the console
-          knows what it is, so it just states who you are and whether the feed is
-          live, and gets out of the way. */}
-      <header className="ops-bar">
-        <div className="ops-id">
-          <span className="ops-mark"><Lock /></span>
-          <b>KUSH</b><span className="ops-sub">{t('console')}</span>
+  const unitTag = (d) => (d.licensed
+    ? <span className="kx-tag ok"><Check />{t('licensed')}</span>
+    : d.licenseRequested
+      ? <span className="kx-tag caution">{t('licRequested')}</span>
+      : <span className="kx-tag">{t('unlicensed')}</span>);
+
+  const ownerLine = (d) => [d.ownerName ? d.ownerEmail : '', d.country].filter(Boolean).join(' · ');
+
+  // ── Fleet ────────────────────────────────────────────────────────────────────
+  const renderFleet = () => {
+    // The bus bar: the fleet split by licence state (a partition — every unit is
+    // in exactly one segment), and within each segment the lit share is the part
+    // that's online right now. Clicking a segment narrows the list to it.
+    const segs = [
+      { k: 'licensed', tone: 'ok', label: t('fLicensed'), list: devices.filter((d) => d.licensed) },
+      { k: 'pending', tone: 'caution', label: t('fPending'), list: devices.filter((d) => !d.licensed && d.licenseRequested) },
+      { k: 'unlicensed', tone: 'idle', label: t('fUnlicensed'), list: devices.filter((d) => !d.licensed && !d.licenseRequested) },
+    ].map((s) => ({ ...s, n: s.list.length, on: s.list.filter((d) => d.online).length }));
+    const pick = (k) => setView((v) => (v === k ? 'all' : k));
+    const narrowed = view !== 'all' || onlineOnly || q.trim();
+
+    return (<>
+      <section className="kx-bus" aria-label={t('busT')}>
+        <div className="kx-bus-head">
+          <div className="kx-bus-fig">
+            <b>{stats.total}</b><span>{t('kFleet')}</span>
+          </div>
+          <div className="kx-bus-fig live">
+            <i className={`kx-lamp ${stats.online ? 'on' : ''}`} />
+            <b>{stats.online}</b><span>{t('kOnline')}</span>
+          </div>
+          <span className="kx-bus-feed"><i className={`kx-lamp ${mqttState}`} />{conn}</span>
         </div>
 
-        {/* The live feed is plumbing: it connects itself. A status light reports
-            it — it isn't a button, and it opens nothing. */}
-        <span className={`ops-link ${mqttState}`} title={conn}>
-          <span className={`led ${mqttState}`} />
-          <span className="ops-link-t">{conn}</span>
-        </span>
-
-        <div className="ops-id-r">
-          {/* The bell: units waiting to be licensed. */}
-          {can('licenses') && (
-            <div className="bell-wrap">
-              <button
-                className={`bell ${alerts.length ? 'has' : ''}`}
-                onClick={() => setBellOpen((v) => !v)}
-                aria-label={t('bellT')}>
-                <Bell />
-                {alerts.length > 0 && <span className="bell-n">{alerts.length}</span>}
-              </button>
-
-              {bellOpen && (
-                <>
-                  <div className="bell-scrim" onClick={() => setBellOpen(false)} />
-                  <div className="bell-pop">
-                    <div className="bell-h">
-                      <b>{t('bellT')}</b>
-                      {notifPerm === 'granted'
-                        ? <span className="seal ok">✓</span>
-                        : notifPerm === 'denied'
-                          ? <span className="bell-note">{t('bellBlocked')}</span>
-                          : <button className="ops-ghost sm" onClick={askNotifPerm}>
-                              {t('bellEnable')}
-                            </button>}
-                    </div>
-
-                    {!alerts.length && <div className="bell-empty">{t('bellEmpty')}</div>}
-
-                    {alerts.map((a) => (
-                      <button key={a.serial} className="bell-item"
-                        onClick={() => { setBellOpen(false); setTab('fleet'); setSel(a.serial); }}>
-                        <span className="bell-item-t">
-                          <b>{a.unitName || t('unit')}</b>
-                          <small className="mono">{a.serial}</small>
-                        </span>
-                        <span className="bell-item-m">
-                          {[a.ownerEmail, a.board].filter(Boolean).join(' · ') || '—'}
-                        </span>
-                        <span className="bell-item-a">{t('view')} ›</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          <div className="langsw">
-            <button className={!isEn(lang) ? 'on' : ''} onClick={() => switchLang('ar')}>ع</button>
-            <button className={isEn(lang) ? 'on' : ''} onClick={() => switchLang('en')}>EN</button>
-          </div>
-          {/* Who you are and what you're allowed to do — worth showing now that
-              two admins can see very different consoles. */}
-          {/* An admin who sells licences is spending their own balance, so it
-              belongs in the bar — visible the moment they open the console,
-              whichever page they land on, not buried in one tab. */}
-          {can('licenses') && !superAdmin && myCredit && (
-            <span className={`ops-credit ${myCredit.balance <= 0 ? 'empty' : ''}`}
-              title={t('myBalance')}>
-              <b>{myCredit.balance}</b>
-              <small>{myCredit.currency}</small>
-            </span>
-          )}
-
-          <div className="ops-me">
-            <span className="ops-who">{user.email}</span>
-            <span className={`ops-role ${superAdmin ? 'super' : ''}`}>
-              {superAdmin ? t('superRole') : `${myPerms.length} ${t('nPerms')}`}
-            </span>
-          </div>
-          <button className="ops-ghost sm" onClick={() => signOut(fb.current.auth)}>{t('signout')}</button>
+        <div className="kx-bus-bar">
+          {stats.total
+            ? segs.filter((s) => s.n).map((s) => (
+                <button key={s.k} type="button" className={`kx-seg ${s.tone}`}
+                  style={{ flexGrow: s.n }} aria-pressed={view === s.k} onClick={() => pick(s.k)}
+                  title={`${s.label}: ${s.n} · ${s.on} ${t('busOnline')}`}>
+                  <i style={{ inlineSize: `${(s.on / s.n) * 100}%` }} />
+                  <span className="kx-sr">{s.label} {s.n}</span>
+                </button>
+              ))
+            : <span className="kx-seg empty" />}
         </div>
-      </header>
 
-      <div className="ops-shell">
-        {/* Side rail. The active section lights up the same way a live unit does
-            — nav, readouts and fleet all say "on" in one language. */}
-        <nav className="ops-rail">
-          {SECTIONS.map(({ k, Ic, label, n }) => (
-            <button key={k}
-              className={`rail-item ${activeTab === k ? 'active' : ''}`}
-              onClick={() => setTab(k)}>
-              <span className="rail-bar" />
-              <span className="rail-ic"><Ic /></span>
-              <span className="rail-label">{label}</span>
-              {n != null && <span className="rail-n">{n}</span>}
+        <div className="kx-bus-legend">
+          {segs.map((s) => (
+            <button key={s.k} type="button" className={`kx-leg ${s.tone}`}
+              aria-pressed={view === s.k} onClick={() => pick(s.k)}>
+              <i aria-hidden="true" />
+              <span>{s.label}</span>
+              <b>{s.n}</b>
+              <small>{s.on} {t('busOnline')}</small>
             </button>
           ))}
-        </nav>
+        </div>
+      </section>
 
-        <main className="ops-main">
-          {/* An admin with no permissions yet — an empty screen should say what
-              to do next, not just sit there. */}
-          {!SECTIONS.length ? (
-            <section className="ops-panel">
-              <div className="ops-empty" style={{ border: 0, background: 'none' }}>
-                {t('noPerms')}
-              </div>
-            </section>
-          ) : (
-            <div className="page-h">
-              <div className="page-h-t">
-                <h1>{section?.label}</h1>
-                <p>{section?.sub}</p>
-              </div>
-              {activeTab === 'firmware' && (
-                <button className="ops-ghost sm" onClick={() => { loadFwIndex(); loadAppRelease(); }}>
-                  {t('refresh')}
-                </button>
-              )}
-            </div>
-          )}
-
-        {activeTab === 'fleet' && (<>
-          {/* readouts */}
-          <div className="ops-kpis">
-            <Kpi Ic={Cpu} n={stats.total} label={t('kFleet')} />
-            <Kpi Ic={Lock} n={stats.licensed} label={t('kLicensed')} tone="ok" />
-            <Kpi Ic={Bell} n={stats.pending} label={t('kPending')} tone="warn" />
-            <Kpi Ic={Signal} n={stats.online} label={t('kOnline')} tone="live" />
-          </div>
-
-          {/* Find a unit, or license one that hasn't reported in yet. */}
-          <div className="ops-cmd">
-            <div className="ops-search">
-              <span className="prompt">›</span>
-              <input
-                placeholder={t('search')}
-                value={q} onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && filtered.length) setSel(filtered[0].serial); }}
-              />
-              {q && <span className="hits">{filtered.length}</span>}
-            </div>
-            {can('licenses') && (
-              <div className="ops-add">
-                <input placeholder="SERIAL" value={newSerial}
-                  onChange={(e) => setNewSerial(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addLicense()} />
-                <button className="ops-btn" onClick={addLicense}>{t('grant')}</button>
-              </div>
-            )}
-          </div>
-
-          {/* Narrow the list — the ORDER never changes, so a card never moves out
-              from under your cursor when a unit reconnects. */}
-          <div className="fl-filters">
-            {[
-              ['all', t('fAll'), devices.length],
-              ['online', t('fOnline'), devices.filter((d) => d.online).length],
-              ['pending', t('fPending'), devices.filter((d) => d.licenseRequested && !d.licensed).length],
-              ['unlicensed', t('fUnlicensed'), devices.filter((d) => !d.licensed).length],
-            ].map(([k, label, n]) => (
-              <button key={k}
-                className={`fl-chip ${view === k ? 'on' : ''}`}
-                onClick={() => setView(k)}>
-                {label}<span>{n}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* fleet — a card per unit, with a status stripe down its side */}
-          <div className="dev-grid">
-            {filtered.map((d) => {
-              const ty = TYPE[d.type] || TYPE.relay;
-              const owner = [d.ownerName, d.country].filter(Boolean).join(' · ')
-                || d.ownerEmail || (d.inRegistry ? '—' : t('unregistered'));
-              const tone = d.online ? 'on' : d.licensed ? 'off' : 'idle';
-              return (
-                <button
-                  key={d.serial}
-                  className={`dev-card ${tone} ${sel === d.serial ? 'sel' : ''}`}
-                  onClick={() => setSel(d.serial)}>
-                  <span className="dev-bar" />
-                  <span className="dev-top">
-                    <span className="dev-ic"><ty.Ic /></span>
-                    <span className="dev-name">
-                      <b>{d.name || '—'}</b>
-                      <small className="mono">{d.serial}</small>
-                    </span>
-                    <span className={`dev-live ${d.online ? 'on' : ''}`}>
-                      <span className={`led ${d.online ? 'on' : 'off'}`} />
-                      {d.online ? t('online') : t('offline')}
-                    </span>
-                  </span>
-
-                  <span className="dev-owner">{owner}</span>
-
-                  {/* How long this unit has actually been running — the number an
-                      operator asks for first, so it belongs on the card. */}
-                  {d.live?.uptime != null && (
-                    <span className="dev-run">
-                      <span className="dev-run-l">{t('fRuntime')}</span>
-                      <span className="dev-run-v">{fmtDur(d.live.uptime, lang)}</span>
-                    </span>
-                  )}
-
-                  <span className="dev-foot">
-                    <span className="chip">
-                      {tl(ty.label)}{d.live?.channels != null ? ` · ${d.live.channels}` : ''}
-                    </span>
-                    {d.licensed
-                      ? <span className="seal ok">{t('licensed')}<i>{rel(d.licensedAt, lang)}</i></span>
-                      : d.licenseRequested
-                        ? <span className="seal warn">{t('licRequested')}</span>
-                        : <span className="seal">{t('unlicensed')}</span>}
-                    {d.sharedWith.length > 0 && (
-                      <span className="seal share">{t('sharedBadge')}<i>{d.sharedWith.length}</i></span>
-                    )}
-                  </span>
-                </button>
-              );
-            })}
-            {!filtered.length && <div className="ops-empty">{t('noMatch')}</div>}
-          </div>
-
-          {/* Registry docs that aren't units — written by an older app build that
-              mistook a Home Assistant discovery payload for a device. */}
-          {junk.length > 0 && can('fleet') && (
-            <div className="junk-box">
-              <div className="junk-h">
-                <b>{t('junkT')} ({junk.length})</b>
-                <p>{t('junkP')}</p>
-              </div>
-              {junk.map((r) => (
-                <div className="junk-row" key={r.serial}>
-                  <span className="mono">{r.serial}</span>
-                  <button className="ops-ghost sm" onClick={() => removeDevice(r.serial, t('junkT'))}>
-                    {t('del')}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>)}
-
-        {activeTab === 'firmware' && (
-          <section className="ops-panel">
-
-            {/* Mobile app release. Pick the .apk and we host it ourselves and
-                generate the link — no GitHub, nothing to paste. */}
-            <div className="app-rel">
-              <div className="app-rel-h">
-                <div>
-                  <b>نسخة التطبيق (APK)</b>
-                  <p>اكتب رقم النسخة، اختار ملف الـ APK، وهو هيترفع على السيرفر بتاعنا ويتنشر في صفحة التحميل تلقائيًا.</p>
-                </div>
-                <span className={`seal ${appRel && appRel.version ? 'ok' : ''}`}>
-                  {appRel ? `المنشور الآن ${appRel.version}` : '…'}
-                </span>
-              </div>
-
-              <div className="app-rel-grid">
-                <label>
-                  <span>رقم النسخة</span>
-                  <input className="nt-input" dir="ltr" placeholder="1.0.12"
-                    value={appForm.version}
-                    disabled={appBusy}
-                    onChange={(e) => setAppForm((f) => ({ ...f, version: e.target.value }))} />
-                </label>
-                <label>
-                  <span>ملاحظات التحديث (اختياري)</span>
-                  <input className="nt-input" placeholder="أهم ما تغيّر في هذه النسخة"
-                    value={appForm.notes}
-                    disabled={appBusy}
-                    onChange={(e) => setAppForm((f) => ({ ...f, notes: e.target.value }))} />
-                </label>
-              </div>
-
-              {/* The whole flow: choose file → upload → published. */}
-              {appBusy ? (
-                <div className="apk-prog">
-                  <div className="apk-prog-bar"><i style={{ width: `${appPct}%` }} /></div>
-                  <span>{appPct < 100 ? `جارٍ الرفع… ${appPct}%` : 'جارٍ النشر…'}</span>
-                </div>
-              ) : (
-                <label className="apk-drop">
-                  <input type="file" accept=".apk,application/vnd.android.package-archive"
-                    onChange={(e) => { uploadApk(e.target.files?.[0]); e.target.value = ''; }} />
-                  <b>اختار ملف الـ APK</b>
-                  <small>هيترفع على السيرفر بتاعنا ويتولّد الرابط لوحده</small>
-                </label>
-              )}
-
-              {appRel && appRel.apk && (
-                <div className="app-rel-foot">
-                  <a className="app-rel-link" href={appRel.apk} target="_blank" rel="noreferrer">
-                    {appRel.apk}
-                  </a>
-                  <button
-                    className="ops-ghost sm"
-                    onClick={() => { navigator.clipboard?.writeText(appRel.apk); flash('تم نسخ الرابط ✓'); }}>
-                    نسخ الرابط
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="fw-cards">
-              {FW_BOARDS.map((b) => {
-                const meta = fwIndex[b.key];
-                const st = (meta && meta.slots) || {};
-                const slots = b.key === 'esp8266' ? ESP8266_SLOTS : ESP32_SLOTS;
-                const filled = slots.filter((s) => st[s.key]).length;
-                const ready = filled === slots.length;
-                const online = devices.filter((d) => b.match(d) && d.online && d.owner).length;
-                const busy = fwBusy === b.key;
-                return (
-                  <div className="fw-card" key={b.key}>
-                    <div className="fw-card-h">
-                      <b>{b.label}</b>
-                      <span className={`seal ${meta && meta.complete ? 'ok' : ''}`}>
-                        {meta && meta.complete ? `النسخة ${meta.version}` : `${filled}/${slots.length}`}
-                      </span>
-                    </div>
-
-                    {/* one slot per file — pick each on its own (any file fits) */}
-                    <div className="fw-slots">
-                      {slots.map((s) => {
-                        const done = !!st[s.key];
-                        return (
-                          <label className={`fw-slot ${done ? 'done' : ''} ${busy ? 'busy' : ''}`} key={s.key}>
-                            <span className="fw-slot-l">
-                              <span className="fw-slot-c">{done ? '✓' : '+'}</span>
-                              {s.label}
-                            </span>
-                            <span className="fw-slot-v">{done ? 'تم الرفع' : `اختر ملف · ${s.hint}`}</span>
-                            <input type="file" style={{ display: 'none' }} disabled={busy}
-                              onChange={(e) => { uploadOneFile(b.key, s.key, e.target.files?.[0]); e.target.value = ''; }} />
-                          </label>
-                        );
-                      })}
-                    </div>
-
-                    <div className="fw-card-act">
-                      <input placeholder="النسخة (مثال 4.2)" value={fwVer[b.key] || ''}
-                        onChange={(e) => setFwVer((v) => ({ ...v, [b.key]: e.target.value }))} />
-                      <button className="ops-btn sm" disabled={!ready || busy} onClick={() => publishFw(b.key)}>
-                        {busy ? '…' : 'نشر النسخة'}
-                      </button>
-                      <button className="ops-annc" disabled={!(meta && meta.complete) || busy} onClick={() => announceUpdate(b)} title="إرسال إشعار للمستخدمين بالتحديث الجديد">
-                        🔔 أبلغ بالتحديث
-                      </button>
-                      <button className="ops-ota" disabled={!(meta && meta.complete) || !online} onClick={() => pushOta(b.key)} title="دفع التحديث الآن للأجهزة المتصلة عبر البثّ الحيّ">
-                        تحديث {online} جهاز
-                      </button>
-                      <button className="ops-del" disabled={!filled || busy} onClick={() => deleteFw(b.key)} title="مسح هذه النسخة">
-                        🗑 مسح
-                      </button>
-                    </div>
-                    {meta && meta.complete && (
-                      <div className="fw-card-meta">
-                        منشور · <a href={meta.manifestUrl} target="_blank" rel="noreferrer">manifest</a>
-                        {meta.updatedAt ? ` · ${new Date(meta.updatedAt).toLocaleDateString('ar')}` : ''}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="ops-note">
-              ارفع <b>كل ملف في خانته</b> ثم اكتب رقم النسخة واضغط <b>«نشر النسخة»</b>. بعد النشر:
-              <br /><b>🔔 أبلغ بالتحديث</b> — يبعت إشعارًا احترافيًا بالنسخة الجديدة لكل أصحاب البوردة، فيفتحون التطبيق ويحدّثون بأنفسهم (الطريقة المفضّلة).
-              <br /><b>تحديث N جهاز</b> — يدفع التحديث فورًا للأجهزة المتصلة الآن عبر البثّ الحيّ (يتطلّب حساب <b>kushadmin</b>).
-            </div>
-          </section>
+      <div className="kx-tools">
+        <label className="kx-search">
+          <Search />
+          <span className="kx-sr">{t('search')}</span>
+          <input ref={searchRef} type="search" placeholder={t('search')} value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && filtered.length) setSel(filtered[0].serial); }} />
+          {q ? <span className="kx-hits">{filtered.length}</span> : <kbd aria-hidden="true">/</kbd>}
+        </label>
+        <button type="button" className="kx-toggle" aria-pressed={onlineOnly}
+          onClick={() => setOnlineOnly((v) => !v)}>
+          <i className={`kx-lamp ${onlineOnly ? 'on' : ''}`} />{t('onlineOnly')}
+        </button>
+        {can('licenses') && (
+          <form className="kx-grant" onSubmit={(e) => { e.preventDefault(); addLicense(); }}>
+            <input className="kx-input mono" placeholder="SERIAL" aria-label={t('activateT')}
+              value={newSerial} onChange={(e) => setNewSerial(e.target.value)} />
+            <button className="kx-btn primary" type="submit"><Key />{t('grant')}</button>
+          </form>
         )}
+      </div>
 
-        {activeTab === 'notify' && (
-          <section className="ops-panel">
-
-            <div className="nt-wrap">
-              {/* Audience */}
-              <label className="nt-label">إلى مَن؟</label>
-              <div className="nt-aud">
-                {[
-                  ['all', 'كل المستخدمين', 'كل من ثبّت التطبيق'],
-                  ['board', 'أصحاب بوردة', 'من عنده جهاز بهذه البوردة'],
-                  ['user', 'مستخدم محدّد', 'عبر البريد الإلكتروني'],
-                ].map(([k, t, d]) => (
-                  <button key={k} type="button"
-                    className={`nt-aud-b ${nAudience === k ? 'active' : ''}`}
-                    onClick={() => setNAudience(k)}>
-                    <b>{t}</b><small>{d}</small>
-                  </button>
-                ))}
-              </div>
-
-              {nAudience === 'board' && (
-                <div className="nt-row">
-                  <label className="nt-label">البوردة</label>
-                  <select className="nt-input" value={nBoard} onChange={(e) => setNBoard(e.target.value)}>
-                    <option value="smarthome">المنزل الذكي (ESP32)</option>
-                    <option value="esp32">مفاتيح وإضاءة — ESP32</option>
-                    <option value="esp8266">مفاتيح وإضاءة — ESP8266</option>
-                    <option value="lock">القفل الذكي</option>
-                    <option value="power">عدّاد الطاقة</option>
-                    <option value="ir">ريموت IR (تكييف/رسيفر/تلفزيون)</option>
-                  </select>
-                </div>
-              )}
-              {nAudience === 'user' && (
-                <div className="nt-row">
-                  <label className="nt-label">بريد المستخدم</label>
-                  <input className="nt-input" type="email" dir="ltr" placeholder="user@example.com"
-                    value={nEmail} onChange={(e) => setNEmail(e.target.value)} />
-                </div>
-              )}
-
-              <label className="nt-label">العنوان</label>
-              <input className="nt-input" placeholder="مثال: تحديث جديد متاح 🎉" maxLength={80}
-                value={nTitle} onChange={(e) => setNTitle(e.target.value)} />
-
-              <label className="nt-label">النص</label>
-              <textarea className="nt-input nt-area" rows={4} maxLength={400}
-                placeholder="اكتب نص الإشعار هنا…"
-                value={nBody} onChange={(e) => setNBody(e.target.value)} />
-
-              {/* Live preview */}
-              <div className="nt-preview">
-                <span className="nt-preview-ic">🔔</span>
-                <div>
-                  <b>{nTitle.trim() || 'عنوان الإشعار'}</b>
-                  <p>{nBody.trim() || 'نص الإشعار سيظهر هنا…'}</p>
-                </div>
-              </div>
-
-              <div className="nt-actions">
-                <button className="ops-btn" disabled={nBusy} onClick={sendBroadcast}>
-                  {nBusy ? 'جارٍ الإرسال…' : '📣 إرسال الإشعار'}
-                </button>
-                {nResult && (
-                  <span className="nt-result">
-                    تم إرسال <b>{nResult.sent}</b> إشعار إلى <b>{nResult.recipients}</b> مستخدم
-                    {nResult.failed ? ` · فشل ${nResult.failed}` : ''}
+      {/* A FIXED order (see `devices`): narrowing never moves a row out from
+          under the cursor when a unit reconnects. */}
+      <div className="kx-table kx-fleet">
+        <div className="kx-thead" aria-hidden="true">
+          <span>{t('colUnit')}</span><span>{t('colType')}</span><span>{t('gOwner')}</span>
+          <span>{t('fState')}</span><span>{t('fSignal')}</span><span>{t('fFw')}</span>
+          <span>{t('gLicence')}</span>
+        </div>
+        {filtered.map((d) => {
+          const ty = TYPE[d.type] || TYPE.relay;
+          const who = d.ownerName || d.ownerEmail;
+          return (
+            <button key={d.serial} type="button"
+              className={`kx-unit ${d.online ? 'on' : ''} ${sel === d.serial ? 'sel' : ''}`}
+              onClick={() => setSel(d.serial)}>
+              <span className="c-unit">
+                <span className="kx-unit-ic"><ty.Ic /></span>
+                <span className="kx-stack">
+                  <b>{d.name || t('unnamed')}</b>
+                  <small className="mono">{d.serial}</small>
+                </span>
+              </span>
+              <span className="c-type kx-stack">
+                <b className="kx-w">{tl(ty.label)}</b>
+                <small>
+                  {d.board || '—'}
+                  {d.live?.channels != null ? ` · ${d.live.channels} ${t('ch')}` : ''}
+                </small>
+              </span>
+              <span className="c-owner kx-stack">
+                <b className="kx-w">{who || (d.inRegistry ? '—' : t('unregistered'))}</b>
+                <small>{ownerLine(d) || ' '}</small>
+              </span>
+              <span className="c-run kx-stack">
+                <b className="kx-w kx-status">
+                  <i className={`kx-lamp ${d.online ? 'on' : ''}`} />
+                  {d.online ? t('online') : t('offline')}
+                </b>
+                {/* Up: how long it has been working. Down: how long it's been gone. */}
+                <small>
+                  {d.online
+                    ? fmtDur(d.live?.uptime, lang)
+                    : (d.lastSeen ? rel(d.lastSeen, lang, isEn(lang) ? true : t('ago')) : '—')}
+                </small>
+              </span>
+              <span className="c-sig"><SignalBars rssi={d.online ? d.live?.rssi : null} /></span>
+              <span className="c-fw mono">{d.live?.fw || '—'}</span>
+              <span className="c-lic">
+                {unitTag(d)}
+                {d.sharedWith.length > 0 && (
+                  <span className="kx-tag shared" title={t('sharedBadge')}>
+                    <Users /><em>{d.sharedWith.length}</em>
                   </span>
                 )}
-              </div>
-              <div className="ops-note">
-                الإشعارات تُرسَل من السيرفر مباشرةً (FCM) لكل الأجهزة المسجّلة للمستخدمين المستهدفين. التوكنات غير الصالحة تُنظَّف تلقائيًا.
-              </div>
-            </div>
-          </section>
+              </span>
+            </button>
+          );
+        })}
+        {!filtered.length && (
+          <div className="kx-empty">
+            <Cpu />
+            <span>{devices.length ? t('noMatch') : t('noUnits')}</span>
+            {narrowed && devices.length > 0 && (
+              <button className="kx-btn ghost sm"
+                onClick={() => { setQ(''); setView('all'); setOnlineOnly(false); }}>
+                {t('clearFilters')}
+              </button>
+            )}
+          </div>
         )}
+      </div>
 
-        {activeTab === 'license' && (() => {
-          const waiting = devices.filter((d) => d.licenseRequested && !d.licensed);
-          const left = myCredit && !myCredit.unlimited && myCredit.price > 0
-            ? Math.floor(myCredit.balance / myCredit.price)
-            : null;
-          const broke = left === 0;
-
-          return (<>
-            {/* What you can spend, and — the only number that really matters —
-                how many units you can still switch on. */}
-            {myCredit && (
-              <div className="ops-kpis">
-                <Kpi Ic={Bolt}
-                  n={myCredit.unlimited ? '∞' : myCredit.balance}
-                  label={`${t('myBalance')} ${myCredit.unlimited ? '' : myCredit.currency}`}
-                  tone={broke ? 'warn' : 'ok'} />
-                <Kpi Ic={Cpu}
-                  n={myCredit.price > 0 ? myCredit.price : '—'}
-                  label={`${t('perLicence')} ${myCredit.price > 0 ? myCredit.currency : ''}`} />
-                <Kpi Ic={Lock}
-                  n={left == null ? '∞' : left}
-                  label={t('canActivate')}
-                  tone={broke ? 'warn' : 'live'} />
-                <Kpi Ic={Bell} n={waiting.length} label={t('waitingT')} tone="warn" />
-              </div>
-            )}
-
-            {/* Out of credit — say it once, plainly, and say who fixes it. */}
-            {broke && (
-              <div className="cr-warn">
-                <b>{t('outOfCredit')}</b>
-                <span>{t('outOfCreditP')}</span>
-              </div>
-            )}
-
-            {/* Switch a unit on. */}
-            <section className="ops-panel">
-              <div className="ops-panel-h">
-                <div>
-                  <h2>{t('activateT')}</h2>
-                  <p>{superAdmin ? t('activateP_super') : t('activateP')}</p>
-                </div>
-              </div>
-              <div className="ops-add">
-                <input
-                  style={{ flex: 1, width: 'auto', textAlign: 'start', direction: 'ltr' }}
-                  className="mono" placeholder="SERIAL"
-                  value={newSerial} disabled={broke}
-                  onChange={(e) => setNewSerial(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addLicense()} />
-                <button className="ops-btn" onClick={addLicense} disabled={broke}>
-                  {t('grant')}
+      {/* Registry docs that aren't units — written by an older app build that
+          mistook a Home Assistant discovery payload for a device. */}
+      {junk.length > 0 && can('fleet') && (
+        <section className="kx-panel caution">
+          <div className="kx-panel-h">
+            <div><h2>{t('junkT')} <span className="kx-count">{junk.length}</span></h2><p>{t('junkP')}</p></div>
+          </div>
+          <div className="kx-rows">
+            {junk.map((r) => (
+              <div className="kx-row kx-junk" key={r.serial}>
+                <span className="mono kx-trunc">{r.serial}</span>
+                <button className="kx-btn danger sm" onClick={() => removeDevice(r.serial, t('junkT'))}>
+                  <Trash />{t('del')}
                 </button>
               </div>
-            </section>
+            ))}
+          </div>
+        </section>
+      )}
+    </>);
+  };
 
-            {/* The units that asked. This is the queue you actually work. */}
-            <section className="ops-panel">
-              <div className="ops-panel-h">
-                <div>
-                  <h2>{t('waitingT')} ({waiting.length})</h2>
-                  <p>{t('waitingP')}</p>
-                </div>
-              </div>
-              {!waiting.length ? (
-                <div className="ops-empty" style={{ border: 0, background: 'none' }}>
-                  {t('waitingNone')}
-                </div>
-              ) : (
-                <div className="cr-grid">
-                  {waiting.map((d) => {
-                    const T = TYPE[d.type] || TYPE.relay;
-                    return (
-                      <div className="cr-card empty" key={d.serial}>
-                        <span className="cr-bar-l" />
-                        <div className="cr-card-h">
-                          <span className="mono">{d.serial}</span>
-                          <span className="chip"><T.Ic /> {T.label}</span>
-                        </div>
-                        <div className="wait-who">
-                          <b>{d.name || '—'}</b>
-                          <small>
-                            {[d.ownerName, d.ownerEmail, d.country].filter(Boolean).join(' · ') || '—'}
-                          </small>
-                        </div>
-                        <div className="cr-card-a">
-                          <button className="ops-ghost sm" onClick={() => setSel(d.serial)}>
-                            {t('view')}
-                          </button>
-                          <button className="ops-btn sm" disabled={broke}
-                            onClick={() => setLicense(d.serial, true)}>
-                            {t('grant')}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-
-            {/* Buyer leads from the website. */}
-            <section className="ops-panel">
-              <div className="ops-panel-h">
-                <div>
-                  <h2>طلبات الشراء ({licReqs.length})</h2>
-                  <p>{superAdmin ? t('priceHere') : t('priceSuperOnly')}</p>
-                </div>
-                <button className="ops-ghost sm" onClick={loadLicReqs}>↻ تحديث</button>
-              </div>
-            {licReqs.length === 0 ? (
-              <div className="ops-empty">لا توجد طلبات بعد.</div>
-            ) : (
-              <div className="lic-reqs">
-                {licReqs.map((r) => (
-                  <div className={`lic-req st-${r.status}`} key={r.id}>
-                    <div className="lic-req-h">
-                      <b>{r.name || '—'}</b>
-                      <span className={`lic-badge b-${r.status}`}>
-                        {r.status === 'new' ? 'جديد' : r.status === 'contacted' ? 'تم التواصل'
-                          : r.status === 'done' ? 'مكتمل' : 'مرفوض'}
-                      </span>
-                    </div>
-                    <div className="lic-req-meta">
-                      {r.email && <span>✉️ <a href={`mailto:${r.email}`}>{r.email}</a></span>}
-                      {r.phone && <span>📞 <a href={`tel:${r.phone}`}>{r.phone}</a></span>}
-                      {r.qty > 1 && <span>الكمية: {r.qty}</span>}
-                      {r.serial && <span>الجهاز: <code>{r.serial}</code></span>}
-                    </div>
-                    {r.message && <p className="lic-req-msg">{r.message}</p>}
-                    <div className="lic-req-act">
-                      <button onClick={() => setReqStatus(r.id, 'contacted')}>تم التواصل</button>
-                      <button onClick={() => setReqStatus(r.id, 'done')}>مكتمل</button>
-                      <button className="danger" onClick={() => setReqStatus(r.id, 'rejected')}>رفض</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            </section>
-          </>);
-        })()}
-
-        {activeTab === 'invoices' && (
-          <section className="ops-panel">
-            <div className="ops-list">
-              {invoices.map((v) => {
-                const plat = v.platform === 'admin' ? 'الأدمن'
-                  : v.platform === 'apple' ? 'App Store'
-                  : v.platform === 'test' || v.test ? 'تجريبي' : 'Google Play';
-                return (
-                  <div className="ops-inv" key={v.id}>
-                    <div className="ops-inv-top">
-                      <button className="ops-inv-serial mono" title="نسخ السيريال"
-                        onClick={() => { navigator.clipboard?.writeText(v.serial); flash('تم نسخ السيريال'); }}>
-                        {v.serial || '—'}
-                      </button>
-                      <span className={`seal ${v.verified ? 'ok' : v.needsReview ? 'warn' : ''}`}>
-                        {v.verified ? 'مفعّل' : v.needsReview ? 'مراجعة' : 'معلّق'}
-                      </span>
-                    </div>
-                    <div className="ops-inv-meta">
-                      <span className="chip">{plat}</span>
-                      {v.amount && v.amount !== 'admin' && <span>{v.amount}</span>}
-                      {v.by && <span>بواسطة {v.by}</span>}
-                      <span style={{ marginInlineStart: 'auto' }}>{v.at ? v.at.toLocaleString('ar-EG') : '—'}</span>
-                    </div>
-                  </div>
-                );
-              })}
-              {!invoices.length && <div className="ops-empty" style={{ border: 0 }}>مفيش فواتير بعد.</div>}
-            </div>
-          </section>
+  // ── Updates ──────────────────────────────────────────────────────────────────
+  const renderFirmware = () => (<>
+    {/* Mobile app release. Pick the .apk and we host it ourselves and generate
+        the link — no GitHub, nothing to paste. */}
+    <section className="kx-panel">
+      <div className="kx-panel-h">
+        <div className="kx-h-ic">
+          <span className="kx-panel-ic" aria-hidden="true"><Android /></span>
+          <div><h2>{t('apkT')}</h2><p>{t('apkP')}</p></div>
+        </div>
+        <span className={`kx-tag ${appRel?.version ? 'ok' : ''}`}>
+          {appRel ? (appRel.version ? t('apkLive', appRel.version) : t('apkNone')) : '…'}
+        </span>
+      </div>
+      <div className="kx-panel-b kx-apk">
+        <div className="kx-form">
+          <label className="kx-field">
+            <span>{t('verL')}</span>
+            <input className="kx-input mono" dir="ltr" placeholder="1.0.12"
+              value={appForm.version} disabled={appBusy}
+              onChange={(e) => setAppForm((f) => ({ ...f, version: e.target.value }))} />
+          </label>
+          <label className="kx-field">
+            <span>{t('notesL')}</span>
+            <input className="kx-input" placeholder={t('notesPh')}
+              value={appForm.notes} disabled={appBusy}
+              onChange={(e) => setAppForm((f) => ({ ...f, notes: e.target.value }))} />
+          </label>
+        </div>
+        {appBusy ? (
+          <div className="kx-prog" role="status">
+            <div className="kx-prog-bar"><i style={{ inlineSize: `${appPct}%` }} /></div>
+            <span>{appPct < 100 ? t('uploading', appPct) : t('publishing')}</span>
+          </div>
+        ) : (
+          <label className="kx-drop">
+            <input className="kx-sr" type="file" accept=".apk,application/vnd.android.package-archive"
+              onChange={(e) => { uploadApk(e.target.files?.[0]); e.target.value = ''; }} />
+            <span className="kx-drop-ic" aria-hidden="true"><Upload /></span>
+            <span><b>{t('apkPick')}</b><small>{t('apkPickP')}</small></span>
+          </label>
         )}
+      </div>
+      {appRel?.apk && (
+        <div className="kx-panel-f">
+          <span className="kx-link">
+            <Download />
+            <a href={appRel.apk} target="_blank" rel="noreferrer">{appRel.apk}</a>
+          </span>
+          <button className="kx-btn ghost sm" onClick={() => copy(appRel.apk)}><Copy />{t('copyLink')}</button>
+        </div>
+      )}
+    </section>
 
-        {activeTab === 'countries' && (
-          <section className="ops-panel">
-            <div className="ops-list">
-              {byCountry.map(([c, n]) => (
-                <div className="ops-admin" key={c}><span>{c}</span><span className="seal ok">{n} جهاز</span></div>
-              ))}
-              {!byCountry.length && <div className="ops-empty" style={{ border: 0 }}>لا توجد بيانات.</div>}
-            </div>
-          </section>
-        )}
-
-        {/* ── Credit & price — the money page. Super admin only. ────────────── */}
-        {activeTab === 'credit' && (() => {
-          const licAdmins = (allowList || [])
-            .filter((em) => !ADMIN_EMAILS.includes(em))
-            .filter((em) => (permsMap[em] || []).includes('licenses'));
-          const cur = myCredit?.currency || currency || '';
-          const p = Number(price) || 0;
-          const issued = licAdmins.reduce((s, em) => s + (creditMap[em]?.balance ?? 0), 0);
-          const spent = licAdmins.reduce((s, em) => s + (creditMap[em]?.spent ?? 0), 0);
-
-          return (<>
-            <div className="ops-kpis">
-              <Kpi Ic={Bolt} n={p || '—'} label={`${t('priceT')} ${p ? cur : ''}`} />
-              <Kpi Ic={Cpu} n={issued} label={`${t('kTotalCredit')} ${cur}`} tone="ok" />
-              <Kpi Ic={Signal} n={spent} label={`${t('kTotalSpent')} ${cur}`} tone="warn" />
-              <Kpi Ic={Lock} n={licAdmins.length} label={t('kLicAdmins')} tone="live" />
-            </div>
-
-            {/* The price. It decides what every balance is worth — which is
-                exactly why only a super admin ever reaches this page. */}
-            <section className="ops-panel">
-              <div className="ops-panel-h">
-                <div>
-                  <h2>{t('priceT')}</h2>
-                  <p>{t('priceP')}</p>
-                </div>
-                {p > 0 && <span className="seal ok">{p} {cur}</span>}
-              </div>
-              <div className="lic-price">
-                <div className="lic-price-row">
-                  <div className="lic-fld">
-                    <label>{t('priceT')}</label>
-                    <input type="number" min="0" step="1" value={price} placeholder="0"
-                      onChange={(e) => setPrice(e.target.value)} />
-                  </div>
-                  <div className="lic-fld lic-fld-sm">
-                    <label>العملة</label>
-                    <input value={currency} placeholder="EGP"
-                      onChange={(e) => setCurrency(e.target.value)} />
-                  </div>
-                  <div className="lic-fld">
-                    <label>ملاحظة (اختياري)</label>
-                    <input value={priceNote} placeholder="مثال: ترخيص دائم لكل جهاز"
-                      onChange={(e) => setPriceNote(e.target.value)} />
-                  </div>
-                </div>
-                <label className="lic-check">
-                  <input type="checkbox" checked={priceEnabled}
-                    onChange={(e) => setPriceEnabled(e.target.checked)} />
-                  إظهار السعر وزر الشراء على الموقع
-                </label>
-                <div className="lic-price-act">
-                  <button className="ops-btn" disabled={priceBusy} onClick={savePricing}>
-                    {priceBusy ? 'جارٍ الحفظ…' : 'حفظ السعر'}
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            {/* One card per admin who can actually license. */}
-            <section className="ops-panel">
-              <div className="ops-panel-h">
-                <div>
-                  <h2>{t('balancesT')}</h2>
-                  <p>{t('balancesP')}</p>
-                </div>
-                <button className="ops-ghost sm" onClick={loadAllCredit}>↻ تحديث</button>
-              </div>
-
-              {!licAdmins.length ? (
-                <div className="ops-empty" style={{ border: 0, background: 'none' }}>
-                  {t('noLicAdmins')}
-                </div>
-              ) : (
-                <div className="cr-grid">
-                  {licAdmins.map((em) => {
-                    const bal = creditMap[em]?.balance ?? 0;
-                    const sp = creditMap[em]?.spent ?? 0;
-                    const canDo = p > 0 ? Math.floor(bal / p) : null;
-                    const busyRow = permBusy === em;
-                    const draft = creditDraft[em] ?? '';
-                    return (
-                      <div className={`cr-card ${bal > 0 ? 'ok' : 'empty'}`} key={em}>
-                        <span className="cr-bar-l" />
-
-                        <div className="cr-card-h">
-                          <span className="mono">{em}</span>
-                          {/* The number that answers the only question that
-                              matters: can this person still do their job? */}
-                          {canDo != null && (
-                            <span className={`seal ${canDo > 0 ? 'ok' : 'warn'}`}>
-                              {t('canActivate')} {canDo} {t('licences')}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="cr-card-n">
-                          <div>
-                            <small>{t('balanceL')}</small>
-                            <b>{bal} <i>{cur}</i></b>
-                          </div>
-                          <div>
-                            <small>{t('spentL')}</small>
-                            <b>{sp} <i>{cur}</i></b>
-                          </div>
-                        </div>
-
-                        {/* Set the balance outright, or ADD to it — topping up is
-                            what you actually do when someone runs out. */}
-                        <div className="cr-card-a">
-                          <input
-                            className="nt-input" type="number" min="0" step="1"
-                            disabled={busyRow}
-                            placeholder={String(bal)}
-                            value={draft}
-                            onChange={(e) => setCreditDraft((d) => ({ ...d, [em]: e.target.value }))}
-                            onKeyDown={(e) => e.key === 'Enter' && setAdminCredit(em, draft)} />
-                          <button className="ops-ghost sm" disabled={busyRow || draft === ''}
-                            onClick={() => setAdminCredit(em, bal + Number(draft || 0))}>
-                            + {t('addCredit')}
-                          </button>
-                          <button className="ops-btn sm" disabled={busyRow || draft === ''}
-                            onClick={() => setAdminCredit(em, draft)}>
-                            {t('setBalance')}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-          </>);
-        })()}
-
-        {activeTab === 'admins' && (
-          <section className="ops-panel">
-
-            {/* Add an admin AND pick what they can do, in one step. */}
-            <div className="adm-card adm-new">
-              <div className="adm-card-h">
-                <b>إضافة مسؤول</b>
-                <span className={`seal ${newPerms.length ? 'ok' : 'warn'}`}>
-                  {newPerms.length ? `${newPerms.length} صلاحية مختارة` : 'اختار الصلاحيات'}
+    <section>
+      <div className="kx-block-h"><h2>{t('boardsT')}</h2><p>{t('boardsP')}</p></div>
+      <div className="kx-fw-grid">
+        {FW_BOARDS.map((b) => {
+          const meta = fwIndex[b.key];
+          const st = (meta && meta.slots) || {};
+          const slots = b.key === 'esp8266' ? ESP8266_SLOTS : ESP32_SLOTS;
+          const filled = slots.filter((s) => st[s.key]).length;
+          const ready = filled === slots.length;
+          const online = devices.filter((d) => b.match(d) && d.online && d.owner).length;
+          const busy = fwBusy === b.key;
+          const live = !!(meta && meta.complete);
+          return (
+            <article className={`kx-fw ${live ? 'live' : ''}`} key={b.key}>
+              <header className="kx-fw-h">
+                <span className="kx-stack">
+                  <b>{tl([b.label, b.en])}</b>
+                  <small className="mono">{b.key}</small>
                 </span>
-              </div>
-              {/* The login AND the permissions. Granting permissions alone gives
-                  them nothing to sign in WITH — that's the wall a new admin hits. */}
-              <div className="app-rel-grid">
-                <label>
-                  <span>الإيميل</span>
-                  <input className="nt-input mono" dir="ltr" placeholder="admin@email.com"
-                    value={newAdmin} disabled={!!permBusy}
-                    onChange={(e) => setNewAdmin(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && addAdmin()} />
-                </label>
-                <label>
-                  <span>{t('newPassL')}</span>
-                  <input className="nt-input" type="password" autoComplete="new-password"
-                    placeholder="••••••" value={newPass} disabled={!!permBusy}
-                    onChange={(e) => setNewPass(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && addAdmin()} />
-                </label>
-              </div>
-              <div className="ops-note" style={{ marginTop: -4 }}>{t('newPassHint')}</div>
-              <div className="ops-add">
-                <button className="ops-btn" disabled={!!permBusy} onClick={addAdmin}>
-                  {permBusy ? '…' : 'إضافة'}
-                </button>
-              </div>
-              <div className="adm-perms">
-                {PERMS.map(([key, label, hint]) => {
-                  const on = newPerms.includes(key);
+                <span className={`kx-tag ${live ? 'ok' : ready ? 'brand' : ''}`}>
+                  {live ? t('published', meta.version) : <span className="num">{filled}/{slots.length}</span>}
+                </span>
+              </header>
+
+              {/* The flash map, in address order — the order is real: each file
+                  lands at its own offset. The slot decides the offset, so any
+                  file name works. */}
+              <ol className="kx-flash">
+                {slots.map((s) => {
+                  const done = !!st[s.key];
                   return (
-                    <label key={key} className={`adm-perm ${on ? 'on' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={on}
-                        onChange={(e) => setNewPerms((p) => (
-                          e.target.checked ? [...p, key] : p.filter((x) => x !== key)
-                        ))} />
-                      <span><b>{label}</b><small>{hint}</small></span>
-                    </label>
+                    <li key={s.key}>
+                      <label className={`kx-slot ${done ? 'done' : ''} ${busy ? 'busy' : ''}`}>
+                        <span className="kx-slot-a">{s.hint}</span>
+                        <span className="kx-slot-n">{tl([s.label, s.en || s.label])}</span>
+                        <span className="kx-slot-s">
+                          {done ? <><Check />{t('uploaded')}</> : <><Upload />{t('chooseFile')}</>}
+                        </span>
+                        <input className="kx-sr" type="file" disabled={busy}
+                          onChange={(e) => { uploadOneFile(b.key, s.key, e.target.files?.[0]); e.target.value = ''; }} />
+                      </label>
+                    </li>
                   );
                 })}
+              </ol>
+
+              <form className="kx-fw-pub" onSubmit={(e) => { e.preventDefault(); if (ready && !busy) publishFw(b.key); }}>
+                <input className="kx-input mono" dir="ltr" aria-label={t('verL')} placeholder={t('verPh')}
+                  value={fwVer[b.key] || ''}
+                  onChange={(e) => setFwVer((v) => ({ ...v, [b.key]: e.target.value }))} />
+                <button className="kx-btn primary" type="submit" disabled={!ready || busy}>
+                  {busy ? '…' : t('publish')}
+                </button>
+              </form>
+
+              <div className="kx-fw-act">
+                <button className="kx-btn ghost sm" disabled={!live || busy}
+                  onClick={() => announceUpdate(b)} title={t('announceP')}>
+                  <Megaphone />{t('announce')}
+                </button>
+                <button className="kx-btn ghost sm" disabled={!live || !online}
+                  onClick={() => pushOta(b.key)} title={t('pushOtaP')}>
+                  <Upload />{t('pushOta', online)}
+                </button>
+                <button className="kx-btn danger sm icon" disabled={!filled || busy}
+                  onClick={() => deleteFw(b.key)} aria-label={t('delVer')} title={t('delVer')}>
+                  <Trash />
+                </button>
+              </div>
+
+              {live && (
+                <footer className="kx-fw-f">
+                  <i className="kx-lamp on" />
+                  <span>{t('publishedOn')}</span>
+                  {meta.updatedAt && <span>{new Date(meta.updatedAt).toLocaleDateString(locale)}</span>}
+                  <a href={meta.manifestUrl} target="_blank" rel="noreferrer" className="mono">manifest</a>
+                </footer>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  </>);
+
+  // ── Notifications ────────────────────────────────────────────────────────────
+  const renderNotify = () => {
+    const clock = new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+    return (
+      <div className="kx-compose">
+        <section className="kx-panel">
+          <div className="kx-panel-b kx-form">
+            <div className="kx-field" role="group" aria-label={t('audT')}>
+              <span>{t('audT')}</span>
+              <div className="kx-aud">
+                {[
+                  ['all', Users, t('audAll'), t('audAllP')],
+                  ['board', Cpu, t('audBoard'), t('audBoardP')],
+                  ['user', Mail, t('audUser'), t('audUserP')],
+                ].map(([k, Ic, l, d]) => (
+                  <button key={k} type="button" aria-pressed={nAudience === k} onClick={() => setNAudience(k)}>
+                    <Ic /><b>{l}</b><small>{d}</small>
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="ops-list">
-              {ADMIN_EMAILS.map((em) => (
-                <div className="ops-admin" key={em}>
-                  <span className="mono">{em}</span>
-                  <span className="seal ok">أساسي — كل الصلاحيات</span>
-                </div>
-              ))}
+
+            {nAudience === 'board' && (
+              <label className="kx-field">
+                <span>{t('boardL')}</span>
+                <select className="kx-input" value={nBoard} onChange={(e) => setNBoard(e.target.value)}>
+                  {FW_BOARDS.map((b) => <option key={b.key} value={b.key}>{tl([b.label, b.en])}</option>)}
+                </select>
+              </label>
+            )}
+            {nAudience === 'user' && (
+              <label className="kx-field">
+                <span>{t('userEmailL')}</span>
+                <input className="kx-input" type="email" dir="ltr" placeholder="user@example.com"
+                  value={nEmail} onChange={(e) => setNEmail(e.target.value)} />
+              </label>
+            )}
+
+            <label className="kx-field">
+              <span>{t('titleL')}<em>{nTitle.length}/80</em></span>
+              <input className="kx-input" maxLength={80} placeholder={t('titlePh')}
+                value={nTitle} onChange={(e) => setNTitle(e.target.value)} />
+            </label>
+            <label className="kx-field">
+              <span>{t('bodyL')}<em>{nBody.length}/400</em></span>
+              <textarea className="kx-input" rows={5} maxLength={400} placeholder={t('bodyPh')}
+                value={nBody} onChange={(e) => setNBody(e.target.value)} />
+            </label>
+            <p className="kx-note">{t('notifyNote')}</p>
+          </div>
+          <div className="kx-panel-f">
+            {nResult ? (
+              <span className="kx-tag ok">
+                <Check />{t('sentResult', [nResult.sent, nResult.recipients])}
+                {nResult.failed ? ` · ${t('failedN', nResult.failed)}` : ''}
+              </span>
+            ) : <span />}
+            <button className="kx-btn primary" disabled={nBusy} onClick={sendBroadcast}>
+              <Megaphone />{nBusy ? t('sending') : t('send')}
+            </button>
+          </div>
+        </section>
+
+        {/* Live preview: roughly what lands on the customer's lock screen. */}
+        <aside className="kx-phone" aria-label={t('previewL')}>
+          <div className="kx-phone-l">{t('previewL')}</div>
+          <div className="kx-phone-time">{clock}</div>
+          <div className="kx-notif">
+            <span className="kx-notif-ic" aria-hidden="true"><Bolt /></span>
+            <div className="kx-notif-t">
+              <div className="kx-notif-m"><span>KUSH SMART</span><span>{t('now')}</span></div>
+              <b dir="auto">{nTitle.trim() || t('previewTitle')}</b>
+              <p dir="auto">{nBody.trim() || t('previewBody')}</p>
             </div>
+          </div>
+        </aside>
+      </div>
+    );
+  };
 
-            {/* Each extra admin gets only what you tick here. */}
-            {(allowList || []).filter((em) => !ADMIN_EMAILS.includes(em)).map((em) => {
-              const has = permsMap[em] || [];
-              const busyRow = permBusy === em;
+  // ── Licensing ────────────────────────────────────────────────────────────────
+  const renderLicense = () => {
+    const waiting = devices.filter((d) => d.licenseRequested && !d.licensed);
+    const left = myCredit && !myCredit.unlimited && myCredit.price > 0
+      ? Math.floor(myCredit.balance / myCredit.price)
+      : null;
+    const broke = left === 0;
+
+    return (<>
+      {/* What you can spend, and — the number that really matters — how many
+          units you can still switch on. */}
+      {myCredit && (
+        <div className="kx-readout">
+          <Cell Ic={Wallet} label={t('myBalance')}
+            v={myCredit.unlimited ? '∞' : myCredit.balance}
+            unit={myCredit.unlimited ? '' : myCredit.currency} tone={broke ? 'fault' : ''} />
+          <Cell Ic={Key} label={t('perLicence')}
+            v={myCredit.price > 0 ? myCredit.price : '—'}
+            unit={myCredit.price > 0 ? myCredit.currency : ''} />
+          <Cell Ic={Check} label={t('canActivate')} v={left == null ? '∞' : left} tone={broke ? 'fault' : 'ok'} />
+          <Cell Ic={Bell} label={t('waitingT')} v={waiting.length} tone={waiting.length ? 'caution' : ''} />
+        </div>
+      )}
+
+      {/* Out of credit — say it once, plainly, and say who fixes it. */}
+      {broke && (
+        <div className="kx-alert fault" role="alert">
+          <Alert /><span><b>{t('outOfCredit')}</b>{t('outOfCreditP')}</span>
+        </div>
+      )}
+
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div><h2>{t('activateT')}</h2><p>{superAdmin ? t('activateP_super') : t('activateP')}</p></div>
+        </div>
+        <form className="kx-panel-b kx-activate" onSubmit={(e) => { e.preventDefault(); addLicense(); }}>
+          <input className="kx-input mono" placeholder="SERIAL" aria-label={t('colSerial')}
+            value={newSerial} disabled={broke} onChange={(e) => setNewSerial(e.target.value)} />
+          <button className="kx-btn primary" type="submit" disabled={broke}><Key />{t('grant')}</button>
+        </form>
+      </section>
+
+      {/* The units that asked. This is the queue you actually work. */}
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div>
+            <h2>{t('waitingT')} <span className="kx-count">{waiting.length}</span></h2>
+            <p>{t('waitingP')}</p>
+          </div>
+        </div>
+        {!waiting.length ? (
+          <div className="kx-empty"><Check /><span>{t('waitingNone')}</span></div>
+        ) : (
+          <div className="kx-rows kx-queue">
+            <div className="kx-row head" aria-hidden="true">
+              <span>{t('colUnit')}</span><span>{t('colType')}</span><span>{t('gOwner')}</span><span />
+            </div>
+            {waiting.map((d) => {
+              const T = TYPE[d.type] || TYPE.relay;
               return (
-                <div className="adm-card" key={em}>
-                  <div className="adm-card-h">
-                    <span className="mono">{em}</span>
-                    <div className="adm-card-a">
-                      <span className={`seal ${has.length ? 'ok' : 'warn'}`}>
-                        {has.length ? `${has.length} صلاحية` : 'من غير صلاحيات'}
-                      </span>
-                      <button className="ops-ghost sm" disabled={busyRow}
-                        onClick={() => resetAdminPassword(em)}>
-                        {t('resetPass')}
-                      </button>
-                      <button className="ops-ghost sm" onClick={() => removeAdmin(em)}>حذف</button>
-                    </div>
-                  </div>
-                  <div className="adm-perms">
-                    {PERMS.map(([key, label, hint]) => (
-                      <label key={key} className={`adm-perm ${has.includes(key) ? 'on' : ''}`}>
-                        <input
-                          type="checkbox"
-                          disabled={busyRow}
-                          checked={has.includes(key)}
-                          onChange={(e) => togglePerm(em, key, e.target.checked)} />
-                        <span>
-                          <b>{label}</b>
-                          <small>{hint}</small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-
+                <div className="kx-row" key={d.serial}>
+                  <span className="c-unit">
+                    <span className={`kx-unit-ic ${d.online ? 'on' : ''}`}><T.Ic /></span>
+                    <span className="kx-stack">
+                      <b>{d.name || t('unnamed')}</b>
+                      <small className="mono">{d.serial}</small>
+                    </span>
+                  </span>
+                  <span className="kx-stack" data-l={t('colType')}>
+                    <b className="kx-w">{tl(T.label)}</b>
+                    <small>{d.board || '—'}</small>
+                  </span>
+                  <span className="kx-stack" data-l={t('gOwner')}>
+                    <b className="kx-w">{d.ownerName || d.ownerEmail || '—'}</b>
+                    <small>{ownerLine(d) || ' '}</small>
+                  </span>
+                  <span className="kx-row-a full">
+                    <button className="kx-btn ghost sm" onClick={() => setSel(d.serial)}>{t('view')}</button>
+                    <button className="kx-btn primary sm" disabled={broke}
+                      onClick={() => setLicense(d.serial, true)}>
+                      <Key />{t('grant')}
+                    </button>
+                  </span>
                 </div>
               );
             })}
-            {!(allowList || []).filter((em) => !ADMIN_EMAILS.includes(em)).length && (
-              <div className="ops-empty" style={{ border: 0 }}>مفيش مسؤولين إضافيين بعد.</div>
+          </div>
+        )}
+      </section>
+
+      {/* Buyer leads from the website. */}
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div>
+            <h2>{t('reqsT')} <span className="kx-count">{licReqs.length}</span></h2>
+            <p>{superAdmin ? t('priceHere') : t('priceSuperOnly')}</p>
+          </div>
+          <button className="kx-btn ghost sm" onClick={loadLicReqs}><Sync />{t('refresh')}</button>
+        </div>
+        {!licReqs.length ? (
+          <div className="kx-empty"><Receipt /><span>{t('reqsNone')}</span></div>
+        ) : (
+          <div className="kx-reqs">
+            {licReqs.map((r) => (
+              <article className={`kx-req st-${r.status}`} key={r.id}>
+                {/* Buyers write in either language; dir="auto" lays each out
+                    by its own script instead of the console's direction. */}
+                <div className="kx-req-h">
+                  <b dir="auto">{r.name || '—'}</b>
+                  <span className={`kx-tag ${REQ_TONE[r.status] || ''}`}>{t(REQ_LABEL[r.status] || 'stNew')}</span>
+                </div>
+                <div className="kx-req-c">
+                  {r.email && <a href={`mailto:${r.email}`}><Mail /><span className="mono">{r.email}</span></a>}
+                  {r.phone && <a href={`tel:${r.phone}`}><Phone /><span className="mono">{r.phone}</span></a>}
+                  {r.qty > 1 && <span>{t('qty')}: <b className="num">{r.qty}</b></span>}
+                  {r.serial && <span><Cpu /><span className="mono">{r.serial}</span></span>}
+                </div>
+                {r.message && <p className="kx-req-m" dir="auto">{r.message}</p>}
+                <div className="kx-seg-ctl" role="group" aria-label={t('markAs')}>
+                  {['contacted', 'done', 'rejected'].map((s) => (
+                    <button key={s} type="button" className={s === 'rejected' ? 'danger' : ''}
+                      aria-pressed={r.status === s} onClick={() => setReqStatus(r.id, s)}>
+                      {t(REQ_LABEL[s])}
+                    </button>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </>);
+  };
+
+  // ── Invoices ─────────────────────────────────────────────────────────────────
+  const renderInvoices = () => (
+    <section className="kx-panel">
+      {!invoices.length ? (
+        <div className="kx-empty"><Receipt /><span>{t('noInvoices')}</span></div>
+      ) : (
+        <div className="kx-rows kx-inv">
+          <div className="kx-row head" aria-hidden="true">
+            <span>{t('colSerial')}</span><span>{t('colSource')}</span><span>{t('colAmount')}</span>
+            <span>{t('colBy')}</span><span>{t('colDate')}</span><span>{t('colStatus')}</span>
+          </div>
+          {invoices.map((v) => {
+            const src = v.platform === 'admin' ? t('srcAdmin')
+              : v.platform === 'apple' ? 'App Store'
+              : (v.platform === 'test' || v.test) ? t('srcTest') : 'Google Play';
+            return (
+              <div className="kx-row" key={v.id}>
+                <span>
+                  {v.serial
+                    ? <button className="kx-copy" onClick={() => copy(v.serial)} title={t('copySerial')}>
+                        {v.serial}<Copy />
+                      </button>
+                    : '—'}
+                </span>
+                <span data-l={t('colSource')}><span className="kx-tag">{src}</span></span>
+                <span data-l={t('colAmount')}>
+                  <span className="num">{v.amount && v.amount !== 'admin' ? v.amount : '—'}</span>
+                </span>
+                <span data-l={t('colBy')}><span className="mono kx-trunc">{v.by || '—'}</span></span>
+                <span data-l={t('colDate')}>
+                  <span>{v.at ? v.at.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' }) : '—'}</span>
+                </span>
+                <span className="kx-row-end">
+                  <span className={`kx-tag ${v.verified ? 'ok' : v.needsReview ? 'caution' : ''}`}>
+                    {v.verified ? t('invVerified') : v.needsReview ? t('invReview') : t('invPending')}
+                  </span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+
+  // ── Countries ────────────────────────────────────────────────────────────────
+  const renderCountries = () => {
+    const max = byCountry[0]?.[1] || 1;
+    const total = devices.length || 1;
+    return (
+      <section className="kx-panel">
+        {!byCountry.length ? (
+          <div className="kx-empty"><Globe /><span>{t('noData')}</span></div>
+        ) : (
+          <div className="kx-rows kx-geo">
+            {byCountry.map(([c, n]) => (
+              <div className="kx-row" key={c}>
+                <b className="kx-trunc">{c === 'غير معروف' ? t('unknownCountry') : c}</b>
+                <span className="kx-meter" aria-hidden="true"><i style={{ inlineSize: `${(n / max) * 100}%` }} /></span>
+                <span className="num kx-geo-n">{n}</span>
+                <span className="num kx-geo-p">{Math.round((n / total) * 100)}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  // ── Credit & price — the money page. Super admin only. ───────────────────────
+  const renderCredit = () => {
+    const licAdmins = (allowList || [])
+      .filter((em) => !ADMIN_EMAILS.includes(em))
+      .filter((em) => (permsMap[em] || []).includes('licenses'));
+    const cur = myCredit?.currency || currency || '';
+    const p = Number(price) || 0;
+    const issued = licAdmins.reduce((s, em) => s + (creditMap[em]?.balance ?? 0), 0);
+    const spent = licAdmins.reduce((s, em) => s + (creditMap[em]?.spent ?? 0), 0);
+
+    return (<>
+      <div className="kx-readout">
+        <Cell Ic={Key} label={t('priceT')} v={p || '—'} unit={p ? cur : ''} />
+        <Cell Ic={Wallet} label={t('kTotalCredit')} v={issued} unit={cur} tone="ok" />
+        <Cell Ic={Receipt} label={t('kTotalSpent')} v={spent} unit={cur} />
+        <Cell Ic={Users} label={t('kLicAdmins')} v={licAdmins.length} />
+      </div>
+
+      {/* The price decides what every balance is worth — which is exactly why
+          only a super admin ever reaches this page. */}
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div><h2>{t('priceT')}</h2><p>{t('priceP')}</p></div>
+          {p > 0 && <span className="kx-tag ok"><span className="num">{p}</span> {cur}</span>}
+        </div>
+        <form className="kx-panel-b kx-form" onSubmit={(e) => { e.preventDefault(); savePricing(); }}>
+          <div className="kx-price">
+            <label className="kx-field">
+              <span>{t('priceT')}</span>
+              <input className="kx-input mono" type="number" min="0" step="1" dir="ltr"
+                value={price} placeholder="0" onChange={(e) => setPrice(e.target.value)} />
+            </label>
+            <label className="kx-field">
+              <span>{t('currencyL')}</span>
+              <input className="kx-input mono" dir="ltr" value={currency} placeholder="EGP"
+                onChange={(e) => setCurrency(e.target.value)} />
+            </label>
+            <label className="kx-field wide">
+              <span>{t('noteL')}</span>
+              <input className="kx-input" value={priceNote} placeholder={t('notePh')}
+                onChange={(e) => setPriceNote(e.target.value)} />
+            </label>
+          </div>
+          <div className="kx-form-f">
+            <label className="kx-switch">
+              <input type="checkbox" checked={priceEnabled} onChange={(e) => setPriceEnabled(e.target.checked)} />
+              {t('showOnSite')}
+            </label>
+            <button className="kx-btn primary" type="submit" disabled={priceBusy}>
+              {priceBusy ? t('saving') : t('savePrice')}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div><h2>{t('balancesT')}</h2><p>{t('balancesP')}</p></div>
+          <button className="kx-btn ghost sm" onClick={loadAllCredit}><Sync />{t('refresh')}</button>
+        </div>
+        {!licAdmins.length ? (
+          <div className="kx-empty"><Wallet /><span>{t('noLicAdmins')}</span></div>
+        ) : (
+          <div className="kx-rows kx-bal">
+            <div className="kx-row head" aria-hidden="true">
+              <span>{t('colAdmin')}</span><span>{t('balanceL')}</span><span>{t('spentL')}</span>
+              <span>{t('canActivate')}</span><span />
+            </div>
+            {licAdmins.map((em) => {
+              const bal = creditMap[em]?.balance ?? 0;
+              const sp = creditMap[em]?.spent ?? 0;
+              const canDo = p > 0 ? Math.floor(bal / p) : null;
+              const busyRow = permBusy === em;
+              const draft = creditDraft[em] ?? '';
+              return (
+                <div className="kx-row" key={em}>
+                  <span className="kx-who">
+                    <span className="kx-avatar" aria-hidden="true">{em[0].toUpperCase()}</span>
+                    <span className="mono kx-trunc">{em}</span>
+                  </span>
+                  <span data-l={t('balanceL')}>
+                    <span><b className={`num ${bal > 0 ? '' : 'kx-fault'}`}>{bal}</b> <small className="kx-cur">{cur}</small></span>
+                  </span>
+                  <span data-l={t('spentL')}>
+                    <span><span className="num">{sp}</span> <small className="kx-cur">{cur}</small></span>
+                  </span>
+                  <span data-l={t('canActivate')}>
+                    {canDo != null
+                      ? <span className={`kx-tag ${canDo > 0 ? 'ok' : 'caution'}`}><span className="num">{canDo}</span> {t('licences')}</span>
+                      : <span>—</span>}
+                  </span>
+                  {/* Set the balance outright, or ADD to it — topping up is what
+                      you actually do when someone runs out. */}
+                  <form className="kx-bal-a full"
+                    onSubmit={(e) => { e.preventDefault(); if (draft !== '') setAdminCredit(em, draft); }}>
+                    <input className="kx-input mono" type="number" min="0" step="1" dir="ltr"
+                      aria-label={t('amountPh')} placeholder={String(bal)} disabled={busyRow} value={draft}
+                      onChange={(e) => setCreditDraft((d) => ({ ...d, [em]: e.target.value }))} />
+                    <button type="button" className="kx-btn ghost sm" disabled={busyRow || draft === ''}
+                      onClick={() => setAdminCredit(em, bal + Number(draft || 0))}>
+                      <Plus />{t('addCredit')}
+                    </button>
+                    <button type="submit" className="kx-btn primary sm" disabled={busyRow || draft === ''}>
+                      {t('setBalance')}
+                    </button>
+                  </form>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </>);
+  };
+
+  // ── Admins ───────────────────────────────────────────────────────────────────
+  const renderAdmins = () => {
+    const extra = (allowList || []).filter((em) => !ADMIN_EMAILS.includes(em));
+    const permTiles = (has, onToggle, disabled) => (
+      <div className="kx-perms">
+        {PERMS.map(([key, label, hint]) => {
+          const on = has.includes(key);
+          return (
+            <label key={key} className={`kx-perm ${on ? 'on' : ''} ${disabled ? 'dis' : ''}`}>
+              <input type="checkbox" checked={on} disabled={disabled}
+                onChange={(e) => onToggle(key, e.target.checked)} />
+              <span><b>{tl(label)}</b><small>{tl(hint)}</small></span>
+            </label>
+          );
+        })}
+      </div>
+    );
+
+    return (<>
+      {/* The login AND the permissions, in one step. Granting permissions alone
+          gives them nothing to sign in WITH — that's the wall a new admin hits. */}
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div><h2>{t('addAdminT')}</h2><p>{t('addAdminP')}</p></div>
+          <span className={`kx-tag ${newPerms.length ? 'brand' : ''}`}>
+            {newPerms.length ? t('nPermsOf', [newPerms.length, PERMS.length]) : t('pickPerms')}
+          </span>
+        </div>
+        <form className="kx-panel-b kx-form" onSubmit={(e) => { e.preventDefault(); addAdmin(); }}>
+          <div className="kx-grid2">
+            <label className="kx-field">
+              <span>{t('fEmail')}</span>
+              <input className="kx-input mono" type="email" dir="ltr" placeholder="admin@email.com"
+                autoComplete="off" value={newAdmin} disabled={!!permBusy}
+                onChange={(e) => setNewAdmin(e.target.value)} />
+            </label>
+            <label className="kx-field">
+              <span>{t('newPassL')}</span>
+              <input className="kx-input" type="password" dir="ltr" autoComplete="new-password"
+                placeholder="••••••" value={newPass} disabled={!!permBusy}
+                onChange={(e) => setNewPass(e.target.value)} />
+              <small>{t('newPassHint')}</small>
+            </label>
+          </div>
+          <div className="kx-field" role="group" aria-label={t('permsL')}>
+            <span>{t('permsL')}</span>
+            {permTiles(newPerms, (key, on) => setNewPerms((p) => (on ? [...p, key] : p.filter((x) => x !== key))), !!permBusy)}
+          </div>
+          <div className="kx-form-f">
+            <span />
+            <button className="kx-btn primary" type="submit" disabled={!!permBusy}>
+              <Plus />{permBusy ? '…' : t('addBtn')}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div>
+            <h2>{t('adminsT')} <span className="kx-count">{ADMIN_EMAILS.length + extra.length}</span></h2>
+            <p>{t('adminsP')}</p>
+          </div>
+        </div>
+        {ADMIN_EMAILS.map((em) => (
+          <div className="kx-admin" key={em}>
+            <div className="kx-admin-h">
+              <span className="kx-avatar" aria-hidden="true">{em[0].toUpperCase()}</span>
+              <span className="mono kx-trunc kx-admin-e">{em}</span>
+              <span className="kx-tag brand"><Key />{t('ownerTag')}</span>
+            </div>
+          </div>
+        ))}
+        {/* Each extra admin gets only what you tick here. */}
+        {extra.map((em) => {
+          const has = permsMap[em] || [];
+          const busyRow = permBusy === em;
+          return (
+            <div className="kx-admin" key={em}>
+              <div className="kx-admin-h">
+                <span className="kx-avatar" aria-hidden="true">{em[0].toUpperCase()}</span>
+                <span className="mono kx-trunc kx-admin-e">{em}</span>
+                <span className={`kx-tag ${has.length ? 'ok' : 'caution'}`}>
+                  {has.length ? t('nPermsOf', [has.length, PERMS.length]) : t('noPermsTag')}
+                </span>
+                <span className="kx-row-a">
+                  <button className="kx-btn ghost sm" disabled={busyRow} onClick={() => resetAdminPassword(em)}>
+                    <Mail />{t('resetPass')}
+                  </button>
+                  <button className="kx-btn danger sm" disabled={busyRow}
+                    onClick={() => { if (window.confirm(t('removeAdminQ', em))) removeAdmin(em); }}>
+                    <Trash />{t('remove')}
+                  </button>
+                </span>
+              </div>
+              {permTiles(has, (key, on) => togglePerm(em, key, on), busyRow)}
+            </div>
+          );
+        })}
+        {!extra.length && <div className="kx-empty"><Users /><span>{t('noAdmins')}</span></div>}
+        <div className="kx-panel-f"><p className="kx-note">{t('adminsNote')}</p></div>
+      </section>
+
+      {/* The live feed's credentials. Plumbing, so it lives here — you set it
+          once and forget it. */}
+      <section className="kx-panel">
+        <div className="kx-panel-h">
+          <div><h2>{t('brokerT')}</h2><p>{t('brokerP')}</p></div>
+          <span className={`kx-tag ${mqttState === 'on' ? 'ok' : mqttState === 'error' ? 'fault' : mqttState === 'connecting' ? 'caution' : ''}`}>
+            <i className={`kx-lamp ${mqttState}`} />{conn}
+          </span>
+        </div>
+        <form className="kx-panel-b kx-form" autoComplete="off" onSubmit={(e) => { e.preventDefault(); saveMqtt(); }}>
+          <div className="kx-grid2">
+            <label className="kx-field wide">
+              <span>{t('brokerUrl')}</span>
+              <input className="kx-input mono" dir="ltr" value={mqttUrl} placeholder="wss://broker/mqtt"
+                onChange={(e) => setMqttUrl(e.target.value)} />
+            </label>
+            <label className="kx-field">
+              <span>{t('brokerUser')}</span>
+              <input className="kx-input mono" dir="ltr" value={mqttUser} autoComplete="off" placeholder="kushadmin"
+                onChange={(e) => setMqttUser(e.target.value)} />
+            </label>
+            <label className="kx-field">
+              <span>{t('brokerPass')}</span>
+              <input className="kx-input" type="password" dir="ltr" value={mqttPass} autoComplete="new-password"
+                placeholder="••••••••" onChange={(e) => setMqttPass(e.target.value)} />
+            </label>
+          </div>
+          <div className="kx-form-f">
+            <span className="kx-note">{t('brokerNote')}</span>
+            <button className="kx-btn primary" type="submit"><Signal />{t('brokerSave')}</button>
+          </div>
+        </form>
+      </section>
+    </>);
+  };
+
+  const PAGES = {
+    fleet: renderFleet, firmware: renderFirmware, notify: renderNotify, license: renderLicense,
+    invoices: renderInvoices, countries: renderCountries, credit: renderCredit, admins: renderAdmins,
+  };
+  const go = (k) => { setTab(k); setNavOpen(false); };
+
+  return (
+    <div className="kx" dir={dir}>
+      {/* The rail — the panel enclosure. Sections are grouped by the kind of
+          work; the active one is marked the way a live breaker is. */}
+      <aside className={`kx-rail ${navOpen ? 'open' : ''}`} aria-label={t('nav')}>
+        <div className="kx-brand">
+          <span className="kx-mark" aria-hidden="true"><Bolt /></span>
+          <span className="kx-brand-t"><b>KUSH SMART</b><small>{t('console')}</small></span>
+          <button className="kx-icon-btn kx-rail-x" onClick={() => setNavOpen(false)} aria-label={t('close')}>
+            <Close />
+          </button>
+        </div>
+
+        <nav className="kx-nav">
+          {GROUPS.map(([g, gl]) => {
+            const items = SECTIONS.filter((s) => s.g === g);
+            if (!items.length) return null;
+            return (
+              <div className="kx-nav-g" key={g}>
+                <span className="kx-nav-gl">{gl}</span>
+                {items.map(({ k, Ic, label, n, alert }) => (
+                  <button key={k} className={`kx-nav-i ${activeTab === k ? 'on' : ''}`}
+                    aria-current={activeTab === k ? 'page' : undefined} onClick={() => go(k)}>
+                    <Ic /><span>{label}</span>
+                    {n != null && <em className={alert ? 'alert' : ''}>{n}</em>}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div className="kx-rail-foot">
+          {/* The live feed is plumbing: it connects itself. This reports it. */}
+          <div className="kx-feed" title={conn}><i className={`kx-lamp ${mqttState}`} /><span>{conn}</span></div>
+          <div className="kx-me">
+            <span className="kx-avatar" aria-hidden="true">{(user.email || '?')[0].toUpperCase()}</span>
+            <span className="kx-me-t">
+              <b className="mono">{user.email}</b>
+              <small>{superAdmin ? t('superRole') : `${myPerms.length} ${t('nPerms')}`}</small>
+            </span>
+            <button className="kx-icon-btn" onClick={() => signOut(fb.current.auth)}
+              aria-label={t('signout')} title={t('signout')}>
+              <Logout />
+            </button>
+          </div>
+        </div>
+      </aside>
+      {navOpen && <div className="kx-scrim" onClick={() => setNavOpen(false)} />}
+
+      <div className="kx-main">
+        <header className="kx-top">
+          <button className="kx-icon-btn kx-menu" onClick={() => setNavOpen(true)} aria-label={t('nav')}>
+            <Menu />
+          </button>
+          <div className="kx-top-t">
+            <h1>{section?.label || t('console')}</h1>
+            {section && <p>{section.sub}</p>}
+          </div>
+          <div className="kx-top-a">
+            {activeTab === 'firmware' && (
+              <button className="kx-btn ghost sm" onClick={() => { loadFwIndex(); loadAppRelease(); }}>
+                <Sync /><span className="kx-hide-sm">{t('refresh')}</span>
+              </button>
             )}
 
-            <div className="ops-note">
-              الإيميلات «الأساسية» ثابتة في الكود ومعاها كل الصلاحيات. الباقي يُسجَّل في
-              {' '}<span className="mono">config/admins</span>، وصلاحياته في{' '}
-              <span className="mono">admin_perms/&lt;email&gt;</span>. الصلاحيات متطبّقة على
-              السيرفر وفي قواعد Firestore — مش إخفاء في الواجهة بس. «إدارة المسؤولين» متاحة
-              للأدمن الأساسي فقط، لأن اللي يقدر يعدّل القائمة يقدر يدّي نفسه أي صلاحية.
-            </div>
-          </section>
-        )}
-
-        {/* The live feed's credentials. Plumbing, so it lives here instead of a
-            popup hanging off the top bar — you set it once and forget it. */}
-        {activeTab === 'admins' && (
-          <section className="ops-panel">
-            <div className="ops-panel-h">
-              <div>
-                <h2>{t('brokerT')}</h2>
-                <p>{t('brokerP')}</p>
-              </div>
-              <span className={`seal ${mqttState === 'on' ? 'ok' : mqttState === 'error' ? 'warn' : ''}`}>
-                {conn}
+            {/* An admin who sells licences is spending their own balance, so it
+                sits in the bar — visible on whichever page they land. */}
+            {can('licenses') && !superAdmin && myCredit && (
+              <span className={`kx-credit ${!myCredit.unlimited && myCredit.balance <= 0 ? 'empty' : ''}`}
+                title={t('myBalance')}>
+                <Wallet /><b>{myCredit.unlimited ? '∞' : myCredit.balance}</b><small>{myCredit.currency}</small>
               </span>
-            </div>
-            <div className="app-rel-grid">
-              <label className="wide">
-                <span>{t('brokerUrl')}</span>
-                <input className="nt-input mono" value={mqttUrl}
-                  onChange={(e) => setMqttUrl(e.target.value)} placeholder="wss://broker/mqtt" />
-              </label>
-              <label>
-                <span>{t('brokerUser')}</span>
-                <input className="nt-input mono" value={mqttUser} autoComplete="off"
-                  onChange={(e) => setMqttUser(e.target.value)} placeholder="kushadmin" />
-              </label>
-              <label>
-                <span>{t('brokerPass')}</span>
-                <input className="nt-input" type="password" value={mqttPass} autoComplete="new-password"
-                  onChange={(e) => setMqttPass(e.target.value)} placeholder="••••••••" />
-              </label>
-            </div>
-            <div className="app-rel-foot">
-              <span className="ops-note" style={{ flex: 1 }}>{t('brokerNote')}</span>
-              <button className="ops-btn" onClick={saveMqtt}>{t('brokerSave')}</button>
-            </div>
-          </section>
-        )}
+            )}
+
+            {/* The bell: units waiting to be licensed. */}
+            {can('licenses') && (
+              <div className="kx-bell">
+                <button className="kx-icon-btn" onClick={() => setBellOpen((v) => !v)}
+                  aria-label={`${t('bellT')} (${alerts.length})`} aria-expanded={bellOpen}>
+                  <Bell />
+                </button>
+                {alerts.length > 0 && <span className="kx-bell-n" aria-hidden="true">{alerts.length}</span>}
+                {bellOpen && (<>
+                  <div className="kx-pop-scrim" onClick={() => setBellOpen(false)} />
+                  <div className="kx-pop" role="dialog" aria-label={t('bellT')}>
+                    <div className="kx-pop-h">
+                      <b>{t('bellT')}</b>
+                      {notifPerm === 'granted'
+                        ? <span className="kx-tag ok"><Check />{t('alertsOn')}</span>
+                        : notifPerm === 'denied'
+                          ? <span className="kx-pop-note">{t('bellBlocked')}</span>
+                          : <button className="kx-btn ghost sm" onClick={askNotifPerm}>{t('bellEnable')}</button>}
+                    </div>
+                    <div className="kx-pop-list">
+                      {!alerts.length && <div className="kx-pop-empty">{t('bellEmpty')}</div>}
+                      {alerts.map((a) => (
+                        <button key={a.serial} className="kx-pop-i"
+                          onClick={() => { setBellOpen(false); go('fleet'); setSel(a.serial); }}>
+                          <i className="kx-lamp amber" />
+                          <span className="kx-pop-i-t">
+                            <b>{a.unitName || t('unit')}</b>
+                            <small className="mono">{a.serial}</small>
+                            <small>{[a.ownerEmail, a.board].filter(Boolean).join(' · ') || '—'}</small>
+                          </span>
+                          <span className="kx-tag brand">{t('view')}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>)}
+              </div>
+            )}
+
+            <LangSwitch lang={lang} onChange={switchLang} />
+          </div>
+        </header>
+
+        <main className="kx-page">
+          {/* An admin with no permissions yet — an empty screen should say what
+              to do next, not just sit there. */}
+          {!SECTIONS.length
+            ? <section className="kx-panel"><div className="kx-empty"><Lock /><span>{t('noPerms')}</span></div></section>
+            : PAGES[activeTab]?.()}
         </main>
       </div>
 
@@ -2381,115 +2646,89 @@ export default function AdminConsole() {
         const state = selected.licensed
           ? { cls: 'ok', text: t('licensed') }
           : selected.licenseRequested
-            ? { cls: 'warn', text: t('licRequested') }
+            ? { cls: 'caution', text: t('licRequested') }
             : { cls: '', text: t('unlicensed') };
-        const locale = isEn(lang) ? 'en-GB' : 'ar-EG';
         const up = selected.live?.uptime;
         const heap = selected.live?.heap;
         return (
-          <div className="ops-modal-wrap" onClick={() => setSel(null)}>
-            <div className="ops-modal" onClick={(e) => e.stopPropagation()}
-              role="dialog" aria-modal="true">
-              <div className="ops-mhead">
-                <span className="ops-mic"><T.Ic /></span>
-                <div className="ops-mtitle">
-                  <b>{selected.name || t('unit')}</b>
-                  <span className="mono">{selected.serial}</span>
+          <div className="kx-modal-wrap" onClick={() => setSel(null)}>
+            <div className="kx-modal" onClick={(e) => e.stopPropagation()}
+              role="dialog" aria-modal="true" aria-labelledby="kx-unit-title">
+              <header className="kx-modal-h">
+                <span className={`kx-modal-ic ${selected.online ? 'on' : ''}`} aria-hidden="true"><T.Ic /></span>
+                <div className="kx-modal-t">
+                  <h2 id="kx-unit-title">{selected.name || t('unit')}</h2>
+                  <button className="kx-copy" onClick={() => copy(selected.serial)} title={t('copySerial')}>
+                    {selected.serial}<Copy />
+                  </button>
                 </div>
-                <button className="ops-x" onClick={() => setSel(null)} aria-label="close">×</button>
-              </div>
+                <button ref={closeRef} className="kx-icon-btn" onClick={() => setSel(null)} aria-label={t('close')}>
+                  <Close />
+                </button>
+              </header>
 
-              <div className="ops-mtags">
-                <span className={`chip ${selected.online ? 'live' : ''}`}>
-                  <span className={`led ${selected.online ? 'on' : 'off'}`} />
+              <div className="kx-modal-tags">
+                <span className={`kx-tag ${selected.online ? 'ok' : ''}`}>
+                  <i className={`kx-lamp ${selected.online ? 'on' : ''}`} />
                   {selected.online ? t('online') : t('offline')}
                 </span>
-                <span className={`seal ${state.cls}`}>{state.text}</span>
-                <span className="chip">{tl(T.label)}</span>
+                <span className={`kx-tag ${state.cls}`}>{state.text}</span>
+                <span className="kx-tag">{tl(T.label)}</span>
+                {selected.sharedWith.length > 0 && (
+                  <span className="kx-tag shared"><Users />{t('sharedBadge')}<em>{selected.sharedWith.length}</em></span>
+                )}
               </div>
 
               {/* The three numbers an operator wants before anything else: how
                   long it has run, how strong its signal is, how much memory is
                   left. Everything else is reference, and sits below. */}
-              <div className="ops-mstats">
-                <div className="mstat">
-                  <span className="mstat-l">{t('fRuntime')}</span>
-                  <b className="mstat-v">{fmtDur(up, lang)}</b>
-                </div>
-                <div className="mstat">
-                  <span className="mstat-l">{t('fSignal')}</span>
-                  <b className="mstat-v mono">
-                    {selected.live?.rssi != null ? `${selected.live.rssi} dBm` : '—'}
-                  </b>
-                </div>
-                <div className="mstat">
-                  <span className="mstat-l">{t('fMemory')}</span>
-                  <b className="mstat-v mono">
-                    {heap != null ? `${Math.round(heap / 1024)} KB` : '—'}
-                  </b>
-                </div>
+              <div className="kx-readout three">
+                <Cell label={t('fRuntime')} v={fmtDur(up, lang)} plain />
+                <Cell label={t('fSignal')} v={selected.live?.rssi != null ? selected.live.rssi : '—'}
+                  unit={selected.live?.rssi != null ? 'dBm' : ''} />
+                <Cell label={t('fMemory')} v={heap != null ? Math.round(heap / 1024) : '—'}
+                  unit={heap != null ? 'KB' : ''} />
               </div>
 
-              <div className="ops-mbody">
-                <div className="ops-mgroup">
-                  <h4>{t('gOwner')}</h4>
-                  <div className="ops-spec">
-                    <Row k={t('fName')} v={selected.ownerName || '—'} />
-                    <Row k={t('fEmail')} v={selected.ownerEmail || '—'} mono />
-                    <Row k={t('fCountry')} v={selected.country || '—'} />
-                  </div>
-                </div>
-
-                <div className="ops-mgroup">
-                  <h4>{t('gDevice')}</h4>
-                  <div className="ops-spec">
-                    <Row k={t('fManufacturer')} v={selected.live?.manufacturer || '—'} />
-                    <Row k={t('fModel')} v={selected.live?.model || '—'} mono />
-                    <Row k={t('fBoard')} v={selected.board || '—'} mono />
-                    <Row k={t('fChannels')} v={selected.live?.channels != null ? String(selected.live.channels) : '—'} mono />
-                    <Row k={t('fFw')} v={selected.live?.fw || '—'} mono />
-                    <Row k={t('fRegistered')} v={selected.inRegistry ? t('yes') : t('noBroadcastOnly')} />
-                  </div>
-                </div>
-
-                <div className="ops-mgroup">
-                  <h4>{t('gConn')}</h4>
-                  <div className="ops-spec">
-                    <Row k={t('fIp')} v={selected.live?.ip || '—'} mono />
-                    <Row k={t('fLastSeen')} v={selected.lastSeen ? rel(selected.lastSeen, lang, ' مضت') : '—'} />
-                  </div>
-                </div>
-
-                <div className="ops-mgroup">
-                  <h4>{t('gLicence')}</h4>
-                  <div className="ops-spec">
-                    <Row k={t('fState')} v={state.text} />
-                    <Row k={t('fLicSince')} v={selected.licensed ? rel(selected.licensedAt, lang) : '—'} />
-                    <Row k={t('fLicDate')}
-                      v={selected.licensedAt ? selected.licensedAt.toLocaleDateString(locale) : '—'} />
-                  </div>
-                </div>
-
+              <div className="kx-modal-b">
+                <Spec title={t('gOwner')} rows={[
+                  [t('fName'), selected.ownerName || '—'],
+                  [t('fEmail'), selected.ownerEmail || '—', true],
+                  [t('fCountry'), selected.country || '—'],
+                ]} />
+                <Spec title={t('gDevice')} rows={[
+                  [t('fManufacturer'), selected.live?.manufacturer || '—'],
+                  [t('fModel'), selected.live?.model || '—', true],
+                  [t('fBoard'), selected.board || '—', true],
+                  [t('fChannels'), selected.live?.channels != null ? String(selected.live.channels) : '—', true],
+                  [t('fFw'), selected.live?.fw || '—', true],
+                  [t('fRegistered'), selected.inRegistry ? t('yes') : t('noBroadcastOnly')],
+                ]} />
+                <Spec title={t('gConn')} rows={[
+                  [t('fIp'), selected.live?.ip || '—', true],
+                  [t('fLastSeen'), selected.lastSeen ? rel(selected.lastSeen, lang, isEn(lang) ? true : t('ago')) : '—'],
+                ]} />
+                <Spec title={t('gLicence')} rows={[
+                  [t('fState'), state.text],
+                  [t('fLicSince'), selected.licensed ? rel(selected.licensedAt, lang) : '—'],
+                  [t('fLicDate'), selected.licensedAt ? selected.licensedAt.toLocaleDateString(locale) : '—'],
+                ]} />
                 {/* Who the OWNER shared this unit with — read-only here; the
                     console doesn't grant/revoke shares, only the app does. */}
-                <div className="ops-mgroup">
-                  <h4>{t('gSharing')}</h4>
-                  <div className="ops-spec">
-                    {selected.sharedWith.length
-                      ? selected.sharedWith.map((sw, i) => (
-                          <Row key={sw.uid || i}
-                            k={selected.sharedWith.length > 1 ? `${t('fSharedWith')} ${i + 1}` : t('fSharedWith')}
-                            v={sw.email || '—'} mono />
-                        ))
-                      : <Row k={t('fSharedWith')} v={t('noShares')} />}
-                  </div>
-                </div>
+                <Spec title={t('gSharing')} rows={
+                  selected.sharedWith.length
+                    ? selected.sharedWith.map((sw, i) => [
+                        selected.sharedWith.length > 1 ? `${t('fSharedWith')} ${i + 1}` : t('fSharedWith'),
+                        sw.email || '—', true,
+                      ])
+                    : [[t('fSharedWith'), t('noShares')]]
+                } />
               </div>
 
               {/* Each action only renders for an admin allowed to do it — and the
                   footer only appears if there is at least one. */}
               {((selected.licensed ? superAdmin : can('licenses')) || can('fleet')) && (
-                <div className="ops-mfoot">
+                <footer className="kx-modal-f">
                   {/* Granting and revoking are not the same power. An admin sells
                       licences — they spend their own credit to switch a customer's
                       unit on. Taking a working unit away from a customer is a
@@ -2497,46 +2736,91 @@ export default function AdminConsole() {
                       (Enforced on the bridge too — this is just the half you see.) */}
                   {selected.licensed
                     ? (superAdmin && (
-                        <button className="ops-ghost lg" onClick={() => setLicense(selected.serial, false)}>
+                        <button className="kx-btn ghost"
+                          onClick={() => { if (window.confirm(t('revokeQ', selected.serial))) setLicense(selected.serial, false); }}>
                           {t('revoke')}
                         </button>
                       ))
                     : (can('licenses') && (
-                        <button className="ops-btn lg" onClick={() => setLicense(selected.serial, true)}>
-                          {t('grant')}
+                        <button className="kx-btn primary" onClick={() => setLicense(selected.serial, true)}>
+                          <Key />{t('grant')}
                         </button>
                       ))}
                   {can('fleet') && (
-                    <button className="ops-ghost lg danger"
-                      onClick={() => removeDevice(selected.serial, selected.name)}>
-                      {t('removeDev')}
+                    <button className="kx-btn danger" onClick={() => removeDevice(selected.serial, selected.name)}>
+                      <Trash />{t('removeDev')}
                     </button>
                   )}
-                </div>
+                </footer>
               )}
             </div>
           </div>
         );
       })()}
 
-
-      {toast && <div className="ops-toast">{toast}</div>}
+      {/* Always mounted, so screen readers announce each message as it lands. */}
+      <div className="kx-toast-host" role="status" aria-live="polite">
+        {toast && <div className="kx-toast">{toast}</div>}
+      </div>
     </div>
   );
 }
 
-function Kpi({ Ic, n, label, tone }) {
+function Gate({ dir, children }) {
+  return <div className="kx gate" dir={dir}>{children}</div>;
+}
+
+function LangSwitch({ lang, onChange }) {
   return (
-    <div className={`kpi ${tone || ''}`}>
-      <span className="kpi-ic"><Ic /></span>
-      <span className="kpi-n mono">{n}</span>
-      <span className="kpi-l">{label}</span>
+    <div className="kx-lang" role="group" aria-label="Language / اللغة">
+      <button type="button" lang="ar" aria-pressed={!isEn(lang)} onClick={() => onChange('ar')}>ع</button>
+      <button type="button" lang="en" aria-pressed={isEn(lang)} onClick={() => onChange('en')}>EN</button>
     </div>
   );
 }
-function Row({ k, v, mono }) {
-  return <div className="ops-srow"><span>{k}</span><span className={mono ? 'mono' : ''}>{v}</span></div>;
+
+// One reading in a strip of readings. `plain` is for values that are words
+// ("3 يوم و4 ساعة"), which must not be forced left-to-right like a number.
+function Cell({ label, v, unit, tone, Ic, plain }) {
+  return (
+    <div className={`kx-cell ${tone || ''}`}>
+      <span>{Ic && <Ic />}{label}</span>
+      <b className={plain ? 'plain' : ''}>
+        {/* A bare number has no letters to take a direction from, so `auto`
+            would fall back to RTL and print "−52" as "52−". */}
+        <bdi dir={plain ? 'auto' : 'ltr'}>{v}</bdi>{unit ? <small>{unit}</small> : null}
+      </b>
+    </div>
+  );
 }
+
+function Spec({ title, rows }) {
+  return (
+    <div className="kx-spec">
+      <h3>{title}</h3>
+      <dl>
+        {rows.map(([k, v, mono], i) => (
+          <div key={i}><dt>{k}</dt><dd className={mono ? 'mono' : ''}>{v}</dd></div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+// Wi-Fi strength as four bars — the dBm number is there too, for whoever wants it.
+function SignalBars({ rssi }) {
+  if (rssi == null) return <span className="kx-sig">—</span>;
+  const n = rssi > -55 ? 4 : rssi > -67 ? 3 : rssi > -75 ? 2 : rssi > -85 ? 1 : 0;
+  return (
+    <span className="kx-sig" title={`${rssi} dBm`}>
+      <span className={`kx-bars lv-${n}`} aria-hidden="true">
+        {[0, 1, 2, 3].map((i) => <i key={i} className={i < n ? 'lit' : ''} />)}
+      </span>
+      <span className="num">{rssi}</span>
+    </span>
+  );
+}
+
 // Is this unit actually reachable right now?
 //
 // The LWT ("status") used to be taken as gospel. But the broker replays a
