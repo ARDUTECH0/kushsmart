@@ -4,25 +4,28 @@ import { SlimFooter } from '@/components/SiteFooter';
 import AlexaLogo from '@/components/AlexaLogo';
 import L from '@/components/L';
 import { Hand, Bulb, Palette, Sensor, Door, Megaphone, Sync, Plus, Lock } from '@/components/Icons';
+import { pageMeta } from '@/lib/seo';
 
-export const metadata = {
-  title: 'KUSH SMART × Amazon Alexa',
+export const metadata = pageMeta({
+  title: 'التحكّم الصوتي مع Alexa — KUSH SMART × Amazon Alexa',
   description:
-    'Control your KUSH SMART devices with your voice through Amazon Alexa — switches, lights, RGB, temperature and door sensors, synced live with the app.',
-};
+    'تحكّم في أجهزة كوش سمارت بصوتك عبر Amazon Alexa، مع مزامنة لحظية مع التطبيق. Control KUSH SMART by voice with Amazon Alexa.',
+  path: '/docs/alexa/',
+});
 
 const NAV = [
   { href: '/#features', label: 'المميزات', en: 'Features' },
   { href: '/#how', label: 'كيف يعمل', en: 'How it works' },
   { href: '/docs', label: 'الدليل', en: 'Guide', active: true },
+  { href: '/pricing', label: 'الأسعار', en: 'Pricing' },
   { href: '/downloads', label: 'التحميل', en: 'Download', btn: true },
 ];
 
 // [icon, ar, en] — only what the Alexa Smart Home skill actually exposes today.
 const DEVICES = [
   [<Hand key="i" />, 'المفاتيح', 'Switches'],
-  [<Bulb key="i" />, 'الإضاءة والديمر', 'Lights & dimmers'],
-  [<Palette key="i" />, 'الإضاءة الملوّنة', 'RGB lights'],
+  [<Bulb key="i" />, 'الإضاءة والخفوت', 'Lights & dimmers'],
+  [<Palette key="i" />, 'الإضاءة الملوّنة', 'Colour lighting'],
   [<Sensor key="i" />, 'حسّاسات الحرارة', 'Temperature sensors'],
   [<Door key="i" />, 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
 ];
@@ -33,7 +36,7 @@ const BENEFITS = [
     'Control by voice', 'Ask Alexa to turn any device on or off, or ask for the temperature or a door’s status — no need to open the app.'],
   [<Sync key="i" />, 'تزامن لحظي', 'أي تغيير من التطبيق أو من المفتاح اليدوي يظهر في Alexa فورًا، والعكس صحيح.',
     'Instant sync', 'Any change from the app or a wall switch shows up in Alexa right away — and the other way around.'],
-  [<Plus key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Alexa من غير ما تعمل حاجة زيادة.',
+  [<Plus key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Alexa دون أي خطوة إضافية.',
     'Added automatically', 'Any new device you add in the app shows up in Alexa with nothing extra to do.'],
   [<Lock key="i" />, 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — الربط مبني على حسابك في التطبيق ولا شيء غيره.',
     'Full privacy', 'You only ever see your own devices — linking is tied to your own app account and nothing else.'],
@@ -59,8 +62,8 @@ export default function AlexaPage() {
           <h1 data-ar="">منزلك الذكي… بصوتك مع <span className="accent">Alexa</span></h1>
           <h1 data-en="">Your smart home, by voice with <span className="accent">Alexa</span></h1>
           <p data-ar="">
-            اربط كوش سمارت بحساب Amazon بتاعك، وتحكّم في أجهزتك بصوتك من أي مكان في البيت —
-            <b> ومتزامن لحظيًا مع التطبيق</b>.
+            اربط كوش سمارت بحسابك في Amazon، وتحكّم في أجهزتك بصوتك من أي مكان في المنزل —
+            <b> مع مزامنة لحظية مع التطبيق</b>.
           </p>
           <p data-en="">
             Link KUSH SMART to your Amazon account and control your devices with your voice
@@ -78,7 +81,7 @@ export default function AlexaPage() {
           <div className="ha-h">
             <span className="eyebrow"><L ar="مدعوم حاليًا" en="Supported today" /></span>
             <L tag="h2" ar="تظهر تلقائيًا في Alexa" en="They appear automatically in Alexa" />
-            <L tag="p" ar="بمجرّد الربط، الأنواع دي تظهر فورًا بأسمائها وتتحدّث لحظيًا." en="Once linked, these appear right away with their real names and update live." />
+            <L tag="p" ar="بمجرّد الربط تظهر هذه الأجهزة فورًا بأسمائها، وتتحدّث حالتها لحظيًا." en="Once linked, these appear right away with their real names and update live." />
           </div>
           <div className="ha-dev">
             {DEVICES.map(([ic, ar, en]) => (
@@ -89,12 +92,12 @@ export default function AlexaPage() {
             ))}
           </div>
           <p className="ha-dual-note">
-            <L ar="الأقفال والستائر وعدّادات الطاقة متاحة حاليًا عن طريق التطبيق و Home Assistant، وجاري إضافتها لـ Alexa."
+            <L ar="الأقفال والستائر وعدّادات الطاقة متاحة حاليًا عن طريق التطبيق و Home Assistant، ويجري العمل على دعمها في Alexa."
               en="Locks, curtains and power meters are available today through the app and Home Assistant — Alexa support for them is on the way." />
           </p>
           <p className="ha-dual-note">
-            <L ar="غيّر أسماء أجهزتك من تطبيق كوش سمارت وليس من داخل Alexa — Amazon ما بتبلّغش بأي اسم تغيّره من تطبيقها، فهيرجع لاسمه الأصلي في أول مزامنة."
-              en="Rename your devices from the KUSH SMART app, not from inside Alexa — Amazon never reports a rename made in its own app back to us, so it'll revert to the original name on the next sync." />
+            <L ar="غيّر أسماء أجهزتك من تطبيق كوش سمارت وليس من داخل Alexa — فالاسم الذي تغيّره في تطبيق Alexa يعود إلى أصله عند المزامنة التالية."
+              en="Rename your devices from the KUSH SMART app, not from inside Alexa — a name changed in the Alexa app goes back to the original on the next sync." />
           </p>
         </section>
 
@@ -103,18 +106,18 @@ export default function AlexaPage() {
           <div className="ha-h">
             <span className="eyebrow"><L ar="الربط" en="Linking" /></span>
             <L tag="h2" ar="في ٣ خطوات بسيطة" en="Three simple steps" />
-            <L tag="p" ar="من تطبيق Alexa مباشرةً — مفيش تنزيل ولا تثبيت إضافي." en="Straight from the Alexa app — nothing extra to download or install." />
+            <L tag="p" ar="من تطبيق Alexa مباشرةً — دون تنزيل أو تثبيت أي شيء إضافي." en="Straight from the Alexa app — nothing extra to download or install." />
           </div>
           <div className="ha-steps">
             <div className="ha-step">
               <span className="ha-step-n">1</span>
               <L tag="h3" ar="افتح تطبيق Alexa" en="Open the Alexa app" />
-              <L tag="p" ar="دوس على «المزيد» ← «المهارات والألعاب» (Skills & Games) ← ابحث عن «KUSH SMART»." en="Tap “More” → “Skills & Games” → search for “KUSH SMART”." />
+              <L tag="p" ar="اضغط على «المزيد» ← «المهارات والألعاب» (Skills & Games) ← ابحث عن «KUSH SMART»." en="Tap “More” → “Skills & Games” → search for “KUSH SMART”." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">2</span>
               <L tag="h3" ar="فعّل المهارة وسجّل الدخول" en="Enable the skill & sign in" />
-              <L tag="p" ar="دوس «تفعيل» (Enable to Use)، وسجّل الدخول بنفس بيانات حسابك في التطبيق." en="Tap “Enable to Use”, then sign in with the same account you use in the app." />
+              <L tag="p" ar="اضغط «تفعيل» (Enable to Use)، وسجّل الدخول بنفس بيانات حسابك في التطبيق." en="Tap “Enable to Use”, then sign in with the same account you use in the app." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">3</span>

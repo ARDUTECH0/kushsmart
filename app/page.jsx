@@ -1,15 +1,25 @@
 import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
-import { asset } from '@/lib/site';
 import HaLogo from '@/components/HaLogo';
 import GoogleHomeLogo from '@/components/GoogleHomeLogo';
 import AlexaLogo from '@/components/AlexaLogo';
+import AppMock from '@/components/AppMock';
 import L from '@/components/L';
+import { SUPPORT_EMAIL } from '@/lib/site';
+import { SITE, pageMeta } from '@/lib/seo';
 import {
   Bulb, Fan, Sensor, Timer, Automation, Groups, Remote, Bell, Lock,
-  Bolt, Signal, Cloud, Hand, Sync, Key, Check, Globe, Android, ArrowEnd,
+  Bolt, Signal, Cloud, Hand, Key, Check, Globe, Android, ArrowEnd,
 } from '@/components/Icons';
+
+export const metadata = pageMeta({
+  title: 'كوش سمارت KUSH SMART — منزل ذكي يُركَّب خلف مفاتيحك الحالية',
+  description:
+    'تُركَّب وحدات كوش سمارت خلف المفاتيح أو في لوحة الكهرباء، فتتحكّم في الإضاءة والمراوح والستائر والتكييف من هاتفك وبصوتك — داخل المنزل وخارجه. Smart home units that fit behind your existing switches.',
+  path: '/',
+  absolute: true,
+});
 
 const NAV = [
   { href: '/#features', label: 'المميزات', en: 'Features' },
@@ -18,6 +28,49 @@ const NAV = [
   { href: '/pricing', label: 'الأسعار', en: 'Pricing' },
   { href: '/downloads', label: 'التحميل', en: 'Download', btn: true },
 ];
+
+// Structured data: who makes it, what it is, and that the app is free.
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE}/#org`,
+      name: 'KUSH SMART',
+      alternateName: 'كوش سمارت',
+      url: SITE,
+      logo: `${SITE}/assets/icon.png`,
+      email: SUPPORT_EMAIL,
+      parentOrganization: { '@type': 'Organization', name: 'ATGENX' },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE}/#website`,
+      url: SITE,
+      name: 'KUSH SMART — كوش سمارت',
+      inLanguage: ['ar', 'en'],
+      publisher: { '@id': `${SITE}/#org` },
+    },
+    {
+      '@type': 'Product',
+      name: 'KUSH SMART smart home units',
+      alternateName: 'وحدات كوش سمارت للمنزل الذكي',
+      brand: { '@type': 'Brand', name: 'KUSH SMART' },
+      manufacturer: { '@type': 'Organization', name: 'ATGENX' },
+      image: `${SITE}/assets/icon.png`,
+      description:
+        'Smart home units that fit behind existing switches or in the breaker panel: lights, fans, curtains, AC remotes, power meters and smart locks, controlled from the app, by voice, or automatically.',
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'KUSH SMART',
+      operatingSystem: 'Android',
+      applicationCategory: 'LifestyleApplication',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EGP' },
+      publisher: { '@id': `${SITE}/#org` },
+    },
+  ],
+};
 
 // The hero is a distribution board: KUSH SMART units sit on a DIN rail (or
 // behind the wall switch), so that's what the page opens with.
@@ -36,8 +89,8 @@ const FACTS = [
     'Works without internet', 'At home, control runs straight over your own network.'],
   [Hand, 'مفاتيح الحائط تظلّ تعمل', 'يبقى المفتاح العادي كما هو، ويتحدّث التطبيق فورًا.',
     'Wall switches still work', 'The ordinary switch stays as it is, and the app updates instantly.'],
-  [Key, 'تحديثات موقّعة رقميًا', 'يصل السوفت وير الجديد لاسلكيًا، وترفض الوحدة أي نسخة غير موقّعة.',
-    'Signed updates', 'New firmware arrives wirelessly, and a unit refuses any build we didn’t sign.'],
+  [Key, 'تحديثات آمنة', 'تصل التحديثات لاسلكيًا، ولا تقبل الوحدة إلا التحديثات الصادرة منّا.',
+    'Secure updates', 'Updates arrive wirelessly, and a unit only accepts updates that come from us.'],
   [Globe, 'بالعربية والإنجليزية', 'التطبيق والدليل والدعم باللغتين.',
     'Arabic & English', 'The app, the guide and support, in both languages.'],
 ];
@@ -48,22 +101,22 @@ const GROUPS = [
     ar: 'التحكّم', en: 'Control',
     pAr: 'كل ما في المنزل، من مكان واحد.', pEn: 'Everything in the house, from one place.',
     items: [
-      [Bulb, 'إضاءة ومفاتيح', 'تشغيل وإطفاء، وخفوت الإضاءة (Dimmer)، والإضاءة الملوّنة RGB / WS2812.',
-        'Lights & switches', 'On and off, dimming, and colour for RGB / WS2812 strips.'],
+      [Bulb, 'إضاءة ومفاتيح', 'تشغيل وإطفاء، وخفوت الإضاءة، والإضاءة الملوّنة.',
+        'Lights & switches', 'On and off, dimming, and colour lighting.'],
       [Fan, 'مراوح وستائر', 'سرعة المراوح، وفتح وغلق الستائر والشتر الكهربائي.',
         'Fans & curtains', 'Fan speed, and motorised curtains and roller shutters.'],
       [Groups, 'مجموعات', 'اجمع عدّة أجهزة وتحكّم فيها جميعًا بضغطة واحدة.',
         'Groups', 'Put several devices together and run them with one tap.'],
-      [Remote, 'ريموت 433MHz و IR', 'اربط أجهزة التحكّم اللاسلكية وبالأشعّة عبر «تعلّم الزرّ».',
-        '433MHz & IR remotes', 'Pair RF and infrared remotes with learn-a-button.'],
+      [Remote, 'الريموت', 'اربط ريموت التكييف والتلفزيون والريموت اللاسلكي بالتطبيق.',
+        'Remotes', 'Bring your AC, TV and wireless remotes into the app.'],
     ],
   },
   {
     ar: 'الاستشعار والتنبيه', en: 'Sensing & alerts',
     pAr: 'اعرف ما يحدث في منزلك لحظة حدوثه.', pEn: 'Know what happens at home as it happens.',
     items: [
-      [Sensor, 'حسّاسات', 'الحرارة والرطوبة (DHT)، والأبواب والحركة، والحسّاسات اللاسلكية 433MHz.',
-        'Sensors', 'Temperature and humidity (DHT), doors and motion, and 433MHz wireless sensors.'],
+      [Sensor, 'حسّاسات', 'الحرارة والرطوبة، وفتح الأبواب، والحركة.',
+        'Sensors', 'Temperature and humidity, doors opening, and motion.'],
       [Bell, 'إشعارات لحظية', 'إشعار فور وقوع أي حدث — حتى والتطبيق مغلق.',
         'Instant alerts', 'A notification the moment something happens — even with the app closed.'],
       [Lock, 'مفاتيح مخفيّة', 'مفاتيح محميّة برمز سرّي لمزيد من الخصوصية.',
@@ -76,21 +129,21 @@ const GROUPS = [
     items: [
       [Timer, 'مؤقّتات وجدولة', 'عدّاد تنازلي، وجدولة أسبوعية، وإطفاء تلقائي بعد مدّة محدّدة.',
         'Timers & schedules', 'Countdowns, weekly schedules, and auto-off after a set time.'],
-      [Automation, 'قواعد ذكية', '«عند تجاوز الحرارة 30 درجة، شغّل المروحة» — تُنفَّذ على السيرفر حتى والتطبيق مغلق.',
-        'Smart rules', '“When it goes above 30°, turn on the fan” — run on our server, even with the app closed.'],
+      [Automation, 'قواعد ذكية', '«عند تجاوز الحرارة 30 درجة، شغّل المروحة» — وتعمل حتى والتطبيق مغلق.',
+        'Smart rules', '“When it goes above 30°, turn on the fan” — and it runs even with the app closed.'],
     ],
   },
 ];
 
-// The product line. [Icon, ar, en, hardware, arDesc, enDesc]
+// The product line. [Icon, ar, en, arDesc, enDesc]
 const UNITS = [
-  [Bulb, 'مفاتيح وإضاءة', 'Switches & lighting', 'ESP32 · ESP8266',
-    'عدّة قنوات في الوحدة الواحدة، مع الديمر والإضاءة الملوّنة.', 'Several channels per unit, with dimming and RGB.'],
-  [Remote, 'ريموت IR و RF', 'IR & RF remote', 'ATGENX HALO',
-    'يتحكّم في التكييف والتلفزيون والرسيفر.', 'Runs the AC, the TV and the receiver.'],
-  [Bolt, 'عدّاد الطاقة', 'Power meter', 'POW Elite',
-    'الجهد والتيار والاستهلاك، لحظة بلحظة.', 'Voltage, current and consumption, live.'],
-  [Lock, 'القفل الذكي', 'Smart lock', 'Smart Lock',
+  [Bulb, 'مفاتيح وإضاءة', 'Switches & lighting',
+    'للإضاءة والمراوح والستائر، مع الخفوت والإضاءة الملوّنة.', 'For lights, fans and curtains, with dimming and colour.'],
+  [Remote, 'ريموت التكييف والتلفزيون', 'AC & TV remote',
+    'يتحكّم في التكييف والتلفزيون والرسيفر من التطبيق.', 'Runs the AC, the TV and the receiver from the app.'],
+  [Bolt, 'عدّاد الطاقة', 'Power meter',
+    'استهلاك الكهرباء في منزلك، لحظة بلحظة.', 'Your home’s electricity use, live.'],
+  [Lock, 'القفل الذكي', 'Smart lock',
     'افتح الباب من التطبيق، مع إشعار عند كل استخدام.', 'Unlock from the app, with an alert on every use.'],
 ];
 
@@ -104,18 +157,18 @@ const STEPS = [
     'Control everything', 'Your devices appear on their own — run them from your phone, your voice, or anywhere.'],
 ];
 
-// How a command reaches the unit — the three real routes, in the order tried.
-// [Icon, ar, en, protocol, arDesc, enDesc, arTag, enTag]
+// What happens to a command, in the three situations a customer is ever in.
+// [Icon, ar, en, arDesc, enDesc, arTag, enTag]
 const PATHS = [
-  [Signal, 'شبكة المنزل', 'Home network', 'LAN · WebSocket',
-    'داخل المنزل — يصل الأمر فورًا دون المرور بالإنترنت.', 'At home — the command lands instantly, without the internet.',
-    'أولًا', 'First'],
-  [Sync, 'اتصال مباشر احتياطي', 'Direct fallback', 'LAN · UDP',
-    'إن تعذّر الطريق الأول، يصل الأمر مباشرةً بطريقة ثانية.', 'If the first route is unavailable, it goes direct a second way.',
-    'احتياطي', 'Fallback'],
-  [Cloud, 'السحابة', 'Cloud', 'MQTT',
-    'خارج المنزل — تتحكّم من أي مكان عبر الإنترنت.', 'Away from home — control from anywhere over the internet.',
-    'عن بُعد', 'Remote'],
+  [Signal, 'داخل المنزل', 'At home',
+    'يصل الأمر مباشرةً عبر شبكة منزلك — فيكون فوريًا.', 'The command goes straight over your home network — instantly.',
+    'الأسرع', 'Fastest'],
+  [Hand, 'إن انقطع الإنترنت', 'If the internet drops',
+    'يستمرّ التحكّم داخل المنزل، وتعمل مفاتيح الحائط كالمعتاد.', 'Control keeps working at home, and the wall switches work as usual.',
+    'دون انقطاع', 'Uninterrupted'],
+  [Cloud, 'خارج المنزل', 'Away from home',
+    'تتحكّم في منزلك من أي مكان عبر اتصال آمن.', 'Run your home from anywhere over a secure connection.',
+    'من أي مكان', 'Anywhere'],
 ];
 
 // [ar, en]
@@ -129,6 +182,7 @@ const LICENCE = [
 export default function HomePage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
       <SiteHeader links={NAV} />
 
       {/* HERO */}
@@ -173,7 +227,7 @@ export default function HomePage() {
             </div>
             <div className="hm-board-bus">
               <span className="hm-bus"><Signal /><span><L ar="شبكة المنزل" en="Home network" /></span><i /></span>
-              <span className="hm-bus"><Cloud /><span><L ar="السحابة" en="Cloud" /></span><i /></span>
+              <span className="hm-bus"><Cloud /><span><L ar="عن بُعد" en="Remote" /></span><i /></span>
               <span className="hm-bus"><Bell /><span><L ar="الإشعارات" en="Alerts" /></span><i /></span>
             </div>
           </div>
@@ -227,14 +281,13 @@ export default function HomePage() {
 
           <div className="hm-units-h">
             <L tag="h3" ar="الوحدات" en="The units" />
-            <Link href="/docs"><L ar="كيف تختار وتضبط وحدتك" en="Choosing and setting up a unit" /><ArrowEnd className="flip" /></Link>
+            <Link href="/pricing"><L ar="الأسعار والترخيص" en="Pricing & licence" /><ArrowEnd className="flip" /></Link>
           </div>
           <div className="hm-units">
-            {UNITS.map(([Ic, ar, en, hw, ap, ep]) => (
+            {UNITS.map(([Ic, ar, en, ap, ep]) => (
               <div className="hm-unit" key={en}>
                 <span className="hm-ic"><Ic /></span>
                 <b><L ar={ar} en={en} /></b>
-                <small>{hw}</small>
                 <p><L ar={ap} en={ep} /></p>
               </div>
             ))}
@@ -266,37 +319,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* HOW A COMMAND TRAVELS */}
+      {/* RELIABILITY */}
       <section className="section">
         <div className="wrap hm-split">
           <div>
-            <span className="eyebrow"><L ar="محلي + سحابي" en="Local + cloud" /></span>
-            <L tag="h2" ar="كل أمر يسلك أسرع طريق متاح" en="Every command takes the fastest route" />
+            <span className="eyebrow"><L ar="يعتمد عليه" en="Dependable" /></span>
+            <L tag="h2" ar="يعمل في كل الأحوال" en="It works, whatever happens" />
             <p data-ar="">
-              حين تكون في المنزل، يصل الأمر إلى الوحدة عبر شبكتك مباشرةً — فيكون <b>فوريًا</b> ويستمرّ
-              في العمل حتى لو انقطع الإنترنت. وحين تكون خارجه، يمرّ عبر السحابة كالمعتاد.
+              حين تكون في المنزل، يصل الأمر إلى الوحدة عبر شبكتك مباشرةً — فيكون <b>فوريًا</b>. وإن انقطع
+              الإنترنت يستمرّ التحكّم داخل المنزل كما هو. وحين تكون خارجه، تتحكّم في منزلك من أي مكان.
             </p>
             <p data-en="">
-              At home, a command goes straight to the unit over your own network — so it’s <b>instant</b>, and
-              it keeps working even if the internet drops. Away from home, it goes through the cloud as usual.
+              At home, a command goes straight to the unit over your own network — so it’s <b>instant</b>. If the
+              internet drops, control at home carries on as usual. And away from home, you run it from anywhere.
             </p>
-            <p data-ar="">وتؤكّد الوحدة الحالة بعد كل أمر، فما تراه في التطبيق هو ما يحدث فعلًا.</p>
+            <p data-ar="">وتؤكّد الوحدة حالتها بعد كل أمر، فما تراه في التطبيق هو ما يحدث فعلًا.</p>
             <p data-en="">The unit confirms its state after every command, so what the app shows is what really happened.</p>
           </div>
 
           <div className="hm-paths">
-            <div className="hm-paths-h"><Sync /><L ar="من هاتفك إلى الوحدة" en="From your phone to the unit" /></div>
-            {PATHS.map(([Ic, ar, en, proto, ad, ed, at, et], i) => (
+            {PATHS.map(([Ic, ar, en, ad, ed, at, et], i) => (
               <div className={`hm-path ${i === 0 ? 'first' : ''}`} key={en}>
                 <span className="hm-ic"><Ic /></span>
                 <div>
-                  <b><L ar={ar} en={en} /> <em>{proto}</em></b>
+                  <b><L ar={ar} en={en} /></b>
                   <small><L ar={ad} en={ed} /></small>
                 </div>
                 <span className="hm-path-tag"><L ar={at} en={et} /></span>
               </div>
             ))}
-            <div className="hm-paths-f"><Hand /><L ar="ومفتاح الحائط يعمل في كل الأحوال." en="And the wall switch works either way." /></div>
+            <div className="hm-paths-f"><Check /><L ar="وتتأكّد الوحدة من تنفيذ كل أمر." en="And the unit confirms every command." /></div>
           </div>
         </div>
       </section>
@@ -308,8 +360,8 @@ export default function HomePage() {
             <span className="eyebrow"><L ar="يتكامل مع" en="Integrates with" /></span>
             <L tag="h2" ar="يعمل مع الأنظمة التي تستخدمها" en="Works with the systems you already use" />
             <L tag="p"
-              ar="اربطه بأيٍّ منها في دقائق — تُكتشف الأجهزة تلقائيًا وتتزامن حالتها لحظيًا مع التطبيق."
-              en="Link it to any of them in minutes — devices are discovered automatically and stay in sync with the app." />
+              ar="اربطه بأيٍّ منها في دقائق — تظهر أجهزتك تلقائيًا وتتزامن حالتها لحظيًا مع التطبيق."
+              en="Link it to any of them in minutes — your devices show up automatically and stay in sync with the app." />
           </div>
           <div className="int-grid">
             <Link className="int-card" href="/docs/google-home">
@@ -327,7 +379,7 @@ export default function HomePage() {
             <Link className="int-card" href="/docs/home-assistant">
               <span className="int-badge"><HaLogo size={44} /></span>
               <h3>Home Assistant</h3>
-              <p><L ar="محلي وسحابي معًا، لكل أجهزتك." en="Local and cloud together, for every device." /></p>
+              <p><L ar="كل أجهزتك داخل Home Assistant، تلقائيًا." en="Every device inside Home Assistant, automatically." /></p>
               <span className="int-cta"><L ar="دليل الربط" en="Setup guide" /><ArrowEnd className="flip" /></span>
             </Link>
           </div>
@@ -342,14 +394,18 @@ export default function HomePage() {
             <L tag="h2" ar="واجهة بسيطة… وتحكّم كامل" en="A simple interface, full control" />
             <L tag="p" ar="كل أجهزتك في مكان واحد — منظّمة وسريعة وسهلة." en="All your devices in one place — organised, fast and easy." />
           </div>
-          <div className="shots-grid">
+          <div className="mk-showcase">
             <figure>
-              <div className="shot"><img src={asset('/assets/screens/home.png')} alt="KUSH SMART app home screen" loading="lazy" width="1280" height="720" /></div>
-              <figcaption className="shot-cap"><L ar="الشاشة الرئيسية — كل أجهزتك وحالتها" en="Home screen — every device and its state" /></figcaption>
+              <AppMock screen="device" ar="صفحة الجهاز في تطبيق كوش سمارت" en="A device page in the KUSH SMART app" />
+              <figcaption className="mk-cap"><L ar="صفحة الجهاز — التحكّم والمؤقّت والأتمتة" en="Device page — control, timer and automation" /></figcaption>
             </figure>
             <figure>
-              <div className="shot"><img src={asset('/assets/screens/groups.png')} alt="KUSH SMART app groups" loading="lazy" width="1280" height="720" /></div>
-              <figcaption className="shot-cap"><L ar="المجموعات — عدّة أجهزة بضغطة واحدة" en="Groups — several devices with one tap" /></figcaption>
+              <AppMock screen="home" ar="الشاشة الرئيسية في تطبيق كوش سمارت" en="The KUSH SMART app home screen" />
+              <figcaption className="mk-cap"><L ar="الشاشة الرئيسية — كل أجهزتك وحالتها" en="Home screen — every device and its state" /></figcaption>
+            </figure>
+            <figure>
+              <AppMock screen="groups" ar="المجموعات في تطبيق كوش سمارت" en="Groups in the KUSH SMART app" />
+              <figcaption className="mk-cap"><L ar="المجموعات — عدّة أجهزة بضغطة واحدة" en="Groups — several devices with one tap" /></figcaption>
             </figure>
           </div>
         </div>

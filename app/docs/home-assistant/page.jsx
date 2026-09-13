@@ -3,40 +3,32 @@ import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import HaLogo from '@/components/HaLogo';
 import L from '@/components/L';
-import CopyBox from '@/components/CopyBox';
+import { SUPPORT_EMAIL } from '@/lib/site';
+import { pageMeta } from '@/lib/seo';
 import {
-  Hand, Bulb, Palette, Curtain, Sensor, Door, Lock, Bolt, Cloud, Signal, Sync,
+  Hand, Bulb, Palette, Curtain, Sensor, Door, Lock, Bolt, Cloud, Signal, Sync, Plus,
 } from '@/components/Icons';
 
-export const metadata = {
-  title: 'KUSH SMART × Home Assistant',
+export const metadata = pageMeta({
+  title: 'الربط مع Home Assistant — KUSH SMART × Home Assistant',
   description:
-    'Connect your KUSH SMART home to Home Assistant. Local and cloud control at the same time, and every device appears automatically — switches, lights, curtains, sensors and locks.',
-};
-
-// One-shot install of the custom integration, for setups without HACS.
-// Extracts to /tmp first (portable across the busybox tar in the SSH add-on),
-// removes any previous copy, then moves the folder into place and cleans up.
-const INSTALL_CMD = `cd /tmp && rm -rf ha-atsmart-main && \\
-curl -sL https://github.com/ARDUTECH0/ha-atsmart/archive/refs/heads/main.tar.gz | tar xz && \\
-rm -rf /config/custom_components/atsmart && \\
-mkdir -p /config/custom_components && \\
-mv ha-atsmart-main/custom_components/atsmart /config/custom_components/ && \\
-rm -rf ha-atsmart-main && \\
-echo "✅ Installed — now restart Home Assistant"`;
+    'اربط كوش سمارت مع Home Assistant فتظهر كل أجهزتك تلقائيًا — الإضاءة والمفاتيح والستائر والحسّاسات والأقفال. Connect KUSH SMART to Home Assistant; every device appears automatically.',
+  path: '/docs/home-assistant/',
+});
 
 const NAV = [
   { href: '/#features', label: 'المميزات', en: 'Features' },
   { href: '/#how', label: 'كيف يعمل', en: 'How it works' },
   { href: '/docs', label: 'الدليل', en: 'Guide', active: true },
+  { href: '/pricing', label: 'الأسعار', en: 'Pricing' },
   { href: '/downloads', label: 'التحميل', en: 'Download', btn: true },
 ];
 
 // [icon, ar, en]
 const DEVICES = [
   [<Hand key="i" />, 'المفاتيح', 'Switches'],
-  [<Bulb key="i" />, 'الإضاءة والديمر', 'Lights & dimmers'],
-  [<Palette key="i" />, 'الإضاءة الملوّنة', 'RGB lights'],
+  [<Bulb key="i" />, 'الإضاءة والخفوت', 'Lights & dimmers'],
+  [<Palette key="i" />, 'الإضاءة الملوّنة', 'Colour lighting'],
   [<Curtain key="i" />, 'الستائر والشتر', 'Curtains & shutters'],
   [<Sensor key="i" />, 'الحرارة والرطوبة', 'Temperature & humidity'],
   [<Door key="i" />, 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
@@ -46,14 +38,14 @@ const DEVICES = [
 
 // [icon, arTitle, arDesc, enTitle, enDesc]
 const BENEFITS = [
-  [<Signal key="i" />, 'يعمل بدون إنترنت', 'داخل المنزل يتحكّم مباشرةً عبر شبكتك، حتى لو انقطع الإنترنت.',
-    'Works offline', 'At home it controls straight over your network, even if the internet drops.'],
-  [<Sync key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه يظهر في Home Assistant من تلقاء نفسه.',
-    'Added automatically', 'Any new device you add shows up in Home Assistant on its own.'],
-  [<Hand key="i" />, 'المفاتيح اليدوية تعمل', 'تظلّ مفاتيح الحائط تعمل كالمعتاد، والحالة تتحدّث فورًا.',
-    'Manual switches work', 'Your wall switches keep working as usual, and the state updates instantly.'],
-  [<Lock key="i" />, 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — لا شيء من الحسابات الأخرى يظهر.',
-    'Full privacy', 'You only ever see your own devices — nothing from other accounts appears.'],
+  [<Signal key="i" />, 'يعمل دون إنترنت', 'مع إضافة كوش سمارت يستمرّ التحكّم داخل المنزل حتى لو انقطع الإنترنت.',
+    'Works offline', 'With the KUSH SMART add-on, control at home keeps working even if the internet drops.'],
+  [<Sync key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Home Assistant من تلقاء نفسه.',
+    'Added automatically', 'Any new device you add in the app shows up in Home Assistant on its own.'],
+  [<Hand key="i" />, 'مفاتيح الحائط تعمل', 'تظلّ مفاتيح الحائط تعمل كالمعتاد، وتتحدّث الحالة فورًا.',
+    'Wall switches work', 'Your wall switches keep working as usual, and the state updates instantly.'],
+  [<Lock key="i" />, 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — ولا يظهر شيء من أي حساب آخر.',
+    'Full privacy', 'You only ever see your own devices — nothing from any other account.'],
 ];
 
 export default function HomeAssistantPage() {
@@ -68,15 +60,9 @@ export default function HomeAssistantPage() {
           <span className="eyebrow"><L ar="يعمل مع Home Assistant" en="Works with Home Assistant" /></span>
           <h1 data-ar="">منزلك الذكي… داخل <span className="accent">Home Assistant</span></h1>
           <h1 data-en="">Your smart home, inside <span className="accent">Home Assistant</span></h1>
-          <p data-ar="">
-            اربط كوش سمارت مع Home Assistant، فتظهر كل أجهزتك تلقائيًا وتتحكّم فيها
-            <b> محليًا وسحابيًا في آنٍ واحد</b> — ببساطة تامة ومن دون أي تعقيد.
-          </p>
-          <p data-en="">
-            Connect KUSH SMART to Home Assistant and every device shows up automatically —
-            controlled <b>locally and over the cloud at the same time</b>. Simple, with
-            nothing to configure.
-          </p>
+          <L tag="p"
+            ar="اربط كوش سمارت مع Home Assistant، فتظهر كل أجهزتك تلقائيًا وتتحكّم فيها من داخل المنزل ومن خارجه — ببساطة ودون تعقيد."
+            en="Connect KUSH SMART to Home Assistant and every device shows up automatically, ready to control at home and away — simply, with nothing complicated." />
           <div className="ha-hero-cta">
             <Link className="btn lg" href="/downloads"><L ar="حمّل التطبيق وابدأ" en="Get the app to start" /></Link>
           </div>
@@ -84,42 +70,13 @@ export default function HomeAssistantPage() {
       </header>
 
       <div className="wrap ha-body">
-        {/* DUAL CONTROL — the headline */}
-        <section id="dual">
-          <div className="ha-h">
-            <span className="eyebrow"><L ar="الميزة الأبرز" en="The headline feature" /></span>
-            <L tag="h2" ar="محلي وسحابي… في نفس الوقت" en="Local and cloud, at the same time" />
-            <L tag="p" ar="لا تختار بين السرعة والوصول من بعيد — كوش سمارت يمنحك الاثنين معًا، ويبدّل بينهما وحده."
-              en="You don't have to choose between speed and remote access — KUSH SMART gives you both and switches between them on its own." />
-          </div>
-          <div className="ha-dual">
-            <div className="ha-dual-card">
-              <span className="ha-dual-ic"><Signal /></span>
-              <L tag="h3" ar="سريع داخل المنزل" en="Fast at home" />
-              <L tag="p" ar="عندما تكون في المنزل، يعمل التحكّم عبر شبكتك مباشرةً — استجابة فورية بلا انتظار."
-                en="At home, control runs straight over your network — instant, with no waiting." />
-            </div>
-            <div className="ha-dual-plus">+</div>
-            <div className="ha-dual-card">
-              <span className="ha-dual-ic"><Cloud /></span>
-              <L tag="h3" ar="متاح من أي مكان" en="Available anywhere" />
-              <L tag="p" ar="وعندما تكون خارج المنزل، ينتقل تلقائيًا إلى الإنترنت لتتحكّم من أي مكان في العالم."
-                en="Away from home, it switches to the internet automatically so you can control from anywhere." />
-            </div>
-          </div>
-          <p className="ha-dual-note">
-            <L ar="التبديل تلقائي وفوري — والحالة تتحدّث لحظيًا في الحالتين."
-              en="Switching is automatic and instant — and the state updates live either way." />
-          </p>
-        </section>
-
         {/* DEVICES */}
         <section id="devices">
           <div className="ha-h">
             <span className="eyebrow"><L ar="كل أجهزتك" en="All your devices" /></span>
             <L tag="h2" ar="تظهر جميعها تلقائيًا" en="They all appear automatically" />
-            <L tag="p" ar="بمجرّد الربط، تنتقل كل أجهزتك إلى Home Assistant بأسمائها — وتُحدَّث مباشرةً."
-              en="Once connected, every device moves into Home Assistant with its name — and updates in real time." />
+            <L tag="p" ar="بمجرّد الربط تنتقل كل أجهزتك إلى Home Assistant بأسمائها، وتتحدّث حالتها لحظيًا."
+              en="Once linked, every device moves into Home Assistant with its name, and its state updates live." />
           </div>
           <div className="ha-dev">
             {DEVICES.map(([ic, ar, en]) => (
@@ -131,38 +88,42 @@ export default function HomeAssistantPage() {
           </div>
         </section>
 
-        {/* STEPS — the no-install path leads, because it needs nothing installed */}
+        {/* QUICK LINK — nothing to install */}
         <section id="steps">
           <div className="ha-h">
-            <span className="eyebrow"><L ar="بدون تثبيت" en="No install" /></span>
-            <L tag="h2" ar="الطريقة الأسهل — في ٣ خطوات" en="The easiest way — in three steps" />
-            <L tag="p" ar="‏Home Assistant فيه تكامل MQTT جاهز من الأساس. مش محتاج تنزّل أي إضافة ولا تعيد التشغيل." en="Home Assistant already includes MQTT. Nothing to download, nothing to restart." />
+            <span className="eyebrow"><L ar="الربط السريع" en="Quick link" /></span>
+            <L tag="h2" ar="في ثلاث خطوات، دون تثبيت" en="Three steps, nothing to install" />
+            <L tag="p" ar="كل ما تحتاجه موجود داخل تطبيق كوش سمارت، جاهز للنسخ."
+              en="Everything you need is inside the KUSH SMART app, ready to copy." />
           </div>
           <div className="ha-steps">
             <div className="ha-step">
               <span className="ha-step-n">1</span>
-              <L tag="h3" ar="افتح بيانات الاتصال" en="Open your settings" />
-              <L tag="p" ar="في التطبيق: الملف الشخصي ← «ربط Home Assistant» ← «ربط بدون تثبيت». هتلاقي السيرفر واسم المستخدم وكلمة المرور، مع زر نسخ ورمز QR." en="In the app: Profile → “Link Home Assistant” → “Connect — no install”. You’ll find the broker, username and password, with a copy button and a QR code." />
+              <L tag="h3" ar="افتح التطبيق" en="Open the app" />
+              <L tag="p" ar="من «الملف الشخصي» اضغط «ربط Home Assistant» ثم «ربط بدون تثبيت». يعرض التطبيق بيانات الربط الخاصة بحسابك مع زر نسخ."
+                en="In Profile, tap “Link Home Assistant”, then “Connect — no install”. The app shows your account's link details with a copy button." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">2</span>
-              <L tag="h3" ar="أضِف MQTT" en="Add MQTT" />
-              <L tag="p" ar="في Home Assistant: الإعدادات ← الأجهزة والخدمات ← «إضافة تكامل» ← اختر MQTT، والصق البيانات." en="In Home Assistant: Settings → Devices & services → “Add integration” → pick MQTT, then paste the settings." />
+              <L tag="h3" ar="أضِف الربط" en="Add the link" />
+              <L tag="p" ar="اضغط الزر أدناه لفتح صفحة الإضافة في Home Assistant، ثم الصق البيانات التي نسختها من التطبيق."
+                en="Press the button below to open the add page in Home Assistant, then paste the details you copied from the app." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">3</span>
-              <L tag="h3" ar="تظهر تلقائيًا" en="They appear on their own" />
-              <L tag="p" ar="فعّل الاكتشاف واضبط «discovery prefix» بالقيمة الموجودة في التطبيق — وكل أجهزتك تظهر في Home Assistant من تلقاء نفسها." en="Enable discovery and set the “discovery prefix” to the value shown in the app — every device then shows up in Home Assistant by itself." />
+              <L tag="h3" ar="تظهر أجهزتك" en="Your devices appear" />
+              <L tag="p" ar="بعد الحفظ تظهر كل أجهزتك بأسمائها، جاهزة للتحكّم وللاستخدام في لوحاتك وأتمتتك."
+                en="Once saved, all your devices appear by name, ready to control and to use in your dashboards and automations." />
             </div>
           </div>
 
-          {/* one-click: opens HA's built-in MQTT setup directly */}
           <div className="ha-install">
             <div className="ha-install-txt">
-              <span className="ha-install-ic"><Bolt /></span>
+              <span className="ha-install-ic"><Plus /></span>
               <div>
-                <b><L ar="افتح إعداد MQTT بضغطة واحدة" en="Open MQTT setup in one click" /></b>
-                <L tag="p" ar="يفتح معالج إضافة MQTT داخل Home Assistant بتاعك مباشرةً — انسخ البيانات من التطبيق والصقها." en="Opens the Add-MQTT wizard right inside your Home Assistant — copy the settings from the app and paste them." />
+                <b><L ar="افتح صفحة الإضافة في Home Assistant" en="Open the add page in Home Assistant" /></b>
+                <L tag="p" ar="تفتح مباشرةً داخل Home Assistant الخاص بك — ثم الصق بيانات الربط من التطبيق."
+                  en="It opens straight inside your Home Assistant — then paste the link details from the app." />
               </div>
             </div>
             <a
@@ -171,76 +132,51 @@ export default function HomeAssistantPage() {
               target="_blank"
               rel="noreferrer"
             >
-              <L ar="افتح إعداد MQTT" en="Open MQTT setup" />
+              <L ar="افتح Home Assistant" en="Open Home Assistant" />
             </a>
             <span className="ha-install-alt">
-              <L ar="مش محتاج HACS ولا أي تثبيت." en="No HACS, nothing to install." />
+              <L ar="بيانات الربط خاصة بحسابك وتظهر داخل التطبيق فقط — لا تشاركها مع أحد."
+                en="Your link details belong to your account and only ever appear inside the app — never share them." />
             </span>
           </div>
+        </section>
 
-          {/* What each MQTT field means. Never print a real password here — it is
-              per-account and only ever shown inside the app. */}
-          <div className="ha-h" style={{ marginTop: '3rem' }}>
-            <L tag="h3" ar="البيانات اللي هتلصقها" en="The settings you’ll paste" />
-            <L tag="p" ar="كل البيانات دي تلاقيها في التطبيق: الملف الشخصي ← «ربط Home Assistant» ← «ربط بدون تثبيت»، مع زر نسخ ورمز QR." en="You’ll find all of these in the app: Profile → “Link Home Assistant” → “Connect — no install”, with a copy button and a QR code." />
-          </div>
-          <div className="ha-cfg">
-            <div className="ha-cfg-row">
-              <b><L ar="السيرفر (Broker)" en="Broker" /></b>
-              <span><code>smart.kushsmart.space</code></span>
-            </div>
-            <div className="ha-cfg-row">
-              <b><L ar="المنفذ (Port)" en="Port" /></b>
-              <span><code>1883</code></span>
-            </div>
-            <div className="ha-cfg-row">
-              <b><L ar="اسم المستخدم" en="Username" /></b>
-              <span><L ar="معرّف حسابك — يظهر في التطبيق." en="Your account id — shown in the app." /></span>
-            </div>
-            <div className="ha-cfg-row">
-              <b><L ar="كلمة المرور" en="Password" /></b>
-              <span><L ar="خاصة بحسابك وتظهر في التطبيق فقط. ما تشاركهاش مع حد." en="Tied to your account and shown only inside the app. Never share it." /></span>
-            </div>
-            <div className="ha-cfg-row">
-              <b><L ar="بادئة الاكتشاف (discovery prefix)" en="Discovery prefix" /></b>
-              <span>
-                <code>&lt;account-id&gt;/homeassistant</code>{' '}
-                <L ar="— مهمة: من غيرها مش هتظهر الأجهزة. تلاقيها جاهزة للنسخ في التطبيق." en="— important: without it the devices won’t appear. The app shows it ready to copy." />
-              </span>
-            </div>
-          </div>
-
-          {/* Advanced — the custom integration, for instant local / offline control */}
-          <div className="ha-h" style={{ marginTop: '3.5rem' }}>
-            <span className="eyebrow"><L ar="للمستخدم المتقدّم" en="Advanced" /></span>
-            <L tag="h2" ar="تكامل كوش سمارت" en="The KUSH SMART integration" />
-            <L tag="p" ar="يضيف تحكّمًا محليًا فوريًا يعمل حتى لو انقطع الإنترنت. يتطلّب تثبيت HACS مرة واحدة." en="Adds instant local control that keeps working even if the internet drops. Needs HACS installed once." />
+        {/* THE ADD-ON — local control */}
+        <section id="addon">
+          <div className="ha-h">
+            <span className="eyebrow"><L ar="للتحكّم دون إنترنت" en="For offline control" /></span>
+            <L tag="h2" ar="إضافة كوش سمارت" en="The KUSH SMART add-on" />
+            <L tag="p" ar="تثبّتها مرة واحدة، فتحصل على تحكّم فوري داخل المنزل يستمرّ حتى لو انقطع الإنترنت — ودون كتابة أي كلمة مرور."
+              en="Install it once for instant control at home that keeps working even if the internet drops — with no password to type." />
           </div>
           <div className="ha-steps">
             <div className="ha-step">
               <span className="ha-step-n">1</span>
-              <L tag="h3" ar="أضِف كوش سمارت" en="Add KUSH SMART" />
-              <L tag="p" ar="من داخل Home Assistant، أضِف تكامل «كوش سمارت» واختر «الربط عن طريق التطبيق»." en="In Home Assistant, add the “KUSH SMART” integration and choose “Link with the app”." />
+              <L tag="h3" ar="ثبّت الإضافة" en="Install the add-on" />
+              <L tag="p" ar="اضغط «ثبّت في Home Assistant» أدناه، ثم أعِد تشغيل Home Assistant عندما يُطلب منك."
+                en="Press “Install in Home Assistant” below, then restart Home Assistant when asked." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">2</span>
               <L tag="h3" ar="امسح الرمز" en="Scan the code" />
-              <L tag="p" ar="يظهر رمز QR وكود قصير. افتح التطبيق ← الملف الشخصي ← «ربط Home Assistant»، وامسح الرمز أو اكتب الكود." en="A QR and short code appear. Open the app → Profile → “Link Home Assistant”, then scan the QR or type the code." />
+              <L tag="p" ar="أضِف «كوش سمارت» واختر «الربط عن طريق التطبيق». يظهر رمز — امسحه من التطبيق: الملف الشخصي ← «ربط Home Assistant»."
+                en="Add “KUSH SMART” and choose “Link with the app”. A code appears — scan it from the app: Profile → “Link Home Assistant”." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">3</span>
-              <L tag="h3" ar="يربط تلقائيًا" en="Links itself" />
-              <L tag="p" ar="يتأكّد الربط تلقائيًا وتظهر كل أجهزتك جاهزة للتحكّم — بدون كتابة أي كلمة سر في Home Assistant." en="It confirms on its own and all your devices appear, ready to control — with no password typed into Home Assistant." />
+              <L tag="h3" ar="يكتمل الربط" en="It links itself" />
+              <L tag="p" ar="يتأكّد الربط تلقائيًا، وتظهر كل أجهزتك جاهزة للتحكّم."
+                en="The link confirms on its own, and all your devices appear, ready to control." />
             </div>
           </div>
 
-          {/* one-click install */}
           <div className="ha-install">
             <div className="ha-install-txt">
               <span className="ha-install-ic"><Bolt /></span>
               <div>
-                <b><L ar="تثبيت التكامل بضغطة واحدة" en="Install the integration in one click" /></b>
-                <L tag="p" ar="يفتح كوش سمارت مباشرةً داخل Home Assistant جاهزًا للتثبيت." en="Opens KUSH SMART right inside Home Assistant, ready to install." />
+                <b><L ar="ثبّت الإضافة بضغطة واحدة" en="Install the add-on in one click" /></b>
+                <L tag="p" ar="تفتح إضافة كوش سمارت داخل Home Assistant جاهزة للتثبيت."
+                  en="Opens the KUSH SMART add-on inside Home Assistant, ready to install." />
               </div>
             </div>
             <a
@@ -249,52 +185,17 @@ export default function HomeAssistantPage() {
               target="_blank"
               rel="noreferrer"
             >
-              <L ar="افتح في Home Assistant" en="Open in Home Assistant" />
+              <L ar="ثبّت في Home Assistant" en="Install in Home Assistant" />
             </a>
             <span className="ha-install-alt">
-              <L ar="بعد التثبيت، ابدأ الإعداد من هنا:" en="After installing, start the setup here:" />{' '}
-              <a
-                href="https://my.home-assistant.io/redirect/config_flow_start/?domain=atsmart"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <L ar="إضافة كوش سمارت" en="Add KUSH SMART" />
+              <L ar="بعد التثبيت:" en="After installing:" />{' '}
+              <a href="https://my.home-assistant.io/redirect/config_flow_start/?domain=atsmart" target="_blank" rel="noreferrer">
+                <L ar="أضِف كوش سمارت" en="Add KUSH SMART" />
               </a>
               {' · '}
-              <L ar="أو أضِفه يدويًا بنسخ هذا العنوان:" en="Or add it manually by copying this address:" />{' '}
-              <code>ARDUTECH0/ha-atsmart</code>
+              <L ar="تحتاج مساعدة؟" en="Need help?" />{' '}
+              <a href={`mailto:${SUPPORT_EMAIL}`}><L ar="راسل الدعم" en="Email support" /></a>
             </span>
-          </div>
-
-          {/* Third path — one command over SSH, for installs without HACS */}
-          <div className="ha-h" style={{ marginTop: '3rem' }}>
-            <span className="eyebrow"><L ar="بدون HACS" en="Without HACS" /></span>
-            <L tag="h3" ar="التثبيت بأمر واحد (SSH / Terminal)" en="Install with one command (SSH / Terminal)" />
-            <L tag="p" ar="افتح الترمنال بتاع Home Assistant (إضافة «Terminal & SSH») والصق الأمر ده. بينزّل التكامل ويحطّه في مكانه ويشيل أي نسخة قديمة." en="Open your Home Assistant terminal (the “Terminal & SSH” add-on) and paste this. It downloads the integration, puts it in place and removes any older copy." />
-          </div>
-          <CopyBox code={INSTALL_CMD} />
-          <div className="ha-cfg">
-            <div className="ha-cfg-row">
-              <b><L ar="بعد الأمر" en="After the command" /></b>
-              <span><L ar="أعِد تشغيل Home Assistant، وبعدين أضِف تكامل «كوش سمارت» واربطه من التطبيق." en="Restart Home Assistant, then add the “KUSH SMART” integration and link it from the app." /></span>
-            </div>
-            <div className="ha-cfg-row">
-              <b><L ar="مجلد الإعدادات" en="Config folder" /></b>
-              <span>
-                <L ar="الأمر بيستخدم" en="The command uses" /> <code>/config</code>{' '}
-                <L ar="— وده صحيح لـ Home Assistant OS و Supervised و Container. لو مثبّت Core داخل بيئة افتراضية، غيّرها لـ" en="— correct for Home Assistant OS, Supervised and Container. If you run Core in a virtualenv, change it to" />{' '}
-                <code>~/.homeassistant</code>
-              </span>
-            </div>
-            <div className="ha-cfg-row">
-              <b><L ar="تثبيت يدوي بالكامل" en="Fully manual" /></b>
-              <span>
-                <L ar="أو نزّل الريبو من" en="Or download the repository from" />{' '}
-                <a href="https://github.com/ARDUTECH0/ha-atsmart" target="_blank" rel="noreferrer">github.com/ARDUTECH0/ha-atsmart</a>{' '}
-                <L ar="وانسخ المجلد" en="and copy the folder" /> <code>custom_components/atsmart</code>{' '}
-                <L ar="جوّه مجلد الإعدادات." en="into your config folder." />
-              </span>
-            </div>
           </div>
         </section>
 

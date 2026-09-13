@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { asset, SUPPORT_EMAIL } from '@/lib/site';
 
-export const metadata = { title: 'Delete your account | KUSH SMART' };
+import { pageMeta } from '@/lib/seo';
+
+export const metadata = pageMeta({
+  title: 'Delete your account — حذف الحساب',
+  description: 'How to permanently delete your KUSH SMART account and data, from the app or by email.',
+  path: '/account-deletion/',
+});
 
 export default function AccountDeletionPage() {
   return (

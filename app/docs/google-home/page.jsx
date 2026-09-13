@@ -4,36 +4,39 @@ import { SlimFooter } from '@/components/SiteFooter';
 import GoogleHomeLogo from '@/components/GoogleHomeLogo';
 import L from '@/components/L';
 import { Hand, Bulb, Palette, Sensor, Door, Megaphone, Sync, Plus, Lock } from '@/components/Icons';
+import { pageMeta } from '@/lib/seo';
 
-export const metadata = {
-  title: 'KUSH SMART × Google Home',
+export const metadata = pageMeta({
+  title: 'التحكّم الصوتي مع Google Home — KUSH SMART × Google Home',
   description:
-    'Control your KUSH SMART devices with your voice through Google Home / Google Assistant — switches, lights, RGB and sensors, synced live with the app.',
-};
+    'تحكّم في أجهزة كوش سمارت بصوتك عبر Google Home ومساعد Google، مع مزامنة لحظية مع التطبيق. Control KUSH SMART by voice with Google Home.',
+  path: '/docs/google-home/',
+});
 
 const NAV = [
   { href: '/#features', label: 'المميزات', en: 'Features' },
   { href: '/#how', label: 'كيف يعمل', en: 'How it works' },
   { href: '/docs', label: 'الدليل', en: 'Guide', active: true },
+  { href: '/pricing', label: 'الأسعار', en: 'Pricing' },
   { href: '/downloads', label: 'التحميل', en: 'Download', btn: true },
 ];
 
 // [icon, ar, en] — only what the Google Home integration actually exposes today.
 const DEVICES = [
   [<Hand key="i" />, 'المفاتيح', 'Switches'],
-  [<Bulb key="i" />, 'الإضاءة والديمر', 'Lights & dimmers'],
-  [<Palette key="i" />, 'الإضاءة الملوّنة', 'RGB lights'],
+  [<Bulb key="i" />, 'الإضاءة والخفوت', 'Lights & dimmers'],
+  [<Palette key="i" />, 'الإضاءة الملوّنة', 'Colour lighting'],
   [<Sensor key="i" />, 'حسّاسات الحرارة', 'Temperature sensors'],
   [<Door key="i" />, 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
 ];
 
 // [icon, arTitle, arDesc, enTitle, enDesc]
 const BENEFITS = [
-  [<Megaphone key="i" />, 'تحكّم بصوتك', 'اطلب من جوجل تشغيل أو إطفاء أي جهاز، أو اسأله عن الحرارة — بدون فتح التطبيق.',
+  [<Megaphone key="i" />, 'تحكّم بصوتك', 'اطلب من Google تشغيل أو إطفاء أي جهاز، أو اسأله عن الحرارة — بدون فتح التطبيق.',
     'Control by voice', 'Ask Google to turn any device on or off, or ask for the temperature — no need to open the app.'],
   [<Sync key="i" />, 'تزامن لحظي', 'أي تغيير من التطبيق أو من المفتاح اليدوي يظهر في Google Home فورًا، والعكس صحيح.',
     'Instant sync', 'Any change from the app or a wall switch shows up in Google Home right away — and the other way around.'],
-  [<Plus key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Google Home من غير ما تعمل حاجة زيادة.',
+  [<Plus key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Google Home دون أي خطوة إضافية.',
     'Added automatically', 'Any new device you add in the app shows up in Google Home with nothing extra to do.'],
   [<Lock key="i" />, 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — الربط مبني على حسابك في التطبيق ولا شيء غيره.',
     'Full privacy', 'You only ever see your own devices — linking is tied to your own app account and nothing else.'],
@@ -59,8 +62,8 @@ export default function GoogleHomePage() {
           <h1 data-ar="">منزلك الذكي… بصوتك مع <span className="accent">Google Home</span></h1>
           <h1 data-en="">Your smart home, by voice with <span className="accent">Google Home</span></h1>
           <p data-ar="">
-            اربط كوش سمارت بحساب Google بتاعك، وتحكّم في أجهزتك بصوتك من أي مكان في البيت —
-            <b> ومتزامن لحظيًا مع التطبيق</b>.
+            اربط كوش سمارت بحسابك في Google، وتحكّم في أجهزتك بصوتك من أي مكان في المنزل —
+            <b> مع مزامنة لحظية مع التطبيق</b>.
           </p>
           <p data-en="">
             Link KUSH SMART to your Google Account and control your devices with your voice
@@ -78,7 +81,7 @@ export default function GoogleHomePage() {
           <div className="ha-h">
             <span className="eyebrow"><L ar="مدعوم حاليًا" en="Supported today" /></span>
             <L tag="h2" ar="تظهر تلقائيًا في Google Home" en="They appear automatically in Google Home" />
-            <L tag="p" ar="بمجرّد الربط، الأنواع دي تظهر فورًا بأسمائها وتتحدّث لحظيًا." en="Once linked, these appear right away with their real names and update live." />
+            <L tag="p" ar="بمجرّد الربط تظهر هذه الأجهزة فورًا بأسمائها، وتتحدّث حالتها لحظيًا." en="Once linked, these appear right away with their real names and update live." />
           </div>
           <div className="ha-dev">
             {DEVICES.map(([ic, ar, en]) => (
@@ -89,7 +92,7 @@ export default function GoogleHomePage() {
             ))}
           </div>
           <p className="ha-dual-note">
-            <L ar="الأقفال والستائر وعدّادات الطاقة متاحة حاليًا عن طريق التطبيق و Home Assistant، وجاري إضافتها لـ Google Home."
+            <L ar="الأقفال والستائر وعدّادات الطاقة متاحة حاليًا عن طريق التطبيق و Home Assistant، ويجري العمل على دعمها في Google Home."
               en="Locks, curtains and power meters are available today through the app and Home Assistant — Google Home support for them is on the way." />
           </p>
         </section>
@@ -99,13 +102,13 @@ export default function GoogleHomePage() {
           <div className="ha-h">
             <span className="eyebrow"><L ar="الربط" en="Linking" /></span>
             <L tag="h2" ar="في ٣ خطوات بسيطة" en="Three simple steps" />
-            <L tag="p" ar="من تطبيق Google Home مباشرةً — مفيش تنزيل ولا تثبيت إضافي." en="Straight from the Google Home app — nothing extra to download or install." />
+            <L tag="p" ar="من تطبيق Google Home مباشرةً — دون تنزيل أو تثبيت أي شيء إضافي." en="Straight from the Google Home app — nothing extra to download or install." />
           </div>
           <div className="ha-steps">
             <div className="ha-step">
               <span className="ha-step-n">1</span>
               <L tag="h3" ar="افتح تطبيق Google Home" en="Open the Google Home app" />
-              <L tag="p" ar="دوس على «+» (إضافة) ← «إعداد جهاز» ← «يعمل مع Google» (Works with Google)." en="Tap “+” (Add) → “Set up device” → “Works with Google”." />
+              <L tag="p" ar="اضغط على «+» (إضافة) ← «إعداد جهاز» ← «يعمل مع Google» (Works with Google)." en="Tap “+” (Add) → “Set up device” → “Works with Google”." />
             </div>
             <div className="ha-step">
               <span className="ha-step-n">2</span>

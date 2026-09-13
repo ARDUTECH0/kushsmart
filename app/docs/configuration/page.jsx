@@ -3,12 +3,18 @@ import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import DocsToc from '@/components/DocsToc';
 import L from '@/components/L';
+import { pageMeta } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Board setup (device profile) | KUSH SMART — كوش سمارت',
-  description:
-    'A full walkthrough of the KUSH SMART board setup page — ready templates, channels and types, GPIO pins, advanced settings and the setup button. Step by step for anyone.',
-};
+// Installer documentation. The app's unit-setup screen opens this URL from its
+// "?" button (kConfigHelpUrl in lib/pages/Configurationio.dart), so the path
+// must not move. It's deliberately technical, so it stays out of the public
+// guide, the footer and search results.
+export const metadata = pageMeta({
+  title: 'إعداد الوحدة للفنيين — Unit setup for installers',
+  description: 'شرح شاشة إعداد الوحدة للفنيين المعتمدين. The unit setup screen, for installers.',
+  path: '/docs/configuration/',
+  noindex: true,
+});
 
 const NAV = [
   { href: '/#features', label: 'المميزات', en: 'Features' },

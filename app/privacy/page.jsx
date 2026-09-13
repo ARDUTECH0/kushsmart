@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { asset, SUPPORT_EMAIL } from '@/lib/site';
 
-export const metadata = { title: 'Privacy Policy | KUSH SMART' };
+import { pageMeta } from '@/lib/seo';
+
+export const metadata = pageMeta({
+  title: 'Privacy Policy — سياسة الخصوصية',
+  description: 'What KUSH SMART collects, why, and your choices — including how to delete your account and data.',
+  path: '/privacy/',
+});
 
 export default function PrivacyPage() {
   return (

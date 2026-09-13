@@ -32,7 +32,7 @@ export function SiteFooter() {
           <div>
             <h4><L ar="الدليل" en="Guide" /></h4>
             <Link href="/docs"><L ar="البداية" en="Getting started" /></Link>
-            <Link href="/docs/configuration"><L ar="إعداد البوردة" en="Board setup" /></Link>
+            <Link href="/docs#automations"><L ar="الأتمتة" en="Automations" /></Link>
             <Link href="/docs/home-assistant">Home Assistant</Link>
             <Link href="/docs/google-home">Google Home</Link>
             <Link href="/docs/alexa">Alexa</Link>
@@ -50,6 +50,7 @@ export function SiteFooter() {
           <span className="foot-legal">
             <Link href="/privacy"><L ar="الخصوصية" en="Privacy" /></Link>
             <Link href="/account-deletion"><L ar="حذف الحساب" en="Account deletion" /></Link>
+            <Link href="/install/"><L ar="للفنيين" en="For installers" /></Link>
           </span>
         </div>
       </div>

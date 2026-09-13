@@ -2,12 +2,14 @@ import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import PricingClient from '@/components/PricingClient';
 import L from '@/components/L';
+import { pageMeta } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Pricing & licence | KUSH SMART — كوش سمارت',
+export const metadata = pageMeta({
+  title: 'الأسعار والترخيص — Pricing & licence',
   description:
-    'KUSH SMART licence — a one-time, lifetime activation for your device, with full control from the app and Home Assistant, wireless updates and support. Leave your details and we will get in touch.',
-};
+    'ترخيص كوش سمارت: تفعيل دائم لكل وحدة بدفعة واحدة، دون اشتراك، مع تحديثات مجانية ودعم فني. A one-time, lifetime licence per unit, with free updates and support.',
+  path: '/pricing/',
+});
 
 const NAV = [
   { href: '/#features', label: 'المميزات', en: 'Features' },
