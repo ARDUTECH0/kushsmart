@@ -158,6 +158,29 @@ export const Curtain = (p) => (
   </S>
 );
 
+export const Palette = (p) => (
+  <S {...p}>
+    <path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5H16a4.5 4.5 0 0 0 4.5-4.5c0-3.7-3.8-6.7-8.5-6.7Z" />
+    <circle cx="7.8" cy="11" r="1" />
+    <circle cx="10.5" cy="7.5" r="1" />
+    <circle cx="15" cy="8" r="1" />
+  </S>
+);
+
+export const Door = (p) => (
+  <S {...p}>
+    <path d="M6 20.5V4.5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v16" />
+    <path d="M3.5 20.5h17M14.5 12.5v.5" />
+  </S>
+);
+
+// Points "forward" in LTR; add className="flip" and the site CSS mirrors it in RTL.
+export const ArrowEnd = (p) => (
+  <S {...p}>
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </S>
+);
+
 // ── console glyphs (admin) ───────────────────────────────────────────────────
 export const Search = (p) => (
   <S {...p}>

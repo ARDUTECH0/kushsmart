@@ -3,6 +3,7 @@ import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import GoogleHomeLogo from '@/components/GoogleHomeLogo';
 import L from '@/components/L';
+import { Hand, Bulb, Palette, Sensor, Door, Megaphone, Sync, Plus, Lock } from '@/components/Icons';
 
 export const metadata = {
   title: 'KUSH SMART × Google Home',
@@ -19,22 +20,22 @@ const NAV = [
 
 // [icon, ar, en] — only what the Google Home integration actually exposes today.
 const DEVICES = [
-  ['🔌', 'المفاتيح', 'Switches'],
-  ['💡', 'الإضاءة والديمر', 'Lights & dimmers'],
-  ['🌈', 'الإضاءة الملوّنة', 'RGB lights'],
-  ['🌡️', 'حسّاسات الحرارة', 'Temperature sensors'],
-  ['🚪', 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
+  [<Hand key="i" />, 'المفاتيح', 'Switches'],
+  [<Bulb key="i" />, 'الإضاءة والديمر', 'Lights & dimmers'],
+  [<Palette key="i" />, 'الإضاءة الملوّنة', 'RGB lights'],
+  [<Sensor key="i" />, 'حسّاسات الحرارة', 'Temperature sensors'],
+  [<Door key="i" />, 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
 ];
 
 // [icon, arTitle, arDesc, enTitle, enDesc]
 const BENEFITS = [
-  ['🎙️', 'تحكّم بصوتك', 'اطلب من جوجل تشغيل أو إطفاء أي جهاز، أو اسأله عن الحرارة — بدون فتح التطبيق.',
+  [<Megaphone key="i" />, 'تحكّم بصوتك', 'اطلب من جوجل تشغيل أو إطفاء أي جهاز، أو اسأله عن الحرارة — بدون فتح التطبيق.',
     'Control by voice', 'Ask Google to turn any device on or off, or ask for the temperature — no need to open the app.'],
-  ['⚡', 'تزامن لحظي', 'أي تغيير من التطبيق أو من المفتاح اليدوي يظهر في Google Home فورًا، والعكس صحيح.',
+  [<Sync key="i" />, 'تزامن لحظي', 'أي تغيير من التطبيق أو من المفتاح اليدوي يظهر في Google Home فورًا، والعكس صحيح.',
     'Instant sync', 'Any change from the app or a wall switch shows up in Google Home right away — and the other way around.'],
-  ['✨', 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Google Home من غير ما تعمل حاجة زيادة.',
+  [<Plus key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه في التطبيق يظهر في Google Home من غير ما تعمل حاجة زيادة.',
     'Added automatically', 'Any new device you add in the app shows up in Google Home with nothing extra to do.'],
-  ['🔒', 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — الربط مبني على حسابك في التطبيق ولا شيء غيره.',
+  [<Lock key="i" />, 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — الربط مبني على حسابك في التطبيق ولا شيء غيره.',
     'Full privacy', 'You only ever see your own devices — linking is tied to your own app account and nothing else.'],
 ];
 

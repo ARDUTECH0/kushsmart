@@ -124,7 +124,7 @@ export default function DocsPage() {
                 <li>سيعثر التطبيق على الوحدة الجديدة — اخترها.</li>
                 <li>اختر <b>شبكة الواي فاي</b> (2.4 جيجا) وأدخل كلمة المرور.</li>
                 <li>اضغط <b>حفظ / اتصال</b> — وستُعيد الوحدة التشغيل وتتّصل.</li>
-                <li>خلال ثوانٍ ستظهر الوحدة وجميع مفاتيحها في قائمة أجهزتك. ✅</li>
+                <li>خلال ثوانٍ ستظهر الوحدة وجميع مفاتيحها في قائمة أجهزتك.</li>
               </ol>
             </div>
             <div className="card" data-en="">
@@ -134,7 +134,7 @@ export default function DocsPage() {
                 <li>The app finds the new unit — select it.</li>
                 <li>Pick your <b>Wi-Fi network</b> (2.4GHz) and enter the password.</li>
                 <li>Tap <b>Save / Connect</b> — the unit restarts and connects.</li>
-                <li>Within seconds the unit and all its switches appear in your device list. ✅</li>
+                <li>Within seconds the unit and all its switches appear in your device list.</li>
               </ol>
             </div>
             <div className="callout info">

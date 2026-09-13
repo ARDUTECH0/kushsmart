@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Check, Wallet, Alert } from './Icons';
 
 const BRIDGE = 'https://smart.kushsmart.space';
 
@@ -56,6 +57,14 @@ export default function PricingClient() {
 
   const hasPrice = pricing && pricing.enabled !== false && pricing.price != null;
 
+  const FEATS = [
+    t('تفعيل دائم للوحدة — دفعة واحدة', 'Lifetime activation — one payment'),
+    t('يشمل كل الوحدات: مفاتيح وإضاءة، ريموت IR، عدّاد طاقة، وقفل ذكي', 'Covers every unit: switches & lighting, IR remote, power meter and smart lock'),
+    t('تحكّم كامل من التطبيق ومن Home Assistant', 'Full control from the app and Home Assistant'),
+    t('تحديثات لاسلكية مجّانية', 'Free over-the-air updates'),
+    t('دعم فنّي', 'Technical support'),
+  ];
+
   return (
     <div className="wrap pr-wrap">
       {/* Price card */}
@@ -69,7 +78,7 @@ export default function PricingClient() {
               <b>{pricing.price}</b>
               <span>{pricing.currency || 'EGP'}</span>
             </div>
-            <p className="pr-per">{t('لكل جهاز · ترخيص دائم', 'Per device · lifetime licence')}</p>
+            <p className="pr-per">{t('لكل وحدة · ترخيص دائم · دون اشتراك', 'Per unit · lifetime licence · no subscription')}</p>
             {pricing.note ? <p className="pr-note">{pricing.note}</p> : null}
           </>
         ) : (
@@ -79,14 +88,10 @@ export default function PricingClient() {
           </>
         )}
         <ul className="pr-feats">
-          <li>✅ {t('تفعيل دائم للجهاز — دفعة واحدة', 'Lifetime activation — one payment')}</li>
-          <li>✅ {t('يشمل كل الوحدات: مفاتيح وإضاءة، ريموت IR، عدّاد طاقة، وقفل ذكي', 'Covers every unit: switches & lighting, IR remote, power meter and smart lock')}</li>
-          <li>✅ {t('تحكّم كامل من التطبيق ومن Home Assistant', 'Full control from the app and Home Assistant')}</li>
-          <li>✅ {t('تحديثات لاسلكية مجّانية', 'Free over-the-air updates')}</li>
-          <li>✅ {t('دعم فنّي', 'Technical support')}</li>
+          {FEATS.map((f) => <li key={f}><Check />{f}</li>)}
         </ul>
         <div className="pr-pay">
-          <span className="pr-pay-ic">💳</span>
+          <Wallet />
           <span>{t('يمكنك السداد عبر تطبيق بنكك من السودان', 'You can pay through your bank app from Sudan')}</span>
         </div>
       </div>
@@ -94,40 +99,40 @@ export default function PricingClient() {
       {/* Request form */}
       <div className="pr-form-box">
         {sent ? (
-          <div className="pr-done">
-            <span className="pr-done-ic">🎉</span>
-            <h3>{t('تم استلام طلبك!', 'Your request is in!')}</h3>
+          <div className="pr-done" role="status">
+            <span className="pr-done-ic"><Check /></span>
+            <h3>{t('تم استلام طلبك', 'Your request is in')}</h3>
             <p>{t('سيتواصل معك فريق كوش سمارت قريبًا لإتمام الترخيص. شكرًا لك.', 'The KUSH SMART team will reach out soon to complete your licence. Thank you.')}</p>
           </div>
         ) : (
-          <form className="pr-form" onSubmit={submit}>
+          <form className="pr-form" onSubmit={submit} noValidate>
             <h3>{t('اطلب الترخيص', 'Request a licence')}</h3>
             <p className="pr-form-sub">{t('اترك بياناتك وسنتواصل معك لإتمام الشراء والتفعيل.', 'Leave your details and we will get in touch to complete the purchase and activation.')}</p>
-            <label>{t('الاسم *', 'Name *')}</label>
-            <input value={form.name} onChange={set('name')} placeholder={t('اسمك الكامل', 'Your full name')} />
+            <label htmlFor="pr-name">{t('الاسم *', 'Name *')}</label>
+            <input id="pr-name" autoComplete="name" value={form.name} onChange={set('name')} placeholder={t('اسمك الكامل', 'Your full name')} />
             <div className="pr-row">
               <div>
-                <label>{t('البريد الإلكتروني', 'Email')}</label>
-                <input type="email" dir="ltr" value={form.email} onChange={set('email')} placeholder="you@example.com" />
+                <label htmlFor="pr-email">{t('البريد الإلكتروني', 'Email')}</label>
+                <input id="pr-email" type="email" dir="ltr" autoComplete="email" value={form.email} onChange={set('email')} placeholder="you@example.com" />
               </div>
               <div>
-                <label>{t('رقم الهاتف', 'Phone')}</label>
-                <input type="tel" dir="ltr" value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" />
+                <label htmlFor="pr-phone">{t('رقم الهاتف', 'Phone')}</label>
+                <input id="pr-phone" type="tel" dir="ltr" autoComplete="tel" value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" />
               </div>
             </div>
             <div className="pr-row">
               <div>
-                <label>{t('عدد الأجهزة', 'Number of devices')}</label>
-                <input type="number" min="1" value={form.qty} onChange={set('qty')} />
+                <label htmlFor="pr-qty">{t('عدد الوحدات', 'Number of units')}</label>
+                <input id="pr-qty" type="number" min="1" inputMode="numeric" value={form.qty} onChange={set('qty')} />
               </div>
               <div>
-                <label>{t('رقم الجهاز (اختياري)', 'Device serial (optional)')}</label>
-                <input dir="ltr" value={form.serial} onChange={set('serial')} placeholder="Serial" />
+                <label htmlFor="pr-serial">{t('سيريال الوحدة (اختياري)', 'Unit serial (optional)')}</label>
+                <input id="pr-serial" dir="ltr" value={form.serial} onChange={set('serial')} placeholder="A4CF12B9E301" />
               </div>
             </div>
-            <label>{t('رسالة (اختياري)', 'Message (optional)')}</label>
-            <textarea rows={3} value={form.message} onChange={set('message')} placeholder={t('أي تفاصيل تحبّ إضافتها…', 'Anything else you would like to add…')} />
-            {err ? <div className="pr-err">{err}</div> : null}
+            <label htmlFor="pr-msg">{t('رسالة (اختياري)', 'Message (optional)')}</label>
+            <textarea id="pr-msg" rows={3} value={form.message} onChange={set('message')} placeholder={t('أي تفاصيل تحبّ إضافتها…', 'Anything else you would like to add…')} />
+            {err ? <div className="pr-err" role="alert"><Alert /><span>{err}</span></div> : null}
             <button className="btn lg" type="submit" disabled={busy}>
               {busy ? t('جارٍ الإرسال…', 'Sending…') : t('إرسال الطلب', 'Send request')}
             </button>

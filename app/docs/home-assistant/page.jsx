@@ -4,6 +4,9 @@ import { SlimFooter } from '@/components/SiteFooter';
 import HaLogo from '@/components/HaLogo';
 import L from '@/components/L';
 import CopyBox from '@/components/CopyBox';
+import {
+  Hand, Bulb, Palette, Curtain, Sensor, Door, Lock, Bolt, Cloud, Signal, Sync,
+} from '@/components/Icons';
 
 export const metadata = {
   title: 'KUSH SMART × Home Assistant',
@@ -31,25 +34,25 @@ const NAV = [
 
 // [icon, ar, en]
 const DEVICES = [
-  ['🔌', 'المفاتيح', 'Switches'],
-  ['💡', 'الإضاءة والديمر', 'Lights & dimmers'],
-  ['🌈', 'الإضاءة الملوّنة', 'RGB lights'],
-  ['🪟', 'الستائر والشتر', 'Curtains & shutters'],
-  ['🌡️', 'الحرارة والرطوبة', 'Temperature & humidity'],
-  ['🚪', 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
-  ['🔒', 'الأقفال الذكية', 'Smart locks'],
-  ['⚡', 'عدّادات الطاقة', 'Power meters'],
+  [<Hand key="i" />, 'المفاتيح', 'Switches'],
+  [<Bulb key="i" />, 'الإضاءة والديمر', 'Lights & dimmers'],
+  [<Palette key="i" />, 'الإضاءة الملوّنة', 'RGB lights'],
+  [<Curtain key="i" />, 'الستائر والشتر', 'Curtains & shutters'],
+  [<Sensor key="i" />, 'الحرارة والرطوبة', 'Temperature & humidity'],
+  [<Door key="i" />, 'حسّاسات الأبواب والحركة', 'Door & motion sensors'],
+  [<Lock key="i" />, 'الأقفال الذكية', 'Smart locks'],
+  [<Bolt key="i" />, 'عدّادات الطاقة', 'Power meters'],
 ];
 
 // [icon, arTitle, arDesc, enTitle, enDesc]
 const BENEFITS = [
-  ['🌐', 'يعمل بدون إنترنت', 'داخل المنزل يتحكّم مباشرةً عبر شبكتك، حتى لو انقطع الإنترنت.',
+  [<Signal key="i" />, 'يعمل بدون إنترنت', 'داخل المنزل يتحكّم مباشرةً عبر شبكتك، حتى لو انقطع الإنترنت.',
     'Works offline', 'At home it controls straight over your network, even if the internet drops.'],
-  ['✨', 'إضافة تلقائية', 'أي جهاز جديد تضيفه يظهر في Home Assistant من تلقاء نفسه.',
+  [<Sync key="i" />, 'إضافة تلقائية', 'أي جهاز جديد تضيفه يظهر في Home Assistant من تلقاء نفسه.',
     'Added automatically', 'Any new device you add shows up in Home Assistant on its own.'],
-  ['🖐️', 'المفاتيح اليدوية تعمل', 'تظلّ مفاتيح الحائط تعمل كالمعتاد، والحالة تتحدّث فورًا.',
+  [<Hand key="i" />, 'المفاتيح اليدوية تعمل', 'تظلّ مفاتيح الحائط تعمل كالمعتاد، والحالة تتحدّث فورًا.',
     'Manual switches work', 'Your wall switches keep working as usual, and the state updates instantly.'],
-  ['🔒', 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — لا شيء من الحسابات الأخرى يظهر.',
+  [<Lock key="i" />, 'خصوصية كاملة', 'ترى أجهزتك أنت فقط — لا شيء من الحسابات الأخرى يظهر.',
     'Full privacy', 'You only ever see your own devices — nothing from other accounts appears.'],
 ];
 
@@ -91,22 +94,22 @@ export default function HomeAssistantPage() {
           </div>
           <div className="ha-dual">
             <div className="ha-dual-card">
-              <span className="ha-dual-ic">⚡</span>
+              <span className="ha-dual-ic"><Signal /></span>
               <L tag="h3" ar="سريع داخل المنزل" en="Fast at home" />
               <L tag="p" ar="عندما تكون في المنزل، يعمل التحكّم عبر شبكتك مباشرةً — استجابة فورية بلا انتظار."
                 en="At home, control runs straight over your network — instant, with no waiting." />
             </div>
             <div className="ha-dual-plus">+</div>
             <div className="ha-dual-card">
-              <span className="ha-dual-ic">☁️</span>
+              <span className="ha-dual-ic"><Cloud /></span>
               <L tag="h3" ar="متاح من أي مكان" en="Available anywhere" />
               <L tag="p" ar="وعندما تكون خارج المنزل، ينتقل تلقائيًا إلى الإنترنت لتتحكّم من أي مكان في العالم."
                 en="Away from home, it switches to the internet automatically so you can control from anywhere." />
             </div>
           </div>
           <p className="ha-dual-note">
-            <L ar="🔀 التبديل تلقائي وفوري — والحالة تتحدّث لحظيًا في الحالتين."
-              en="🔀 Switching is automatic and instant — and the state updates live either way." />
+            <L ar="التبديل تلقائي وفوري — والحالة تتحدّث لحظيًا في الحالتين."
+              en="Switching is automatic and instant — and the state updates live either way." />
           </p>
         </section>
 
@@ -156,7 +159,7 @@ export default function HomeAssistantPage() {
           {/* one-click: opens HA's built-in MQTT setup directly */}
           <div className="ha-install">
             <div className="ha-install-txt">
-              <span className="ha-install-ic">⚡</span>
+              <span className="ha-install-ic"><Bolt /></span>
               <div>
                 <b><L ar="افتح إعداد MQTT بضغطة واحدة" en="Open MQTT setup in one click" /></b>
                 <L tag="p" ar="يفتح معالج إضافة MQTT داخل Home Assistant بتاعك مباشرةً — انسخ البيانات من التطبيق والصقها." en="Opens the Add-MQTT wizard right inside your Home Assistant — copy the settings from the app and paste them." />
@@ -234,7 +237,7 @@ export default function HomeAssistantPage() {
           {/* one-click install */}
           <div className="ha-install">
             <div className="ha-install-txt">
-              <span className="ha-install-ic">⚡</span>
+              <span className="ha-install-ic"><Bolt /></span>
               <div>
                 <b><L ar="تثبيت التكامل بضغطة واحدة" en="Install the integration in one click" /></b>
                 <L tag="p" ar="يفتح كوش سمارت مباشرةً داخل Home Assistant جاهزًا للتثبيت." en="Opens KUSH SMART right inside Home Assistant, ready to install." />

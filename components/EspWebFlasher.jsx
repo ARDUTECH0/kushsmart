@@ -30,7 +30,7 @@ export default function EspWebFlasher({ manifest }) {
       {/* esp-web-install-button is a web component registered by the script above */}
       <esp-web-install-button manifest={manifest}>
         <button className="btn lg" slot="activate" disabled={!ready}>
-          ⚡ {ready ? 'ارفع السوفت وير الآن' : 'جارٍ التحميل…'}
+          {ready ? 'ارفع السوفت وير الآن' : 'جارٍ التحميل…'}
         </button>
         <span slot="unsupported">
           متصفّحك لا يدعم الرفع المباشر. افتح الموقع على <b>كمبيوتر</b> باستخدام{' '}

@@ -401,7 +401,7 @@ export default function ConfigDocsPage() {
                 <li>راجع شريط الملخّص بالأعلى — يبيّن عدد القنوات وأي تعارض في المنافذ.</li>
                 <li>تأكّد من عدم وجود تنبيه أحمر (منفذ مكرّر، أو RGB/ستارة ناقصة منافذ).</li>
                 <li>اضغط <b>إنشاء ملف التعريف</b> بالأسفل.</li>
-                <li>تُرسَل التعريفات إلى البوردة وتظهر القنوات في التطبيق فورًا. ✅</li>
+                <li>تُرسَل التعريفات إلى البوردة وتظهر القنوات في التطبيق فورًا.</li>
               </ol>
             </div>
             <div className="card" data-en="">
@@ -409,7 +409,7 @@ export default function ConfigDocsPage() {
                 <li>Review the summary bar at the top — it shows the channel count and any pin conflicts.</li>
                 <li>Make sure there's no red warning (a duplicate pin, or an RGB/curtain missing pins).</li>
                 <li>Tap <b>Create profile</b> at the bottom.</li>
-                <li>The definitions are sent to the board and the channels appear in the app instantly. ✅</li>
+                <li>The definitions are sent to the board and the channels appear in the app instantly.</li>
               </ol>
             </div>
             <div className="callout warn">
