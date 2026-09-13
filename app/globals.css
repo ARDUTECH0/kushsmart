@@ -328,6 +328,14 @@ html[dir="rtl"] .mk-back svg{transform:none}
 .mk-row b{display:block;font-size:12px;color:var(--ink);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mk-row small{display:block;font-size:10.5px;color:var(--muted)}
 .mk-cap{color:var(--muted);font-size:14px;text-align:center;margin:18px 0 0}
+/* A real screenshot inside the phone frame. The frame takes its height from
+   the capture (about 9:15) instead of the drawn phone's 9:19 — forcing 9:19
+   with object-fit:cover cropped both sides and cut the text off. The screen
+   starts just below the notch; the capture has no status bar of its own. */
+.mk-phone.shot{aspect-ratio:auto}
+.mk-phone.shot .mk-screen{height:auto}
+.mk-screen.mk-shot{padding:36px 0 0;background:#fff}
+.mk-shot img{display:block;width:100%;height:auto}
 @media(max-width:880px){
   .mk-showcase{grid-template-columns:repeat(2,minmax(0,1fr))}
   .mk-showcase figure:nth-child(3){display:none}

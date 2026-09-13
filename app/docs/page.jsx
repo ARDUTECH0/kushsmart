@@ -2,7 +2,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import { SlimFooter } from '@/components/SiteFooter';
 import DocsToc from '@/components/DocsToc';
-import AppMock from '@/components/AppMock';
+import AppShot from '@/components/AppShot';
 import L from '@/components/L';
 import { SUPPORT_EMAIL } from '@/lib/site';
 import { pageMeta } from '@/lib/seo';
@@ -194,7 +194,7 @@ export default function DocsPage() {
             <L tag="p" ar="اضغط على أي جهاز لتشغيله أو إطفائه، أو افتح صفحته للتحكّم الكامل."
               en="Tap any device to switch it on or off, or open its page for full control." />
             <div className="mk-doc">
-              <AppMock screen="home" ar="الشاشة الرئيسية في التطبيق" en="The app home screen" />
+              <AppShot name="app-home" alt="الشاشة الرئيسية في تطبيق كوش سمارت — the KUSH SMART app home screen" />
               <L tag="p" className="mk-cap" ar="الشاشة الرئيسية — كل أجهزتك وحالتها." en="The home screen — every device and its state." />
             </div>
             <table data-ar="">
@@ -251,7 +251,7 @@ export default function DocsPage() {
             <L tag="p" ar="اجمع عدّة أجهزة في مجموعة واحدة وتحكّم فيها جميعًا بضغطة (مثل «إضاءة الدور الأول»)."
               en="Put several devices in one group and run them all with a single tap (like “Ground-floor lights”)." />
             <div className="mk-doc">
-              <AppMock screen="groups" ar="صفحة المجموعات في التطبيق" en="The groups page in the app" />
+              <AppShot name="app-groups" alt="صفحة المجموعات في تطبيق كوش سمارت — the groups page in the KUSH SMART app" />
               <L tag="p" className="mk-cap" ar="المجموعات — عدّة أجهزة بضغطة واحدة." en="Groups — several devices with one tap." />
             </div>
             <Steps

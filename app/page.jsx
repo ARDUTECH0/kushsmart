@@ -4,7 +4,7 @@ import { SiteFooter } from '@/components/SiteFooter';
 import HaLogo from '@/components/HaLogo';
 import GoogleHomeLogo from '@/components/GoogleHomeLogo';
 import AlexaLogo from '@/components/AlexaLogo';
-import AppMock from '@/components/AppMock';
+import AppShot from '@/components/AppShot';
 import L from '@/components/L';
 import { SUPPORT_EMAIL } from '@/lib/site';
 import { SITE, pageMeta } from '@/lib/seo';
@@ -395,16 +395,17 @@ export default function HomePage() {
             <L tag="p" ar="كل أجهزتك في مكان واحد — منظّمة وسريعة وسهلة." en="All your devices in one place — organised, fast and easy." />
           </div>
           <div className="mk-showcase">
+            {/* Real captures from the app's demo mode — an invented home, no account data. */}
             <figure>
-              <AppMock screen="device" ar="صفحة الجهاز في تطبيق كوش سمارت" en="A device page in the KUSH SMART app" />
-              <figcaption className="mk-cap"><L ar="صفحة الجهاز — التحكّم والمؤقّت والأتمتة" en="Device page — control, timer and automation" /></figcaption>
+              <AppShot name="app-living" alt="غرف المنزل في تطبيق كوش سمارت — KUSH SMART app: switches, dimmer and temperature" />
+              <figcaption className="mk-cap"><L ar="كل غرفة — المفاتيح والخفوت والحرارة" en="Each room — switches, dimming and temperature" /></figcaption>
             </figure>
             <figure>
-              <AppMock screen="home" ar="الشاشة الرئيسية في تطبيق كوش سمارت" en="The KUSH SMART app home screen" />
-              <figcaption className="mk-cap"><L ar="الشاشة الرئيسية — كل أجهزتك وحالتها" en="Home screen — every device and its state" /></figcaption>
+              <AppShot name="app-home" alt="الشاشة الرئيسية في تطبيق كوش سمارت — KUSH SMART app home screen" />
+              <figcaption className="mk-cap"><L ar="الشاشة الرئيسية — القفل والطاقة والتكييف" en="Home screen — lock, power and AC" /></figcaption>
             </figure>
             <figure>
-              <AppMock screen="groups" ar="المجموعات في تطبيق كوش سمارت" en="Groups in the KUSH SMART app" />
+              <AppShot name="app-groups" alt="المجموعات في تطبيق كوش سمارت — KUSH SMART app groups" />
               <figcaption className="mk-cap"><L ar="المجموعات — عدّة أجهزة بضغطة واحدة" en="Groups — several devices with one tap" /></figcaption>
             </figure>
           </div>
