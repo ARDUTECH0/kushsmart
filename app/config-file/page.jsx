@@ -33,7 +33,7 @@ export default function ConfigFilePage() {
           <h1 data-ar="">اعرض <span className="accent">ملف إعداد البوردة</span></h1>
           <h1 data-en="">View a <span className="accent">board setup file</span></h1>
           <L tag="p" style={{ maxWidth: 620, margin: '0 auto' }}
-            ar="افتح الملف اللي حفظته من التطبيق (.kscfg) وشوف ترتيب القنوات والمنافذ والإعدادات — من غير ما تحتاج البوردة."
+            ar={<>افتح الملف اللي حفظته من التطبيق (<bdi dir="ltr">.kscfg</bdi>) وشوف ترتيب القنوات والمنافذ والإعدادات — من غير ما تحتاج البوردة.</>}
             en="Open the file you saved from the app (.kscfg) and see its channels, pins and settings — no board needed." />
         </div>
       </header>

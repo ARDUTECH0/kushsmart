@@ -105,7 +105,7 @@ export default function FlashPage() {
 
           <div className="callout tip">
             <L tag="div"
-              ar={<>بعد الرفع، تصل التحديثات القادمة إلى الجهاز لاسلكيًا من داخل التطبيق — لا تحتاج إلى الرفع من الموقع مرة أخرى. ولضبط قنوات البوردة راجع <Link href="/docs/configuration">دليل إعداد البوردة</Link>، ولو عندك ملف إعداد محفوظ من التطبيق (.kscfg) تقدر تشوف ترتيبه من <Link href="/config-file">عارض ملف الإعداد</Link>.</>}
+              ar={<>بعد الرفع، تصل التحديثات القادمة إلى الجهاز لاسلكيًا من داخل التطبيق — لا تحتاج إلى الرفع من الموقع مرة أخرى. ولضبط قنوات البوردة راجع <Link href="/docs/configuration">دليل إعداد البوردة</Link>، ولو عندك ملف إعداد محفوظ من التطبيق (<bdi dir="ltr">.kscfg</bdi>) تقدر تشوف ترتيبه من <Link href="/config-file">عارض ملف الإعداد</Link>.</>}
               en={<>After flashing, future updates reach the device wirelessly from the app — no need to flash from the website again. To set up the board's channels, see the <Link href="/docs/configuration">board setup guide</Link>; to see the layout in a setup file saved from the app (.kscfg), use the <Link href="/config-file">setup file viewer</Link>.</>} />
           </div>
         </div>

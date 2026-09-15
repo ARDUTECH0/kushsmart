@@ -82,7 +82,9 @@ export default function ConfigFileViewer() {
         <span className={s.dropIc}><Upload /></span>
         <b>{st.status === 'busy' ? t('جارٍ فتح الملف…', 'Opening the file…') : t('اختر ملف الإعداد أو اسحبه هنا', 'Choose a setup file or drop it here')}</b>
         <span className={s.dropSub}>
-          {st.name ? <bdi dir="ltr">{st.name}</bdi> : t('ملف بامتداد .kscfg محفوظ من التطبيق', 'A .kscfg file saved from the app')}
+          {st.name ? <bdi dir="ltr">{st.name}</bdi> : lang === 'en'
+            ? <>A <bdi dir="ltr">.kscfg</bdi> file saved from the app</>
+            : <>ملف بامتداد <bdi dir="ltr">.kscfg</bdi> محفوظ من التطبيق</>}
         </span>
       </label>
 
