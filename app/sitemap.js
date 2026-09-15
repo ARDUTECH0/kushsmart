@@ -12,6 +12,7 @@ const PAGES = [
   ['/flash/', 0.7, 'weekly'],
   ['/pricing/', 0.9, 'monthly'],
   ['/docs/', 0.8, 'monthly'],
+  ['/company/', 0.6, 'yearly'],
   ['/docs/home-assistant/', 0.6, 'monthly'],
   ['/docs/google-home/', 0.6, 'monthly'],
   ['/docs/alexa/', 0.6, 'monthly'],

@@ -3,6 +3,9 @@ import { asset, SUPPORT_EMAIL } from '@/lib/site';
 import { Mail } from './Icons';
 import L from './L';
 
+// The footer's column links are blocks; a link inside running text stays inline.
+const INLINE = { display: 'inline', padding: 0, color: '#9CC3E6', fontWeight: 700 };
+
 /** The site footer: product, guide and support links, plus the legal pages. */
 export function SiteFooter() {
   return (
@@ -16,8 +19,8 @@ export function SiteFooter() {
             </div>
             <p>
               <L
-                ar="وحدات منزل ذكي تُركَّب خلف مفاتيحك الحالية، مع تطبيق تتحكّم منه في منزلك من أي مكان. من تصنيع ATGENX."
-                en="Smart home units that fit behind the switches you already have, with an app that runs your home from anywhere. Made by ATGENX."
+                ar={<>وحدات منزل ذكي تُركَّب خلف مفاتيحك الحالية، مع تطبيق تتحكّم منه في منزلك من أي مكان. من تصنيع <Link href="/company" style={INLINE}>ATGENX</Link>.</>}
+                en={<>Smart home units that fit behind the switches you already have, with an app that runs your home from anywhere. Made by <Link href="/company" style={INLINE}>ATGENX</Link>.</>}
               />
             </p>
             <a className="foot-mail" href={`mailto:${SUPPORT_EMAIL}`}><Mail />{SUPPORT_EMAIL}</a>
@@ -46,7 +49,8 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="foot-bottom">
-          <L ar="© 2026 كوش سمارت — من تصنيع وتشغيل ATGENX" en="© 2026 KUSH SMART — made and operated by ATGENX" />
+          <L ar={<>© 2026 كوش سمارت — من تصنيع وتشغيل <Link href="/company">ATGENX</Link></>}
+            en={<>© 2026 KUSH SMART — made and operated by <Link href="/company">ATGENX</Link></>} />
           <span className="foot-legal">
             <Link href="/privacy"><L ar="الخصوصية" en="Privacy" /></Link>
             <Link href="/account-deletion"><L ar="حذف الحساب" en="Account deletion" /></Link>
