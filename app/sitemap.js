@@ -9,6 +9,7 @@ export const dynamic = 'force-static';
 const PAGES = [
   ['/', 1.0, 'weekly'],
   ['/downloads/', 0.9, 'weekly'],
+  ['/flash/', 0.7, 'weekly'],
   ['/pricing/', 0.9, 'monthly'],
   ['/docs/', 0.8, 'monthly'],
   ['/docs/home-assistant/', 0.6, 'monthly'],

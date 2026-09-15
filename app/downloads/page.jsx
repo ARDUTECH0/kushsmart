@@ -5,6 +5,7 @@ import { asset } from '@/lib/site';
 import { pageMeta } from '@/lib/seo';
 import AppDownload from '@/components/AppDownload';
 import L from '@/components/L';
+import { Upload, ArrowEnd } from '@/components/Icons';
 
 export const metadata = pageMeta({
   title: 'تحميل التطبيق — Download the KUSH SMART app',
@@ -32,9 +33,8 @@ const APP = {
   appstore: '#',
 };
 
-// The board flasher and firmware list used to live here too. They're tools for
-// the technician who fits a unit, not for the person downloading the app, so
-// they moved to /install/.
+// The app download. Flashing a board has its own page (/flash/), reached from
+// the button here.
 export default function DownloadsPage() {
   return (
     <>
@@ -49,6 +49,11 @@ export default function DownloadsPage() {
             <L tag="p" ar="تحكّم في منزلك من هاتفك. التطبيق مجاني — سجّل ببريدك الإلكتروني وابدأ خلال دقائق."
               en="Control your home from your phone. The app is free — sign up with your email and start in minutes." />
             <AppDownload fallback={APP} />
+            <div className="meta-note" style={{ marginTop: 14 }}>
+              <Link href="/flash" style={{ color: '#9CC3E6', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                <Upload /><L ar="عندك بوردة؟ ارفع السوفت وير عليها" en="Have a board? Flash it" />
+              </Link>
+            </div>
           </div>
           <div className="dlhero-art">
             <div className="dl-glass"><img src={asset('/assets/icon.png')} alt="" width="132" height="132" /></div>
@@ -66,23 +71,26 @@ export default function DownloadsPage() {
             <ol className="steps" data-ar="">
               <li>ثبّت التطبيق وافتحه، ثم أنشئ حسابك ببريدك الإلكتروني.</li>
               <li>اضغط <b>إضافة جهاز</b> واتبع الخطوات لتوصيل الوحدة بشبكة الواي فاي في منزلك.</li>
-              <li>تظهر أجهزتك تلقائيًا — وتحكّم فيها من أي مكان.</li>
+              <li>تظهر أجهزتك تلقائيًا — وتحكّم فيها من أي مكان. يشرح <Link href="/docs">الدليل</Link> كل خطوة.</li>
             </ol>
             <ol className="steps" data-en="">
               <li>Install the app, open it, and create your account with your email.</li>
               <li>Tap <b>Add device</b> and follow the steps to connect the unit to your home Wi-Fi.</li>
-              <li>Your devices appear on their own — control them from anywhere.</li>
+              <li>Your devices appear on their own — control them from anywhere. The <Link href="/docs">guide</Link> covers every step.</li>
             </ol>
           </div>
-          <div className="callout info">
-            <L tag="div"
-              ar={<>تحتاج مساعدة في أي خطوة؟ يشرح <Link href="/docs">الدليل</Link> كل شيء بالتفصيل.</>}
-              en={<>Need help with a step? The <Link href="/docs">guide</Link> covers everything in detail.</>} />
-          </div>
-          <div className="callout tip">
-            <L tag="div"
-              ar="تصل تحديثات أجهزتك لاسلكيًا من داخل التطبيق — ولا تحتاج إلى أي شيء آخر."
-              en="Updates for your devices arrive wirelessly from inside the app — there's nothing else to do." />
+
+          {/* The way to the flasher. */}
+          <div className="cta-band">
+            <div>
+              <b data-ar="">رفع السوفت وير على البوردة</b>
+              <b data-en="">Flash a board</b>{' '}
+              <span data-ar="">— وصّل البوردة بالكمبيوتر وارفع أحدث نسخة من المتصفح بضغطة واحدة.</span>
+              <span data-en="">— connect the board to a computer and flash the latest version from your browser in one click.</span>
+            </div>
+            <Link className="btn" href="/flash">
+              <Upload /><L ar="اذهب لصفحة الرفع" en="Go to flashing" /><ArrowEnd className="flip" />
+            </Link>
           </div>
         </div>
       </section>

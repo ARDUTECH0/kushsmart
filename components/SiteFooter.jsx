@@ -50,7 +50,7 @@ export function SiteFooter() {
           <span className="foot-legal">
             <Link href="/privacy"><L ar="الخصوصية" en="Privacy" /></Link>
             <Link href="/account-deletion"><L ar="حذف الحساب" en="Account deletion" /></Link>
-            <Link href="/install/"><L ar="للفنيين" en="For installers" /></Link>
+            <Link href="/flash"><L ar="رفع السوفت وير" en="Flash a board" /></Link>
           </span>
         </div>
       </div>

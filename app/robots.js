@@ -9,9 +9,9 @@ export default function robots() {
       {
         userAgent: '*',
         allow: '/',
-        // The operator console, the customer panel and the technician tools are
-        // not pages anyone should land on from a search.
-        disallow: ['/admin/', '/panel/', '/install/'],
+        // The operator console and the customer panel are not pages anyone
+        // should land on from a search.
+        disallow: ['/admin/', '/panel/'],
       },
     ],
     sitemap: `${SITE}/sitemap.xml`,
