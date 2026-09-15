@@ -380,7 +380,7 @@ textarea.kx-input{resize:vertical;min-block-size:120px;line-height:1.65}
 /* ── fleet table ───────────────────────────────────────────────────────────── */
 .kx-table{background:var(--plate);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
 .kx-fleet .kx-thead,.kx-unit{display:grid;align-items:center;column-gap:16px;padding:0 18px;
-  grid-template-columns:minmax(210px,2.2fr) minmax(110px,1fr) minmax(160px,1.6fr) 124px 92px 70px minmax(150px,1.2fr)}
+  grid-template-columns:minmax(210px,2.2fr) minmax(110px,1fr) minmax(160px,1.6fr) 168px 92px 104px minmax(150px,1.2fr)}
 .kx-thead{min-block-size:38px;background:var(--plate-2);border-bottom:1px solid var(--line);
   font-size:12px;font-weight:700;color:var(--muted)}
 .kx-unit{position:relative;inline-size:100%;min-block-size:62px;border:0;border-bottom:1px solid var(--line-2);
@@ -404,6 +404,25 @@ textarea.kx-input{resize:vertical;min-block-size:120px;line-height:1.65}
 .kx-stack>small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kx-status{display:flex;align-items:center;gap:7px}
 .c-fw{font-size:12.5px;color:var(--text)}
+
+/* status pills: what a unit is doing, readable at a glance */
+.kx-pill{display:inline-flex;align-items:center;gap:7px;inline-size:max-content;max-inline-size:100%;
+  padding:3px 10px 3px 9px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.kx-stack>b.kx-pill{font-size:12.5px;margin-block-end:3px}
+.kx-pill.online{background:var(--live-soft);color:var(--live)}
+.kx-pill.offline{background:var(--plate-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line-2)}
+.kx-pill.updating,.kx-pill.rebooting{background:var(--amber-soft);color:var(--amber)}
+.kx-pill.failed{background:var(--fault-soft);color:var(--fault)}
+@media (prefers-reduced-motion:no-preference){
+  .kx-pill.updating .kx-lamp,.kx-pill.rebooting .kx-lamp{animation:kx-blink 1.2s ease-in-out infinite}
+}
+/* a unit mid-update: amber rail, and the download filling along the row's foot */
+.kx-unit.upd::before{background:var(--amber-lamp)}
+.kx-unit.upd .kx-unit-ic{background:var(--amber-soft);border-color:#EED7AE;color:var(--amber)}
+.kx-unit-prog{position:absolute;inset-inline-start:0;bottom:0;block-size:3px;border-start-end-radius:3px;
+  background:linear-gradient(90deg,var(--amber-lamp),var(--brand-hi));transition:inline-size .5s ease;pointer-events:none}
+.kx-stack>small.kx-upd-tag{color:var(--brand);font-weight:700}
+.kx-bus-fig.upd b{color:var(--amber)}
 .c-lic{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .kx-sig{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
 .kx-bars{display:inline-flex;align-items:flex-end;gap:2px;block-size:14px}

@@ -317,6 +317,16 @@ const STR = {
   busOnline: ['متصلة', 'online'],
   fLicensed: ['مرخّصة', 'Licensed'],
   onlineOnly: ['المتصلة فقط', 'Online only'],
+  // firmware updates, as the units report them
+  updating: ['جارٍ التحديث {0}٪', 'Updating {0}%'],
+  updRebooting: ['يعيد التشغيل بالنسخة الجديدة', 'Restarting on the new version'],
+  updFailed: ['فشل التحديث', 'Update failed'],
+  updAvail: ['تحديث متاح {0}', 'Update {0} available'],
+  kUpdating: ['يتحدّث الآن', 'Updating now'],
+  fwUnsigned: ['الملف غير موقَّع، ولن تقبله أي بوردة. وقّعه أولًا بالأمر: python tools/sign_firmware.py --board esp32 --bin <الملف> ثم ارفع الملف الناتج (.signed).',
+               'This file isn’t signed, so no board will accept it. Sign it first: python tools/sign_firmware.py --board esp32 --bin <file>, then upload the .signed file.'],
+  fwBadSig: ['توقيع الملف لا يطابق مفتاح الأجهزة، ولن تقبله أي بوردة.',
+             'The file’s signature doesn’t match the fleet’s key — no board will accept it.'],
   colUnit: ['الوحدة', 'Unit'],
   colType: ['النوع', 'Type'],
   ch: ['قناة', 'ch'],
@@ -341,7 +351,7 @@ const STR = {
   publishing: ['جارٍ النشر…', 'Publishing…'],
   copyLink: ['نسخ الرابط', 'Copy link'],
   boardsT: ['سوفت وير البوردات', 'Board firmware'],
-  boardsP: ['ضع كل ملف في خانته، واكتب رقم النسخة، ثم انشر. بعد ذلك أبلغ أصحاب البوردة أو حدّث الأجهزة المتصلة الآن.',
+  boardsP: ['ضع كل ملف في خانته، واكتب رقم النسخة، ثم انشر. يجب أن يكون ملف التطبيق موقَّعًا (.signed). بعد ذلك أبلغ أصحاب البوردة أو حدّث الأجهزة المتصلة الآن.',
             'Put each file in its slot, set the version, and publish. Then tell the owners, or update the units online now.'],
   uploaded: ['تم الرفع', 'Uploaded'],
   chooseFile: ['اختر ملفًا', 'Choose file'],
@@ -508,6 +518,7 @@ export default function AdminConsole() {
   const [sharesBySerial, setSharesBySerial] = useState({}); // serial -> [{ email, uid, createdAt }]
   const [liveState, setLiveState] = useState({});  // serial -> telemetry (MQTT)
   const [liveStatus, setLiveStatus] = useState({}); // serial -> online (MQTT)
+  const [ota, setOta] = useState({});               // serial -> { pct, at } from the unit's OTA events
   const [q, setQ] = useState('');
   const [view, setView] = useState('all'); // all | licensed | pending | unlicensed
   const [onlineOnly, setOnlineOnly] = useState(false); // independent of the licence view
@@ -892,7 +903,8 @@ export default function AdminConsole() {
       mqttRef.current = c;
       c.on('connect', () => {
         setMqttState('on');
-        ['+/+/state', '+/state', '+/+/status', '+/status'].forEach((t) => c.subscribe(t));
+        // event carries a unit's OTA progress ({"d":serial,"ot":pct}; -1 = failed).
+        ['+/+/state', '+/state', '+/+/status', '+/status', '+/+/event', '+/event'].forEach((t) => c.subscribe(t));
       });
       c.on('error', () => setMqttState('error'));
       c.on('close', () => setMqttState((s) => (s === 'on' ? 'off' : s)));
@@ -905,6 +917,12 @@ export default function AdminConsole() {
         // gets reflashed ahead of the others.
         const serial = j.device || j.d || j.serial || j.sr || topic.split('/').slice(-2, -1)[0];
         if (!serial) return;
+        if (topic.endsWith('/event')) {
+          // Only the OTA progress matters here; sensor alerts go to the owner's phone.
+          const pct = j.ot ?? j.ota;
+          if (typeof pct === 'number') setOta((m) => ({ ...m, [serial]: { pct, at: Date.now() } }));
+          return;
+        }
         if (topic.endsWith('/status')) {
           const status = j.status ?? j.s;
           setLiveStatus((m) => ({ ...m, [serial]: status === 'online' }));
@@ -992,6 +1010,8 @@ export default function AdminConsole() {
       const j = await r.json().catch(() => ({}));
       if (j.ok) { flash(`تم رفع «${file.name}»`); await loadFwIndex(); }
       else if (j.error === 'forbidden') flash('غير مصرّح — البريد الإلكتروني ليس في قائمة مسؤولي الخادم');
+      else if (j.error === 'unsigned') flash(t('fwUnsigned'));
+      else if (j.error === 'bad_signature') flash(t('fwBadSig'));
       else flash('تعذّر الرفع: ' + (j.error || r.status));
     } catch (e) { flash('فشل الرفع: ' + (e?.message || e)); }
     setFwBusy('');
@@ -1727,6 +1747,34 @@ export default function AdminConsole() {
 
   const ownerLine = (d) => [d.ownerName ? d.ownerEmail : '', d.country].filter(Boolean).join(' · ');
 
+  // What a unit's firmware update is doing right now, from its own OTA events.
+  // Progress arrives every 5%; a unit that goes quiet mid-download for 90s is
+  // no longer shown as updating, and a failure stays visible for ten minutes.
+  const otaOf = (serial) => {
+    const o = ota[serial];
+    if (!o) return null;
+    const age = Date.now() - o.at;
+    if (o.pct < 0) return age < 10 * 60e3 ? { kind: 'failed' } : null;
+    if (o.pct >= 100) return age < 3 * 60e3 ? { kind: 'rebooting' } : null;
+    return age < 90e3 ? { kind: 'updating', pct: o.pct } : null;
+  };
+  // The published version for this unit's board, when it's newer than what it runs.
+  const vParts = (v) => String(v || '').split('.').map((x) => parseInt(x, 10) || 0);
+  const isNewer = (a, b) => {
+    const x = vParts(a), y = vParts(b);
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+    }
+    return false;
+  };
+  const updateFor = (d) => {
+    const fw = d.live?.fw;
+    if (!fw) return null;
+    const bd = FW_BOARDS.find((b) => b.match(d));
+    const pub = bd && fwIndex[bd.key];
+    return pub && pub.complete && pub.version && pub.version !== '—' && isNewer(pub.version, fw) ? pub.version : null;
+  };
+
   // ── Fleet ────────────────────────────────────────────────────────────────────
   const renderFleet = () => {
     // The bus bar: the fleet split by licence state (a partition — every unit is
@@ -1739,6 +1787,7 @@ export default function AdminConsole() {
     ].map((s) => ({ ...s, n: s.list.length, on: s.list.filter((d) => d.online).length }));
     const pick = (k) => setView((v) => (v === k ? 'all' : k));
     const narrowed = view !== 'all' || onlineOnly || q.trim();
+    const updatingNow = devices.filter((d) => { const u = otaOf(d.serial); return u && u.kind !== 'failed'; }).length;
 
     return (<>
       <section className="kx-bus" aria-label={t('busT')}>
@@ -1750,6 +1799,12 @@ export default function AdminConsole() {
             <i className={`kx-lamp ${stats.online ? 'on' : ''}`} />
             <b>{stats.online}</b><span>{t('kOnline')}</span>
           </div>
+          {updatingNow > 0 && (
+            <div className="kx-bus-fig upd">
+              <i className="kx-lamp amber" />
+              <b>{updatingNow}</b><span>{t('kUpdating')}</span>
+            </div>
+          )}
           <span className="kx-bus-feed"><i className={`kx-lamp ${mqttState}`} />{conn}</span>
         </div>
 
@@ -1812,9 +1867,12 @@ export default function AdminConsole() {
         {filtered.map((d) => {
           const ty = TYPE[d.type] || TYPE.relay;
           const who = d.ownerName || d.ownerEmail;
+          const up = otaOf(d.serial);
+          const avail = updateFor(d);
+          const busy = up && up.kind !== 'failed';
           return (
             <button key={d.serial} type="button"
-              className={`kx-unit ${d.online ? 'on' : ''} ${sel === d.serial ? 'sel' : ''}`}
+              className={`kx-unit ${d.online ? 'on' : ''} ${busy ? 'upd' : ''} ${sel === d.serial ? 'sel' : ''}`}
               onClick={() => setSel(d.serial)}>
               <span className="c-unit">
                 <span className="kx-unit-ic"><ty.Ic /></span>
@@ -1835,10 +1893,18 @@ export default function AdminConsole() {
                 <small>{ownerLine(d) || ' '}</small>
               </span>
               <span className="c-run kx-stack">
-                <b className="kx-w kx-status">
-                  <i className={`kx-lamp ${d.online ? 'on' : ''}`} />
-                  {d.online ? t('online') : t('offline')}
-                </b>
+                {up ? (
+                  <b className={`kx-pill ${up.kind}`} role="status">
+                    <i className={`kx-lamp ${up.kind === 'failed' ? 'error' : 'amber'}`} />
+                    {up.kind === 'updating' ? t('updating', up.pct)
+                      : up.kind === 'rebooting' ? t('updRebooting') : t('updFailed')}
+                  </b>
+                ) : (
+                  <b className={`kx-pill ${d.online ? 'online' : 'offline'}`}>
+                    <i className={`kx-lamp ${d.online ? 'on' : ''}`} />
+                    {d.online ? t('online') : t('offline')}
+                  </b>
+                )}
                 {/* Up: how long it has been working. Down: how long it's been gone. */}
                 <small>
                   {d.online
@@ -1847,7 +1913,10 @@ export default function AdminConsole() {
                 </small>
               </span>
               <span className="c-sig"><SignalBars rssi={d.online ? d.live?.rssi : null} /></span>
-              <span className="c-fw mono">{d.live?.fw || '—'}</span>
+              <span className="c-fw kx-stack">
+                <b className="kx-w mono">{d.live?.fw || '—'}</b>
+                {avail && !busy && <small className="kx-upd-tag">{t('updAvail', avail)}</small>}
+              </span>
               <span className="c-lic">
                 {unitTag(d)}
                 {d.sharedWith.length > 0 && (
@@ -1856,6 +1925,9 @@ export default function AdminConsole() {
                   </span>
                 )}
               </span>
+              {up?.kind === 'updating' && (
+                <span className="kx-unit-prog" aria-hidden="true" style={{ inlineSize: `${Math.max(3, up.pct)}%` }} />
+              )}
             </button>
           );
         })}
