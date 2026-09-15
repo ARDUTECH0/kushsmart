@@ -4,6 +4,7 @@ import { SlimFooter } from '@/components/SiteFooter';
 import { pageMeta } from '@/lib/seo';
 import FirmwareVersions from '@/components/FirmwareVersions';
 import WebFlasher from '@/components/WebFlasher';
+import FlashNextStep from '@/components/FlashNextStep';
 import L from '@/components/L';
 import { ArrowEnd } from '@/components/Icons';
 
@@ -108,6 +109,19 @@ export default function FlashPage() {
               ar={<>بعد الرفع، تصل التحديثات القادمة إلى الجهاز لاسلكيًا من داخل التطبيق — لا تحتاج إلى الرفع من الموقع مرة أخرى. ولضبط قنوات البوردة راجع <Link href="/docs/configuration">دليل إعداد البوردة</Link>، ولو عندك ملف إعداد محفوظ من التطبيق (<bdi dir="ltr">.kscfg</bdi>) تقدر تشوف ترتيبه من <Link href="/config-file">عارض ملف الإعداد</Link>.</>}
               en={<>After flashing, future updates reach the device wirelessly from the app — no need to flash from the website again. To set up the board's channels, see the <Link href="/docs/configuration">board setup guide</Link>; to see the layout in a setup file saved from the app (.kscfg), use the <Link href="/config-file">setup file viewer</Link>.</>} />
           </div>
+        </div>
+      </section>
+
+      {/* AFTER FLASHING — a saved setup file, or a new setup in the app */}
+      <section className="section" id="setup" style={{ paddingTop: 0 }}>
+        <div className="wrap" style={{ maxWidth: '900px' }}>
+          <div className="h-center" style={{ marginBottom: '24px' }}>
+            <span className="eyebrow"><L ar="بعد الرفع" en="After flashing" /></span>
+            <L tag="h2" ar="جهّز البوردة" en="Set up the board" />
+            <L tag="p" ar="عايز تدّي البوردة ملف إعداد محفوظ، ولا تعمل لها إعداد جديد؟"
+              en="Give the board a saved setup file, or create a new setup for it?" />
+          </div>
+          <FlashNextStep />
         </div>
       </section>
 

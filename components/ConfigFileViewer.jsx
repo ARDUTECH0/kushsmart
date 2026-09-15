@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Upload, Alert } from './Icons';
+import SendToBoard from './SendToBoard';
 import s from './ConfigFileViewer.module.css';
 
 const BRIDGE = 'https://smart.kushsmart.space';
@@ -97,7 +98,12 @@ export default function ConfigFileViewer() {
         <div className={s.err} role="alert"><Alert /><span>{tp(ERRORS[st.error])}</span></div>
       )}
 
-      {st.status === 'done' && <Layout layout={st.layout} t={t} tp={tp} lang={lang} />}
+      {st.status === 'done' && (
+        <>
+          <Layout layout={st.layout} t={t} tp={tp} lang={lang} />
+          <SendToBoard layout={st.layout} t={t} />
+        </>
+      )}
     </div>
   );
 }
