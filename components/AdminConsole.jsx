@@ -257,6 +257,10 @@ const STR = {
   licensed: ['مرخّص', 'Licensed'],
   unlicensed: ['غير مرخّص', 'Not licensed'],
   licRequested: ['طلب ترخيص', 'Licence requested'],
+  trialLeft: ['تجربة · متبقٍّ {0} ساعة', 'Trial · {0}h left'],
+  trialOver: ['انتهت التجربة', 'Trial ended'],
+  trialP: ['تعمل الوحدة مجانًا ٢٠٠ ساعة من أول تسجيل، ثم تحتاج إلى ترخيص.',
+           'A unit runs free for 200 hours from its first registration, then needs a licence.'],
   // device sheet
   unit: ['وحدة كوش سمارت', 'KUSH SMART unit'],
   gOwner: ['المالك', 'Owner'],
@@ -487,6 +491,9 @@ function rel(date, lang, suffix) {
   if (m >= 1) return `${m} دقيقة${suffix || ''}`;
   return 'الآن';
 }
+
+// Free trial after a unit's first registration — the app's AppConfig.trialHours.
+const TRIAL_HOURS = 200;
 
 const TYPE = {
   power: { Ic: Bolt, label: ['عدّاد طاقة', 'Power meter'] },
@@ -743,6 +750,7 @@ export default function AdminConsole() {
           licensed: x.licensed === true,
           licenseRequested: x.licenseRequested === true,
           licensedAt: toDate(x.licensedAt) || toDate(x.createdAt),
+          createdAt: toDate(x.createdAt),   // free trial start (TRIAL_HOURS from here)
           lastSeen: toDate(x.lastSeen),
         };
       })),
@@ -1739,11 +1747,25 @@ export default function AdminConsole() {
     : mqttState === 'error' ? t('liveErr')
     : t('liveOff');
 
-  const unitTag = (d) => (d.licensed
-    ? <span className="kx-tag ok"><Check />{t('licensed')}</span>
-    : d.licenseRequested
-      ? <span className="kx-tag caution">{t('licRequested')}</span>
-      : <span className="kx-tag">{t('unlicensed')}</span>);
+  // Hours of free trial a unregistered-licence unit has left (AppConfig.trialHours
+  // in the app — keep TRIAL_HOURS in step). null when there's no start recorded.
+  const trialLeftH = (d) => {
+    if (d.licensed || !d.createdAt) return null;
+    return Math.ceil(TRIAL_HOURS - (Date.now() - d.createdAt.getTime()) / 3600e3);
+  };
+  const unitTag = (d) => {
+    if (d.licensed) return <span className="kx-tag ok"><Check />{t('licensed')}</span>;
+    const left = trialLeftH(d);
+    const trial = left == null ? null : left > 0
+      ? <span className="kx-tag info" title={t('trialP')}>{t('trialLeft', left)}</span>
+      : <span className="kx-tag">{t('trialOver')}</span>;
+    return (<>
+      {trial}
+      {d.licenseRequested
+        ? <span className="kx-tag caution">{t('licRequested')}</span>
+        : !trial && <span className="kx-tag">{t('unlicensed')}</span>}
+    </>);
+  };
 
   const ownerLine = (d) => [d.ownerName ? d.ownerEmail : '', d.country].filter(Boolean).join(' · ');
 
