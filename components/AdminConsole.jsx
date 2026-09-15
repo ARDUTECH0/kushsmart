@@ -139,8 +139,35 @@ const STR = {
   s_credit_sub: ['حدّد سعر الترخيص، وحط رصيد لكل مسؤول يفعّل منه.',
                  'Set the licence price, and give each admin a balance to activate from.'],
   priceT: ['سعر الترخيص', 'Licence price'],
-  priceP: ['ده سعر الترخيص الواحد — بيتخصم من رصيد المسؤول مع كل تفعيل، وبيظهر على الموقع.',
-           'The price of one licence — spent from an admin’s balance on each activation, and shown on the website.'],
+  priceP: ['سعر الترخيص الواحد. الموقع بيعرض سعر مصر للزوّار من جوّه مصر، والسعر التاني لباقي الدول. رصيد المسؤول بيتخصم منه سعر «خارج مصر».',
+           'One licence. Visitors in Egypt see the Egypt price on the website; everyone else sees the other one. Admin balances are charged the outside-Egypt price.'],
+  priceIntlT: ['خارج مصر — باقي الدول', 'Outside Egypt — every other country'],
+  priceEgT: ['داخل مصر', 'Inside Egypt'],
+  priceEgHint: ['سيبه فاضي لو نفس سعر خارج مصر', 'Leave empty to use the outside-Egypt price'],
+  fromApp: ['من التطبيق', 'From the app'],
+  // website visits
+  s_visits: ['زيارات الموقع', 'Website visits'],
+  s_visits_sub: ['عدد الزيارات، وجات منين — فيسبوك، واتساب، جوجل…',
+                 'How many visits, and where they came from — Facebook, WhatsApp, Google…'],
+  vRange: ['المدة', 'Period'],
+  vDaysN: ['آخر {0} يوم', 'Last {0} days'],
+  vVisitors: ['زوّار', 'Visitors'],
+  vSessions: ['زيارات', 'Visits'],
+  vViews: ['مشاهدات الصفحات', 'Page views'],
+  vToday: ['زيارات النهارده', 'Visits today'],
+  vDaily: ['يوم بيوم', 'Day by day'],
+  vDailyP: ['الغامق: الزيارات · الفاتح: مشاهدات الصفحات.', 'Dark: visits · light: page views.'],
+  vSources: ['الزيارات جات منين', 'Where visits came from'],
+  vSourcesP: ['من الرابط اللي الزائر فتح منه الموقع.', 'From the link the visitor opened the site by.'],
+  vPages: ['أكتر الصفحات', 'Top pages'],
+  vPagesP: ['كل مشاهدة لكل صفحة.', 'Every view of each page.'],
+  vCountries: ['الزوّار من أنهي دولة', 'Visitors by country'],
+  vDevices: ['بيفتحوا من إيه', 'Visitors by device'],
+  vHome: ['الرئيسية', 'Home'],
+  vLoading: ['جارٍ التحميل…', 'Loading…'],
+  vEmpty: ['لسه مفيش زيارات في المدة دي.', 'No visits in this period yet.'],
+  vPrivacy: ['مفيش أي بيانات شخصية بتتسجّل — لا IP ولا هوية الزائر، أرقام بس.',
+             'No personal data is recorded — no IP, no visitor identity, just counts.'],
   balancesT: ['أرصدة المسؤولين', 'Admin balances'],
   balancesP: ['المسؤول اللي معاه صلاحية التراخيص بس هو اللي بيصرف رصيد.',
               'Only an admin with the licences permission spends credit.'],
@@ -529,6 +556,14 @@ export default function AdminConsole() {
   const [priceNote, setPriceNote] = useState('');
   const [priceEnabled, setPriceEnabled] = useState(true);
   const [priceBusy, setPriceBusy] = useState(false);
+  // Egypt has its own price; empty = the same as everywhere else.
+  const [priceEG, setPriceEG] = useState('');
+  const [currencyEG, setCurrencyEG] = useState('EGP');
+  const [priceNoteEG, setPriceNoteEG] = useState('');
+  // Website visits (super admin): one row per day from the bridge.
+  const [visits, setVisits] = useState(null);
+  const [visitDays, setVisitDays] = useState(30);
+  const [visitsBusy, setVisitsBusy] = useState(false);
   const [licReqs, setLicReqs] = useState([]);
 
   const [mqttUrl, setMqttUrl] = useState(DEFAULT_MQTT);
@@ -774,6 +809,9 @@ export default function AdminConsole() {
         setCurrency(x.currency || 'EGP');
         setPriceNote(x.note || '');
         setPriceEnabled(x.enabled !== false);
+        setPriceEG(x.priceEG != null ? String(x.priceEG) : '');
+        setCurrencyEG(x.currencyEG || 'EGP');
+        setPriceNoteEG(x.noteEG || '');
       },
       () => {},
     );
@@ -1099,12 +1137,18 @@ export default function AdminConsole() {
     if (!fb.current) return;
     const p = parseFloat(price);
     if (isNaN(p) || p < 0) { flash('اكتب سعرًا صحيحًا'); return; }
+    // Empty Egypt price → null, and the bridge falls back to the one above.
+    const pEG = String(priceEG).trim() === '' ? null : parseFloat(priceEG);
+    if (pEG !== null && (isNaN(pEG) || pEG < 0)) { flash('اكتب سعر مصر صحيحًا أو سيبه فاضي'); return; }
     setPriceBusy(true);
     try {
       await setDoc(doc(fb.current.db, 'config', 'pricing'), {
         price: p,
         currency: currency.trim() || 'EGP',
         note: priceNote.trim(),
+        priceEG: pEG,
+        currencyEG: currencyEG.trim() || 'EGP',
+        noteEG: priceNoteEG.trim(),
         enabled: priceEnabled,
         updatedAt: serverTimestamp(),
       }, { merge: true });
@@ -1384,6 +1428,21 @@ export default function AdminConsole() {
     } catch (_) { /* leave what we had */ }
   }
 
+  async function loadVisits(days) {
+    const cu = fb.current?.auth?.currentUser;
+    if (!cu || !superAdmin) return;
+    setVisitsBusy(true);
+    try {
+      const token = await cu.getIdToken();
+      const r = await fetch(`${FW_BASE}/admin/analytics?days=${days}`, {
+        headers: { Authorization: `Bearer ${token}` }, cache: 'no-store',
+      });
+      const j = await r.json().catch(() => ({}));
+      if (Array.isArray(j.days)) setVisits(j.days);
+    } catch (_) { /* keep what's on screen */ }
+    setVisitsBusy(false);
+  }
+
   // Super admin: top an admin up, and read everyone's balance.
   async function loadAllCredit() {
     const cu = fb.current?.auth?.currentUser;
@@ -1540,6 +1599,7 @@ export default function AdminConsole() {
     { k: 'notify', g: 'ops', Ic: Megaphone, label: t('s_notify'), sub: t('s_notify_sub'), n: null },
     { k: 'invoices', g: 'biz', Ic: Receipt, label: t('s_invoices'), sub: t('s_invoices_sub'),
       n: invoices.length || null },
+    { k: 'visits', g: 'biz', Ic: Signal, label: t('s_visits'), sub: t('s_visits_sub'), n: null },
     { k: 'countries', g: 'biz', Ic: Globe, label: t('s_countries'), sub: t('s_countries_sub'),
       n: byCountry.length || null },
     { k: 'credit', g: 'biz', Ic: Wallet, label: t('s_credit'), sub: t('s_credit_sub'), n: null },
@@ -1548,7 +1608,7 @@ export default function AdminConsole() {
     // Money and the admin list both stay with the supers. Whoever sets the price
     // or hands out balances decides what every licence is worth; whoever edits
     // the admin list could grant themselves every other permission.
-    if (k === 'admins' || k === 'credit') return superAdmin;
+    if (k === 'admins' || k === 'credit' || k === 'visits') return superAdmin;
     if (k === 'license') return can('licenses');
     return can(k);
   });
@@ -1557,6 +1617,11 @@ export default function AdminConsole() {
   // licences-only admin must never open.
   const activeTab = SECTIONS.some((s) => s.k === tab) ? tab : (SECTIONS[0]?.k || '');
   const section = SECTIONS.find((s) => s.k === activeTab);
+
+  // The visits page loads when it's opened, and again when the period changes.
+  useEffect(() => {
+    if (activeTab === 'visits') loadVisits(visitDays);
+  }, [activeTab, visitDays, superAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // "/" jumps to the fleet search, as in most operator tools; Esc closes the
   // popovers. Typing a "/" into a field is left alone.
@@ -2165,6 +2230,8 @@ export default function AdminConsole() {
                   {r.phone && <a href={`tel:${r.phone}`}><Phone /><span className="mono">{r.phone}</span></a>}
                   {r.qty > 1 && <span>{t('qty')}: <b className="num">{r.qty}</b></span>}
                   {r.serial && <span><Cpu /><span className="mono">{r.serial}</span></span>}
+                  {r.country && <span><Globe /><span className="mono">{r.country}</span></span>}
+                  {r.source === 'app' && <span className="kx-tag">{t('fromApp')}</span>}
                 </div>
                 {r.message && <p className="kx-req-m" dir="auto">{r.message}</p>}
                 <div className="kx-seg-ctl" role="group" aria-label={t('markAs')}>
@@ -2252,6 +2319,105 @@ export default function AdminConsole() {
     );
   };
 
+  // ── Website visits — how many, and from where. Super admin only. ────────────
+  const renderVisits = () => {
+    const rows = visits || [];
+    const sum = (k) => rows.reduce((s, d) => s + (d[k] || 0), 0);
+    // One map over the whole period, biggest first.
+    const merged = (m) => {
+      const o = {};
+      rows.forEach((d) => Object.entries(d[m] || {}).forEach(([k, v]) => { o[k] = (o[k] || 0) + v; }));
+      return Object.entries(o).sort((a, b) => b[1] - a[1]);
+    };
+    const today = rows[rows.length - 1] || {};
+    const peak = Math.max(1, ...rows.map((d) => d.views || 0));
+    const src = (k) => (VISIT_LABELS[k] ? tl(VISIT_LABELS[k]) : k);
+    const page = (k) => (k === '/' ? t('vHome') : src(k));
+    const country = (k) => {
+      if (VISIT_LABELS[k]) return tl(VISIT_LABELS[k]);
+      try { return new Intl.DisplayNames([isEn(lang) ? 'en' : 'ar'], { type: 'region' }).of(k) || k; } catch (_) { return k; }
+    };
+    const bars = (list, label) => {
+      const top = list.slice(0, 10);
+      const max = top[0]?.[1] || 1;
+      const total = list.reduce((s, [, n]) => s + n, 0) || 1;
+      if (!top.length) return <div className="kx-empty"><Signal /><span>{t('vEmpty')}</span></div>;
+      return (
+        <div className="kx-rows kx-geo">
+          {top.map(([k, n]) => (
+            <div className="kx-row" key={k}>
+              <b className="kx-trunc" dir="auto">{label(k)}</b>
+              <span className="kx-meter" aria-hidden="true"><i style={{ inlineSize: `${(n / max) * 100}%` }} /></span>
+              <span className="num kx-geo-n">{n}</span>
+              <span className="num kx-geo-p">{Math.round((n / total) * 100)}%</span>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    return (<>
+      <div className="kx-visits-bar">
+        <div className="kx-seg" role="group" aria-label={t('vRange')}>
+          {[7, 30, 90].map((n) => (
+            <button key={n} className={`kx-btn sm ${visitDays === n ? 'primary' : 'ghost'}`}
+              aria-pressed={visitDays === n} onClick={() => setVisitDays(n)}>{t('vDaysN', n)}</button>
+          ))}
+        </div>
+        <button className="kx-btn ghost sm" onClick={() => loadVisits(visitDays)} disabled={visitsBusy}>
+          <Sync />{t('refresh')}
+        </button>
+      </div>
+
+      <div className="kx-readout">
+        <Cell Ic={Signal} label={t('vSessions')} v={sum('sessions')} />
+        <Cell Ic={Users} label={t('vVisitors')} v={sum('visitors')} />
+        <Cell Ic={Globe} label={t('vViews')} v={sum('views')} />
+        <Cell Ic={Bolt} label={t('vToday')} v={today.sessions || 0} tone="ok" />
+      </div>
+
+      <section className="kx-panel">
+        <div className="kx-panel-h"><div><h2>{t('vDaily')}</h2><p>{t('vDailyP')}</p></div></div>
+        <div className="kx-panel-b">
+          {visits === null ? (
+            <div className="kx-empty"><Sync /><span>{t('vLoading')}</span></div>
+          ) : (<>
+            <div className="kx-chart" role="img" aria-label={`${t('vDaily')}: ${sum('sessions')} ${t('vSessions')}`}>
+              {rows.map((d) => (
+                <div className="kx-bar" key={d.date}
+                  title={`${d.date} — ${d.sessions} ${t('vSessions')} · ${d.views} ${t('vViews')}`}>
+                  <i style={{ blockSize: `${((d.views || 0) / peak) * 100}%` }} />
+                  <b style={{ blockSize: `${((d.sessions || 0) / peak) * 100}%` }} />
+                </div>
+              ))}
+            </div>
+            <div className="kx-chart-x"><span className="num">{rows[0]?.date}</span><span className="num">{today.date}</span></div>
+          </>)}
+        </div>
+      </section>
+
+      <div className="kx-grid2">
+        <section className="kx-panel">
+          <div className="kx-panel-h"><div><h2>{t('vSources')}</h2><p>{t('vSourcesP')}</p></div></div>
+          {bars(merged('sources'), src)}
+        </section>
+        <section className="kx-panel">
+          <div className="kx-panel-h"><div><h2>{t('vPages')}</h2><p>{t('vPagesP')}</p></div></div>
+          {bars(merged('pages'), page)}
+        </section>
+        <section className="kx-panel">
+          <div className="kx-panel-h"><div><h2>{t('vCountries')}</h2></div></div>
+          {bars(merged('countries'), country)}
+        </section>
+        <section className="kx-panel">
+          <div className="kx-panel-h"><div><h2>{t('vDevices')}</h2></div></div>
+          {bars(merged('devices'), src)}
+        </section>
+      </div>
+      <p className="kx-note-foot">{t('vPrivacy')}</p>
+    </>);
+  };
+
   // ── Credit & price — the money page. Super admin only. ───────────────────────
   const renderCredit = () => {
     const licAdmins = (allowList || [])
@@ -2278,6 +2444,7 @@ export default function AdminConsole() {
           {p > 0 && <span className="kx-tag ok"><span className="num">{p}</span> {cur}</span>}
         </div>
         <form className="kx-panel-b kx-form" onSubmit={(e) => { e.preventDefault(); savePricing(); }}>
+          <h3 className="kx-price-h"><Globe />{t('priceIntlT')}</h3>
           <div className="kx-price">
             <label className="kx-field">
               <span>{t('priceT')}</span>
@@ -2293,6 +2460,24 @@ export default function AdminConsole() {
               <span>{t('noteL')}</span>
               <input className="kx-input" value={priceNote} placeholder={t('notePh')}
                 onChange={(e) => setPriceNote(e.target.value)} />
+            </label>
+          </div>
+          <h3 className="kx-price-h"><Globe />{t('priceEgT')}<small>{t('priceEgHint')}</small></h3>
+          <div className="kx-price">
+            <label className="kx-field">
+              <span>{t('priceT')}</span>
+              <input className="kx-input mono" type="number" min="0" step="1" dir="ltr"
+                value={priceEG} placeholder={price || '0'} onChange={(e) => setPriceEG(e.target.value)} />
+            </label>
+            <label className="kx-field">
+              <span>{t('currencyL')}</span>
+              <input className="kx-input mono" dir="ltr" value={currencyEG} placeholder="EGP"
+                onChange={(e) => setCurrencyEG(e.target.value)} />
+            </label>
+            <label className="kx-field wide">
+              <span>{t('noteL')}</span>
+              <input className="kx-input" value={priceNoteEG} placeholder={t('notePh')}
+                onChange={(e) => setPriceNoteEG(e.target.value)} />
             </label>
           </div>
           <div className="kx-form-f">
@@ -2509,6 +2694,7 @@ export default function AdminConsole() {
   const PAGES = {
     fleet: renderFleet, firmware: renderFirmware, notify: renderNotify, license: renderLicense,
     invoices: renderInvoices, countries: renderCountries, credit: renderCredit, admins: renderAdmins,
+    visits: renderVisits,
   };
   const go = (k) => { setTab(k); setNavOpen(false); };
 
@@ -2778,6 +2964,29 @@ function LangSwitch({ lang, onChange }) {
     </div>
   );
 }
+
+// Names for the visit sources, devices and fallbacks the bridge reports.
+const VISIT_LABELS = {
+  direct: ['مباشر — رابط محفوظ أو كتابة العنوان', 'Direct — a saved link or typed address'],
+  app: ['التطبيق', 'The app'],
+  facebook: ['فيسبوك', 'Facebook'],
+  messenger: ['ماسنجر', 'Messenger'],
+  instagram: ['إنستجرام', 'Instagram'],
+  whatsapp: ['واتساب', 'WhatsApp'],
+  youtube: ['يوتيوب', 'YouTube'],
+  tiktok: ['تيك توك', 'TikTok'],
+  telegram: ['تيليجرام', 'Telegram'],
+  x: ['X (تويتر)', 'X (Twitter)'],
+  snapchat: ['سناب شات', 'Snapchat'],
+  linkedin: ['لينكدإن', 'LinkedIn'],
+  google: ['جوجل', 'Google'],
+  bing: ['بينج', 'Bing'],
+  mobile: ['موبايل', 'Phone'],
+  tablet: ['تابلت', 'Tablet'],
+  desktop: ['كمبيوتر', 'Computer'],
+  unknown: ['غير معروف', 'Unknown'],
+  other: ['أخرى', 'Other'],
+};
 
 // One reading in a strip of readings. `plain` is for values that are words
 // ("3 يوم و4 ساعة"), which must not be forced left-to-right like a number.

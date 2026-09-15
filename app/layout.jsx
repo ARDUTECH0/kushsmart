@@ -1,6 +1,7 @@
 import './globals.css';
 import localFont from 'next/font/local';
 import { asset } from '@/lib/site';
+import Tracker from '@/components/Tracker';
 import { SITE, SITE_NAME, OG_IMAGE } from '@/lib/seo';
 
 // Self-hosted Cairo (variable font) — no build-time network fetch, so CI/Pages
@@ -73,6 +74,7 @@ export default function RootLayout({ children }) {
           }}
         />
         {children}
+        <Tracker />
       </body>
     </html>
   );

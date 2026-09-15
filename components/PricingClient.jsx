@@ -12,6 +12,7 @@ export default function PricingClient() {
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState('');
   const [lang, setLang] = useState('ar');
+  const [source, setSource] = useState('web');
   const t = (ar, en) => (lang === 'en' ? en : ar);
 
   useEffect(() => {
@@ -19,6 +20,21 @@ export default function PricingClient() {
     const onLang = (e) => setLang(e.detail === 'en' ? 'en' : 'ar');
     window.addEventListener('langchange', onLang);
     return () => window.removeEventListener('langchange', onLang);
+  }, []);
+
+  // The app's "request a licence" button opens this page with the account's name,
+  // email and the unit's serial in the link, so the buyer only has to press send.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const pick = (k, n) => (q.get(k) || '').trim().slice(0, n);
+    const pre = { name: pick('name', 120), email: pick('email', 160), phone: pick('phone', 40), serial: pick('serial', 60) };
+    if (Object.values(pre).some(Boolean)) {
+      setForm((f) => ({ ...f, ...Object.fromEntries(Object.entries(pre).filter(([, v]) => v)) }));
+    }
+    if (q.get('source') === 'app') setSource('app');
+    if (window.location.hash === '#request') {
+      requestAnimationFrame(() => document.getElementById('request')?.scrollIntoView({ block: 'start' }));
+    }
   }, []);
 
   useEffect(() => {
@@ -43,7 +59,7 @@ export default function PricingClient() {
       const r = await fetch(`${BRIDGE}/license/request`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, source }),
       });
       const j = await r.json().catch(() => ({}));
       if (j.ok) setSent(true);
@@ -79,6 +95,11 @@ export default function PricingClient() {
               <span>{pricing.currency || 'EGP'}</span>
             </div>
             <p className="pr-per">{t('لكل وحدة · ترخيص دائم · دون اشتراك', 'Per unit · lifetime licence · no subscription')}</p>
+            <p className="pr-region">
+              {pricing.region === 'EG'
+                ? t('السعر داخل مصر', 'Price in Egypt')
+                : t('السعر خارج مصر', 'Price outside Egypt')}
+            </p>
             {pricing.note ? <p className="pr-note">{pricing.note}</p> : null}
           </>
         ) : (
@@ -90,14 +111,16 @@ export default function PricingClient() {
         <ul className="pr-feats">
           {FEATS.map((f) => <li key={f}><Check />{f}</li>)}
         </ul>
-        <div className="pr-pay">
-          <Wallet />
-          <span>{t('يمكنك السداد عبر تطبيق بنكك من السودان', 'You can pay through your bank app from Sudan')}</span>
-        </div>
+        {pricing?.region !== 'EG' && (
+          <div className="pr-pay">
+            <Wallet />
+            <span>{t('يمكنك السداد عبر تطبيق بنكك من السودان', 'You can pay through your bank app from Sudan')}</span>
+          </div>
+        )}
       </div>
 
       {/* Request form */}
-      <div className="pr-form-box">
+      <div className="pr-form-box" id="request">
         {sent ? (
           <div className="pr-done" role="status">
             <span className="pr-done-ic"><Check /></span>
