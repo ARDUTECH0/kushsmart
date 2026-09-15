@@ -258,6 +258,16 @@ const STR = {
   unlicensed: ['غير مرخّص', 'Not licensed'],
   licRequested: ['طلب ترخيص', 'Licence requested'],
   trialLeft: ['تجربة · متبقٍّ {0} ساعة', 'Trial · {0}h left'],
+  trialAdd: ['+{0} ساعة تجربة', '+{0}h trial'],
+  trialEnd: ['إنهاء التجربة', 'End trial'],
+  trialEndQ: ['إنهاء تجربة {0} الآن؟ سيتوقف الجهاز عن العمل حتى يُرخَّص.',
+              'End the trial on {0} now? The unit stops working until it is licensed.'],
+  trialAdded: ['تمت إضافة {0} ساعة إلى التجربة ✓', 'Added {0}h to the trial ✓'],
+  trialEnded: ['تم إنهاء التجربة ✓', 'Trial ended ✓'],
+  trialLicensed: ['هذا الجهاز مرخّص بالفعل.', 'That unit is already licensed.'],
+  trialForbidden: ['لا تملك صلاحية إدارة التراخيص.', 'You don’t have the licences permission.'],
+  trialFailed: ['تعذّر تعديل التجربة.', 'Could not change the trial.'],
+  trialT: ['الفترة التجريبية', 'Free trial'],
   trialOver: ['انتهت التجربة', 'Trial ended'],
   trialP: ['تعمل الوحدة مجانًا ٢٠٠ ساعة من أول تسجيل، ثم تحتاج إلى ترخيص.',
            'A unit runs free for 200 hours from its first registration, then needs a licence.'],
@@ -526,6 +536,7 @@ export default function AdminConsole() {
   const [liveState, setLiveState] = useState({});  // serial -> telemetry (MQTT)
   const [liveStatus, setLiveStatus] = useState({}); // serial -> online (MQTT)
   const [ota, setOta] = useState({});               // serial -> { pct, at } from the unit's OTA events
+  const [trialBusy, setTrialBusy] = useState(false);
   const [q, setQ] = useState('');
   const [view, setView] = useState('all'); // all | licensed | pending | unlicensed
   const [onlineOnly, setOnlineOnly] = useState(false); // independent of the licence view
@@ -751,6 +762,8 @@ export default function AdminConsole() {
           licenseRequested: x.licenseRequested === true,
           licensedAt: toDate(x.licensedAt) || toDate(x.createdAt),
           createdAt: toDate(x.createdAt),   // free trial start (TRIAL_HOURS from here)
+          trialEndsAt: toDate(x.trialEndsAt),  // server's trial end (an admin can extend it)
+          trialActive: typeof x.trialActive === 'boolean' ? x.trialActive : null,
           lastSeen: toDate(x.lastSeen),
         };
       })),
@@ -1413,6 +1426,28 @@ export default function AdminConsole() {
   // trusted to enforce a balance it could simply write around. The bridge takes
   // the money and grants the licence in one place, and the Firestore rules now
   // refuse the licence fields to every client — so this is the only way in.
+  // Add hours to a unit's free trial, or end it (super admin). The bridge moves
+  // trialEndsAt on the server; the registry stream brings the change back here.
+  async function changeTrial(serial, hours, end = false) {
+    const cu = fb.current?.auth?.currentUser;
+    if (!cu) { flash(t('sessionEnded')); return; }
+    setTrialBusy(true);
+    try {
+      const token = await cu.getIdToken();
+      const r = await fetch(`${FW_BASE}/license/trial`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(end ? { serial, end: true } : { serial, hours }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (j.ok) flash(end ? t('trialEnded') : t('trialAdded', hours));
+      else if (j.error === 'licensed') flash(t('trialLicensed'));
+      else if (r.status === 403) flash(t('trialForbidden'));
+      else flash(t('trialFailed'));
+    } catch (_) { flash(t('trialFailed')); }
+    setTrialBusy(false);
+  }
+
   async function setLicense(serial, value) {
     const cu = fb.current?.auth?.currentUser;
     if (!cu) { flash(t('sessionEnded')); return false; }
@@ -1750,8 +1785,12 @@ export default function AdminConsole() {
   // Hours of free trial a unregistered-licence unit has left (AppConfig.trialHours
   // in the app — keep TRIAL_HOURS in step). null when there's no start recorded.
   const trialLeftH = (d) => {
-    if (d.licensed || !d.createdAt) return null;
-    return Math.ceil(TRIAL_HOURS - (Date.now() - d.createdAt.getTime()) / 3600e3);
+    if (d.licensed) return null;
+    const end = d.trialEndsAt
+      || (d.createdAt ? new Date(d.createdAt.getTime() + TRIAL_HOURS * 3600e3) : null);
+    if (!end) return null;
+    if (d.trialActive === false) return 0;         // the server closed it
+    return Math.max(0, Math.ceil((end.getTime() - Date.now()) / 3600e3));
   };
   const unitTag = (d) => {
     if (d.licensed) return <span className="kx-tag ok"><Check />{t('licensed')}</span>;
@@ -3026,6 +3065,22 @@ export default function AdminConsole() {
                           <Key />{t('grant')}
                         </button>
                       ))}
+                  {!selected.licensed && can('licenses') && (
+                    <span className="kx-trial-ctl" role="group" aria-label={t('trialT')}>
+                      {[24, 72, 200].map((h) => (
+                        <button key={h} className="kx-btn ghost" disabled={trialBusy}
+                          onClick={() => changeTrial(selected.serial, h)}>
+                          {t('trialAdd', h)}
+                        </button>
+                      ))}
+                      {superAdmin && (trialLeftH(selected) || 0) > 0 && (
+                        <button className="kx-btn ghost" disabled={trialBusy}
+                          onClick={() => { if (window.confirm(t('trialEndQ', selected.serial))) changeTrial(selected.serial, 0, true); }}>
+                          {t('trialEnd')}
+                        </button>
+                      )}
+                    </span>
+                  )}
                   {can('fleet') && (
                     <button className="kx-btn danger" onClick={() => removeDevice(selected.serial, selected.name)}>
                       <Trash />{t('removeDev')}
