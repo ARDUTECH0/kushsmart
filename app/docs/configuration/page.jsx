@@ -89,7 +89,7 @@ export default function ConfigDocsPage() {
             <p data-en="">Once you save, these definitions are written into the board <b>and locked permanently</b>, so it knows its job and runs on its own — even with no internet.</p>
             <div className="callout info">
               <span className="em">🧩</span>
-              <div data-ar="">فكّر فيها كـ«قائمة توصيلات»: لكل سطر تقول «النوع» (إيه الموصّل) و«المنفذ» (على أي رِجل في البوردة).</div>
+              <div data-ar="">فكّر فيها كـ«قائمة توصيلات»: تحدّد في كل سطر «النوع» (ما الموصَّل) و«المنفذ» (أي طرف في البوردة).</div>
               <div data-en="">Think of it as a “wiring list”: for each row you set the <b>type</b> (what's connected) and the <b>pin</b> (which leg of the board).</div>
             </div>
           </section>

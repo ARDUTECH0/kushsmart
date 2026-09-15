@@ -22,17 +22,17 @@ export default function FlashNextStep() {
   }, []);
 
   const CHOICES = [
-    ['file', t('عندي ملف إعداد', 'I have a setup file'),
+    ['file', t('لديّ ملف إعداد', 'I have a setup file'),
       lang === 'en'
         ? <>A <bdi dir="ltr">.kscfg</bdi> saved from the app — the same layout as an earlier board, sent from here.</>
-        : <>ملف <bdi dir="ltr">.kscfg</bdi> محفوظ من التطبيق — نفس ترتيب بوردة قبل كده، يتبعت للبوردة من هنا.</>],
-    ['new', t('هعمل إعداد جديد', 'I’ll create a new setup'),
+        : <>ملف <bdi dir="ltr">.kscfg</bdi> محفوظ من التطبيق بترتيب بوردة سابقة، ويُرسَل إلى البوردة من هنا.</>],
+    ['new', t('إنشاء إعداد جديد', 'I’ll create a new setup'),
       t('عرّف القنوات والمنافذ خطوة بخطوة من داخل التطبيق.', 'Define the channels and pins step by step in the app.')],
   ];
 
   return (
     <div className={s.root}>
-      <div className={s.choices} role="group" aria-label={t('إزاي تجهّز البوردة', 'How to set up the board')}>
+      <div className={s.choices} role="group" aria-label={t('طريقة تجهيز البوردة', 'How to set up the board')}>
         {CHOICES.map(([k, title, sub]) => (
           <button key={k} type="button" className={`${s.choice} ${pick === k ? s.choiceOn : ''}`}
             aria-pressed={pick === k} onClick={() => setPick(k)}>
@@ -49,8 +49,8 @@ export default function FlashNextStep() {
           <ol className="steps">
             <li>{t('افتح تطبيق كوش سمارت وسجّل دخولك.', 'Open the KUSH SMART app and sign in.')}</li>
             <li>{t('اضغط «إضافة جهاز» ووصّل البوردة بالواي فاي.', 'Tap “Add device” and connect the board to Wi-Fi.')}</li>
-            <li>{t('في شاشة «إعداد الجهاز» اختار قالب أو عرّف كل قناة ومنفذها، واضغط «إنشاء ملف التعريف».', 'On the “Device setup” screen pick a template or define each channel and pin, then tap “Create Info File”.')}</li>
-            <li>{t('احفظ الإعداد كملف من نفس الشاشة، عشان تستخدمه لأي بوردة بنفس الترتيب بعد كده.', 'Save the setup as a file from the same screen, to reuse it for any board built the same way.')}</li>
+            <li>{t('في شاشة «إعداد الجهاز» اختر قالبًا أو عرّف كل قناة ومنفذها، ثم اضغط «إنشاء ملف التعريف».','On the “Device setup” screen pick a template or define each channel and pin, then tap “Create Info File”.')}</li>
+            <li>{t('احفظ الإعداد كملف من الشاشة نفسها، لتستخدمه لاحقًا مع أي بوردة بالترتيب نفسه.','Save the setup as a file from the same screen, to reuse it for any board built the same way.')}</li>
           </ol>
           <p className={s.sendP}>
             <Link href="/downloads">{t('تحميل التطبيق', 'Download the app')}</Link>

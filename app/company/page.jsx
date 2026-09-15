@@ -29,25 +29,25 @@ const PRODUCTS = [
     'وحدات تُركَّب خلف المفاتيح الحالية: تشغيل، تعتيم، مراوح، ستائر، وإضاءة RGB.',
     'Units that fit behind existing switches: on/off, dimming, fans, shutters and RGB lighting.'],
   [Lock, 'القفل الذكي', 'Smart lock',
-    'افتح الباب من التطبيق، أو بالبصمة، أو بكارت، أو برقم سري.',
+    'افتح الباب من التطبيق، أو بالبصمة، أو ببطاقة، أو برمز سري.',
     'Open the door from the app, or by fingerprint, card or PIN.'],
   [Bolt, 'عدّاد الطاقة', 'Power meter',
     'استهلاك الكهرباء لحظة بلحظة، والطاقة المستهلكة على مدار الوقت.',
     'Live electricity use, and the energy used over time.'],
   [Remote, 'ريموت IR و ATGENX HALO', 'IR remote & ATGENX HALO',
-    'تحكّم في التكييف والتلفزيون والرسيفر من الموبايل، ومستشعرات RF.',
+    'تحكّم في المكيّف والتلفاز وجهاز الاستقبال من هاتفك، مع مستشعرات RF.',
     'Control the AC, TV and receiver from your phone, plus RF sensors.'],
 ];
 
 const HOW = [
   [Cpu, 'العتاد والسوفت وير', 'Hardware & firmware',
-    'بنصمّم البوردات ونكتب السوفت وير اللي بيشتغل عليها، وبنحدّثه لاسلكيًا.',
+    'نصمّم البوردات ونكتب السوفت وير الذي يعمل عليها، ونحدّثه لاسلكيًا.',
     'We design the boards and write the software on them, and update it over the air.'],
   [Hand, 'التطبيق', 'The app',
-    'تطبيق واحد بالعربي والإنجليزي للتحكّم والأتمتة ومشاركة الأجهزة.',
+    'تطبيق واحد بالعربية والإنجليزية للتحكّم والأتمتة ومشاركة الأجهزة.',
     'One app, in Arabic and English, for control, automations and sharing.'],
   [Cloud, 'السحابة', 'The cloud',
-    <>خوادمنا بتشغّل الأتمتة والإشعارات والربط مع <bdi dir="ltr" style={{ whiteSpace: 'nowrap' }}>Google Home</bdi> و<bdi dir="ltr">Alexa</bdi> حتى والتطبيق مقفول.</>,
+    <>تشغّل خوادمنا الأتمتة والإشعارات والربط مع <bdi dir="ltr" style={{ whiteSpace: 'nowrap' }}>Google Home</bdi> و<bdi dir="ltr">Alexa</bdi> حتى عندما يكون التطبيق مغلقًا.</>,
     'Our servers run automations, notifications and Google Home / Alexa even with the app closed.'],
 ];
 
@@ -62,7 +62,7 @@ export default function CompanyPage() {
           <h1 data-ar=""><span className="accent">ATGENX</span> — صُنّاع كوش سمارت</h1>
           <h1 data-en=""><span className="accent">ATGENX</span> — the makers of KUSH SMART</h1>
           <L tag="p" style={{ maxWidth: 640, margin: '0 auto' }}
-            ar="بنصمّم ونصنع منتجات المنزل الذكي من البداية للنهاية — الوحدة اللي في الحيطة، السوفت وير اللي عليها، التطبيق، والسحابة — عشان البيت يبقى أبسط."
+            ar="نصمّم منتجات المنزل الذكي ونصنعها من البداية إلى النهاية — الوحدة داخل الجدار، والسوفت وير الذي يعمل عليها، والتطبيق، والسحابة — ليصبح المنزل أبسط."
             en="We design and build smart-home products end to end — the unit in the wall, the software on it, the app and the cloud — to make homes simpler." />
         </div>
       </header>
@@ -71,15 +71,15 @@ export default function CompanyPage() {
       <section className="section">
         <div className={`wrap ${s.about}`}>
           <div>
-            <span className="eyebrow"><L ar="مين إحنا" en="Who we are" /></span>
-            <L tag="h2" ar="شركة واحدة مسؤولة عن كل حاجة" en="One company responsible for all of it" />
+            <span className="eyebrow"><L ar="من نحن" en="Who we are" /></span>
+            <L tag="h2" ar="شركة واحدة مسؤولة عن كل شيء" en="One company responsible for all of it" />
           </div>
           <div className={s.aboutText}>
             <L tag="p"
-              ar="ATGENX هي الشركة اللي بتصنع وتشغّل كوش سمارت. بنشتغل لسوق مصر والسودان، وبنبني كل جزء في المنتج بنفسنا بدل ما نجمّعه من أطراف مختلفة."
+              ar="ATGENX هي الشركة التي تصنع كوش سمارت وتشغّلها. نعمل لسوقَي مصر والسودان، ونبني كل جزء من المنتج بأنفسنا بدل تجميعه من جهات مختلفة."
               en="ATGENX makes and operates KUSH SMART. We build for Egypt and Sudan, and we make every part of the product ourselves rather than assembling it from different vendors." />
             <L tag="p"
-              ar="ده معناه إن اللي بيصمّم البوردة هو نفسه اللي بيحدّث السوفت وير وبيردّ على الدعم — فالمشكلة بتتحل من مكانها."
+              ar="وهذا يعني أن من يصمّم البوردة هو نفسه من يحدّث السوفت وير ويردّ على طلبات الدعم — فتُحَلّ المشكلة من مصدرها."
               en="That means the people who design the board are the ones who update its software and answer support — so a problem gets fixed where it starts." />
           </div>
         </div>
@@ -108,8 +108,8 @@ export default function CompanyPage() {
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="wrap">
           <div className="h-center" style={{ marginBottom: 26 }}>
-            <span className="eyebrow"><L ar="إزاي بنشتغل" en="How we build" /></span>
-            <L tag="h2" ar="من البوردة للسحابة" en="From the board to the cloud" />
+            <span className="eyebrow"><L ar="كيف نعمل" en="How we build" /></span>
+            <L tag="h2" ar="من البوردة إلى السحابة" en="From the board to the cloud" />
           </div>
           <div className={s.grid3}>
             {HOW.map(([Ic, ar, en, dAr, dEn]) => (
@@ -128,7 +128,7 @@ export default function CompanyPage() {
         <div className="wrap" style={{ maxWidth: 900 }}>
           <div className="h-center" style={{ marginBottom: 26 }}>
             <span className="eyebrow"><L ar="تواصل معنا" en="Contact" /></span>
-            <L tag="h2" ar="كلّمنا" en="Get in touch" />
+            <L tag="h2" ar="راسلنا أو اتصل بنا" en="Get in touch" />
             <L tag="p" ar="للدعم الفني، التراخيص، أو طلبات الشركات والتركيب." en="For support, licences, or business and installation enquiries." />
           </div>
           <div className={s.contacts}>
@@ -148,9 +148,9 @@ export default function CompanyPage() {
 
           <div className="cta-band">
             <div>
-              <b data-ar="">عايز ترخيص أو تسعير لمشروع؟</b>
+              <b data-ar="">هل تحتاج إلى ترخيص أو عرض سعر لمشروع؟</b>
               <b data-en="">Need a licence or a project quote?</b>{' '}
-              <span data-ar="">— اترك بياناتك وهنتواصل معاك.</span>
+              <span data-ar="">— اترك بياناتك وسنتواصل معك.</span>
               <span data-en="">— leave your details and we’ll get back to you.</span>
             </div>
             <Link className="btn" href="/pricing#request">

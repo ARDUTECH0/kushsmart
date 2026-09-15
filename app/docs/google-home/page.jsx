@@ -43,10 +43,10 @@ const BENEFITS = [
 ];
 
 const COMMANDS = [
-  ['ok Google, شغّل نور الصالة', '“Hey Google, turn on the living room light”'],
-  ['ok Google, اطفي كل حاجة', '“Hey Google, turn everything off”'],
-  ['ok Google, درجة حرارة الأوضة كام؟', '“Hey Google, what’s the temperature in the bedroom?”'],
-  ['ok Google, اعمل الإضاءة أحمر', '“Hey Google, make the lights red”'],
+  ['ok Google, شغّل إضاءة الصالة', '“Hey Google, turn on the living room light”'],
+  ['ok Google, أطفئ جميع الأجهزة', '“Hey Google, turn everything off”'],
+  ['ok Google, كم درجة حرارة الغرفة؟', '“Hey Google, what’s the temperature in the bedroom?”'],
+  ['ok Google, اجعل الإضاءة حمراء', '“Hey Google, make the lights red”'],
 ];
 
 export default function GoogleHomePage() {

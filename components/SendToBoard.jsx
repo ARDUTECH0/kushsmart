@@ -76,13 +76,13 @@ export default function SendToBoard({ layout, t }) {
   const plan = buildInfoFile(layout);
 
   const PROBLEMS = {
-    rgb: (n) => t(`القناة ${n}: RGB محتاجة منافذ R وG وB.`, `Channel ${n}: RGB needs R, G and B pins.`),
-    shutter: (n) => t(`القناة ${n}: الستارة محتاجة منفذ رفع وخفض.`, `Channel ${n}: the shutter needs Up and Down pins.`),
-    bl0942: (n) => t(`القناة ${n}: العدّاد محتاج منفذ RX وTX.`, `Channel ${n}: the meter needs RX and TX pins.`),
-    clash: (p) => t(`منفذ ${p} مستخدم أكتر من مرة.`, `Pin ${p} is used more than once.`),
-    empty: () => t('مفيش قنوات متعرّفة في الملف.', 'The file defines no channels.'),
-    meters: () => t('أقصى عدد لعدّادات BL0942 هو 2.', 'At most 2 BL0942 meters.'),
-    big: () => t('الإعداد أكبر من اللي البوردة تستقبله مرة واحدة.', 'The setup is larger than the board accepts at once.'),
+    rgb: (n) => t(`القناة ${n}: تحتاج إضاءة RGB إلى منافذ R وG وB.`, `Channel ${n}: RGB needs R, G and B pins.`),
+    shutter: (n) => t(`القناة ${n}: تحتاج الستارة إلى منفذَي رفع وخفض.`, `Channel ${n}: the shutter needs Up and Down pins.`),
+    bl0942: (n) => t(`القناة ${n}: يحتاج العدّاد إلى منفذَي RX وTX.`, `Channel ${n}: the meter needs RX and TX pins.`),
+    clash: (p) => t(`المنفذ ${p} مستخدَم أكثر من مرة.`, `Pin ${p} is used more than once.`),
+    empty: () => t('لا توجد قنوات معرَّفة في الملف.', 'The file defines no channels.'),
+    meters: () => t('الحدّ الأقصى لعدّادات BL0942 هو 2.', 'At most 2 BL0942 meters.'),
+    big: () => t('الإعداد أكبر مما تستقبله البوردة دفعة واحدة.', 'The setup is larger than the board accepts at once.'),
   };
 
   const STEPS = [
@@ -135,20 +135,20 @@ export default function SendToBoard({ layout, t }) {
   }
 
   const ERR = {
-    open: t('تعذّر فتح منفذ البوردة — اقفل أي برنامج تاني بيستخدمه (زي نافذة الرفع) وجرّب تاني.', 'Couldn’t open the board’s port — close anything else using it (like the flashing window) and try again.'),
-    no_reply: t('البوردة مردّتش. اتأكد إنك رفعت السوفت وير عليها، وافصلها ووصّلها تاني، وجرّب.', 'The board didn’t answer. Make sure it was flashed, unplug and replug it, and try again.'),
-    mismatch: t(`الملف ده لبوردة ${layout.board} والمتوصلة ${err?.extra} — المنافذ مختلفة، استخدم ملف للنوع ده.`, `This file is for a ${layout.board} but the connected board is a ${err?.extra} — the pins differ; use a file for this board.`),
-    locked: t('البوردة دي متعرّفة قبل كده، والتعريف بيتقفل بعد أول مرة. عشان تغيّره لازم تتمسح بالكامل وتترفع من جديد.', 'This board already has a definition, and it locks after the first time. Changing it needs a full erase and a fresh flash.'),
-    rejected: t('البوردة رفضت التعريف. افصلها ووصّلها تاني وجرّب.', 'The board refused the definition. Unplug it, plug it back and try again.'),
-    not_locked: t('التعريف موصلش كامل للبوردة. افصلها ووصّلها تاني وجرّب.', 'The definition didn’t reach the board completely. Unplug it, plug it back and try again.'),
-    lost: t('الاتصال بالبوردة اتقطع. وصّلها تاني وجرّب.', 'The connection to the board dropped. Plug it back and try again.'),
+    open: t('تعذّر فتح منفذ البوردة — أغلق أي برنامج آخر يستخدمه (مثل نافذة الرفع) ثم حاول مجددًا.', 'Couldn’t open the board’s port — close anything else using it (like the flashing window) and try again.'),
+    no_reply: t('لم تستجب البوردة. تأكّد من رفع السوفت وير عليها، ثم افصلها وأعد توصيلها وحاول مجددًا.', 'The board didn’t answer. Make sure it was flashed, unplug and replug it, and try again.'),
+    mismatch: t(`هذا الملف مخصّص لبوردة ${layout.board}، أما البوردة المتصلة فهي ${err?.extra} — المنافذ مختلفة، لذا استخدم ملفًا لهذا النوع.`, `This file is for a ${layout.board} but the connected board is a ${err?.extra} — the pins differ; use a file for this board.`),
+    locked: t('هذه البوردة معرَّفة مسبقًا، والتعريف يُقفَل بعد المرة الأولى. ولتغييره يجب مسحها بالكامل ورفع السوفت وير عليها من جديد.', 'This board already has a definition, and it locks after the first time. Changing it needs a full erase and a fresh flash.'),
+    rejected: t('رفضت البوردة التعريف. افصلها وأعد توصيلها ثم حاول مجددًا.', 'The board refused the definition. Unplug it, plug it back and try again.'),
+    not_locked: t('لم يصل التعريف كاملًا إلى البوردة. افصلها وأعد توصيلها ثم حاول مجددًا.', 'The definition didn’t reach the board completely. Unplug it, plug it back and try again.'),
+    lost: t('انقطع الاتصال بالبوردة. أعد توصيلها ثم حاول مجددًا.', 'The connection to the board dropped. Plug it back and try again.'),
   };
 
   if (!serialSupported()) {
     return (
       <div className={s.send}>
-        <h3 className={s.h}>{t('ابعت الإعداد للبوردة', 'Send this setup to a board')}</h3>
-        <p className={s.sendP}>{t('إرسال الإعداد للبوردة بيشتغل من Chrome أو Edge على كمبيوتر.', 'Sending to a board works in Chrome or Edge on a computer.')}</p>
+        <h3 className={s.h}>{t('أرسل الإعداد إلى البوردة', 'Send this setup to a board')}</h3>
+        <p className={s.sendP}>{t('يعمل إرسال الإعداد إلى البوردة من متصفح Chrome أو Edge على جهاز كمبيوتر.','Sending to a board works in Chrome or Edge on a computer.')}</p>
       </div>
     );
   }
@@ -157,9 +157,9 @@ export default function SendToBoard({ layout, t }) {
 
   return (
     <div className={s.send}>
-      <h3 className={s.h}>{t('ابعت الإعداد للبوردة', 'Send this setup to a board')}</h3>
+      <h3 className={s.h}>{t('أرسل الإعداد إلى البوردة', 'Send this setup to a board')}</h3>
       <p className={s.sendP}>
-        {t('وصّل البوردة اللي رفعت عليها السوفت وير بالكمبيوتر بنفس كابل USB، واقفل نافذة الرفع لو لسه مفتوحة، واضغط الزرار واختار منفذها.',
+        {t('وصّل البوردة التي رفعت عليها السوفت وير بالكمبيوتر بكابل USB نفسه، وأغلق نافذة الرفع إن كانت لا تزال مفتوحة، ثم اضغط الزر واختر منفذها.',
           'Connect the freshly flashed board with the same USB cable, close the flashing window if it’s still open, then press the button and pick its port.')}
       </p>
 
@@ -171,11 +171,11 @@ export default function SendToBoard({ layout, t }) {
         <div className={s.ok} role="status">
           <span className={s.okIc}><Check /></span>
           <div>
-            <b>{t('البوردة اتجهّزت ✓', 'The board is set up ✓')}</b>
+            <b>{t('تم تجهيز البوردة ✓', 'The board is set up ✓')}</b>
             <p>
-              {t(`اتكتب التعريف (${result.count} قناة) واتقفل على البوردة ${result.serial || ''}. دلوقتي افتح التطبيق وأضِف الجهاز ووصّله بالواي فاي.`,
+              {t(`كُتب التعريف (${result.count} قناة) وأُقفل على البوردة ${result.serial || ''}. افتح التطبيق الآن وأضِف الجهاز ثم وصّله بالواي فاي.`,
                 `The definition (${result.count} channels) is written and locked on board ${result.serial || ''}. Now open the app, add the device and connect it to Wi-Fi.`)}
-              {' '}<Link href="/docs#add">{t('إزاي أضيف الجهاز', 'How to add a device')}</Link>
+              {' '}<Link href="/docs#add">{t('كيف أضيف الجهاز؟', 'How to add a device')}</Link>
             </p>
           </div>
         </div>
@@ -193,9 +193,9 @@ export default function SendToBoard({ layout, t }) {
           {phase === 'error' && err && <div className={s.err} role="alert"><Alert /><span>{ERR[err.code]}</span></div>}
           <button type="button" className="btn lg" onClick={run} disabled={phase === 'busy'}>
             <Upload />
-            {phase === 'busy' ? t('جارٍ الإرسال… متفصلش الكابل', 'Sending… keep the cable in')
-              : phase === 'error' ? t('جرّب تاني', 'Try again')
-              : t('وصّل البوردة وابعت الإعداد', 'Connect the board and send')}
+            {phase === 'busy' ? t('جارٍ الإرسال… لا تفصل الكابل', 'Sending… keep the cable in')
+              : phase === 'error' ? t('حاول مجددًا', 'Try again')
+              : t('وصّل البوردة وأرسل الإعداد', 'Connect the board and send')}
           </button>
         </>
       )}

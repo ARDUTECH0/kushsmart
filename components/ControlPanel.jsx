@@ -128,11 +128,11 @@ function groupIrButtons(buttons) {
 }
 
 const ERR_MSG = {
-  'auth/user-not-found': 'مفيش حساب بالإيميل ده',
-  'auth/wrong-password': 'كلمة السر غلط',
-  'auth/invalid-credential': 'كلمة السر غلط',
-  'auth/invalid-email': 'الإيميل مش صحيح',
-  'auth/too-many-requests': 'محاولات كتير — جرّب بعد شوية',
+  'auth/user-not-found': 'لا يوجد حساب بهذا البريد الإلكتروني',
+  'auth/wrong-password': 'كلمة المرور غير صحيحة',
+  'auth/invalid-credential': 'كلمة المرور غير صحيحة',
+  'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
+  'auth/too-many-requests': 'محاولات كثيرة — حاول مرة أخرى بعد قليل',
   'auth/network-request-failed': 'تأكّد من الاتصال بالإنترنت',
 };
 
@@ -561,9 +561,9 @@ export default function ControlPanel() {
             <div className="cp-seal"><span className="cp-seal-ring" /><IconHome /></div>
             <h1>أجهزتك</h1>
             <p>ادخل بنفس بيانات حسابك في تطبيق كوش سمارت</p>
-            <input type="email" placeholder="الإيميل" value={email}
+            <input type="email" placeholder="البريد الإلكتروني" value={email}
               onChange={(e) => setEmail(e.target.value)} autoComplete="username" />
-            <input type="password" placeholder="كلمة السر" value={pass}
+            <input type="password" placeholder="كلمة المرور" value={pass}
               onChange={(e) => setPass(e.target.value)} autoComplete="current-password" />
             {authErr && <div className="cp-err">{authErr}</div>}
             <button className="cp-btn" disabled={busy} type="submit">{busy ? '…' : 'دخول'}</button>
@@ -619,7 +619,7 @@ export default function ControlPanel() {
   const linkLabel = linkState === 'on' ? 'متصل' : linkState === 'connecting' ? 'جارٍ الاتصال' : 'غير متصل';
   const heroText = totalUnits === 0
     ? (linkState === 'on' ? 'جارٍ استقبال أجهزتك…' : 'جارٍ الاتصال…')
-    : `${greetingNow()} — ${onlineCount} من ${totalUnits} وحدة متصلة${onCount ? ` · ${onCount} مفتاح شغّال دلوقتي` : ''}`;
+    : `${greetingNow()} — ${onlineCount} من ${totalUnits} وحدة متصلة${onCount ? ` · ${onCount} مفتاح يعمل الآن` : ''}`;
 
   return (
     <div className="cp" dir="rtl">
@@ -682,7 +682,7 @@ export default function ControlPanel() {
                 {relayDevices.length === 0 && remoteDevices.length === 0 ? (
                   <div className="cp-empty">
                     {linkState === 'on'
-                      ? 'لسه معندناش أجهزة نتحكّم فيها — تأكّد إن وحداتك شغّالة ومتصلة بالإنترنت.'
+                      ? 'لا توجد أجهزة للتحكّم فيها بعد — تأكّد من أن وحداتك تعمل ومتصلة بالإنترنت.'
                       : 'جارٍ الاتصال بأجهزتك…'}
                   </div>
                 ) : (
@@ -982,7 +982,7 @@ function RemoteCard({ serial, dev, online, pending, onSend, onRenameDevice, ente
       <DeviceHead title={title} online={online} pending={pending} switchCount={0} icon={IconAntenna}
         onRenameDevice={onRenameDevice} onAllOn={() => {}} onAllOff={() => {}} gripProps={gripProps} />
       {groups.length === 0 && custom.length === 0 ? (
-        <p className="dc-muted">لسه مفيش أزرار متعلَّمة على الريموت ده.</p>
+        <p className="dc-muted">لا توجد أزرار مسجَّلة على هذا الريموت بعد.</p>
       ) : (
         <div className="remotes-wrap">
           {groups.map((g) => (
@@ -1161,7 +1161,7 @@ function SettingsView({ voiceLinks, haLinks, onUnlinkHa }) {
             <div className={`group-row-icon ${it.linked ? 'linked' : ''}`}><IconLink /></div>
             <div className="group-row-body">
               <b>{it.name}</b>
-              <span>{it.linked ? 'مرتبط بحسابك' : 'مش مرتبط لسه'}</span>
+              <span>{it.linked ? 'مرتبط بحسابك' : 'غير مرتبط بعد'}</span>
             </div>
             <span className={`status-pill ${it.linked ? 'on' : ''}`}>{it.linked ? 'مرتبط' : 'غير مرتبط'}</span>
             <a className="cp-ghost" href={it.doc} target="_blank" rel="noreferrer">التفاصيل</a>
@@ -1171,7 +1171,7 @@ function SettingsView({ voiceLinks, haLinks, onUnlinkHa }) {
           <div className={`group-row-icon ${haLinks.length ? 'linked' : ''}`}><IconLink /></div>
           <div className="group-row-body">
             <b>Home Assistant</b>
-            <span>{haLinks.length ? `${haLinks.length} ${haLinks.length === 1 ? 'ربط نشط' : 'روابط نشطة'}` : 'مش مرتبط لسه'}</span>
+            <span>{haLinks.length ? `${haLinks.length} ${haLinks.length === 1 ? 'ربط نشط' : 'روابط نشطة'}` : 'غير مرتبط بعد'}</span>
           </div>
           <span className={`status-pill ${haLinks.length ? 'on' : ''}`}>{haLinks.length ? 'مرتبط' : 'غير مرتبط'}</span>
           {haLinks.length > 0 && (
@@ -1188,11 +1188,11 @@ function GroupsManager({ groups, resolveMember, onToggle, onEdit, onDelete }) {
   return (
     <>
       <div className="groups-head">
-        <p className="groups-head-sub">جمّع أي مفاتيح أو إضاءات أو مراوح من أي جهاز في زر واحد.</p>
+        <p className="groups-head-sub">اجمع أي مفاتيح أو إضاءات أو مراوح من أي جهاز في زر واحد.</p>
         <button className="cp-btn sm" onClick={() => onEdit(null)}><IconPlus /> مجموعة جديدة</button>
       </div>
       {groups.length === 0 ? (
-        <div className="cp-empty">لسه معملتش أي مجموعة. اضغط «مجموعة جديدة» فوق.</div>
+        <div className="cp-empty">لم تُنشئ أي مجموعة بعد. اضغط «مجموعة جديدة» في الأعلى.</div>
       ) : (
         <div className="group-list">
           {groups.map((g) => {
@@ -1204,7 +1204,7 @@ function GroupsManager({ groups, resolveMember, onToggle, onEdit, onDelete }) {
                 <div className={`group-row-icon ${anyOn ? 'active' : ''}`}><IconGroup /></div>
                 <div className="group-row-body">
                   <b>{g.name}</b>
-                  <span>{resolved.length} {resolved.length === 1 ? 'عنصر' : 'عناصر'}{resolved.length !== (g.members || []).length ? ' (بعضها مش ظاهر دلوقتي)' : ''}</span>
+                  <span>{resolved.length} {resolved.length === 1 ? 'عنصر' : 'عناصر'}{resolved.length !== (g.members || []).length ? ' (بعضها غير ظاهر حاليًا)' : ''}</span>
                 </div>
                 <button className={`dc-chip ${anyOn ? 'on' : 'off'}`} disabled={controllable.length === 0}
                   onClick={() => onToggle(g, !anyOn)}>
@@ -1241,7 +1241,7 @@ function GroupEditorModal({ editor, channels, onChange, onCancel, onSave }) {
           onChange={(e) => onChange({ ...editor, name: e.target.value })} />
         <div className="group-picker">
           {Object.keys(byDevice).length === 0 ? (
-            <p className="dc-muted">مفيش قنوات متاحة دلوقتي.</p>
+            <p className="dc-muted">لا توجد قنوات متاحة حاليًا.</p>
           ) : Object.entries(byDevice).map(([devTitle, chans]) => (
             <div key={devTitle} className="group-picker-dev">
               <span className="group-picker-dev-name">{devTitle}</span>

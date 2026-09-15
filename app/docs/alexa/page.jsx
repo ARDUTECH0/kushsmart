@@ -43,10 +43,10 @@ const BENEFITS = [
 ];
 
 const COMMANDS = [
-  ['Alexa, شغّلي نور الصالة', '“Alexa, turn on the living room light”'],
-  ['Alexa, اطفي كل حاجة', '“Alexa, turn everything off”'],
-  ['Alexa, درجة حرارة الأوضة كام؟', '“Alexa, what’s the temperature in the bedroom?”'],
-  ['Alexa, باب المطبخ مقفول ولا لأ؟', '“Alexa, is the kitchen door open?”'],
+  ['Alexa, شغّلي إضاءة الصالة', '“Alexa, turn on the living room light”'],
+  ['Alexa, أطفئي جميع الأجهزة', '“Alexa, turn everything off”'],
+  ['Alexa, كم درجة حرارة الغرفة؟', '“Alexa, what’s the temperature in the bedroom?”'],
+  ['Alexa, هل باب المطبخ مغلق؟', '“Alexa, is the kitchen door open?”'],
 ];
 
 export default function AlexaPage() {

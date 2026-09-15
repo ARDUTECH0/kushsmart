@@ -22,13 +22,13 @@ const TYPES = {
 };
 
 const ERRORS = {
-  not_ours: ['الملف ده مش ملف إعداد كوش سمارت (.kscfg).', 'This isn’t a KUSH SMART setup file (.kscfg).'],
-  damaged: ['الملف تالف أو اتعدّل — مينفعش يتفتح.', 'The file is damaged or was changed — it can’t be opened.'],
-  newer_version: ['الملف ده من نسخة أحدث — جرّب تاني بعد تحديث الموقع.', 'This file is from a newer version — try again later.'],
-  too_big: ['الملف كبير جدًا على إنه ملف إعداد.', 'The file is too large to be a setup file.'],
-  too_fast: ['طلبات كتير ورا بعض — استنى دقيقة وجرّب تاني.', 'Too many tries in a row — wait a minute and try again.'],
-  unavailable: ['العارض مش متاح دلوقتي — جرّب بعد شوية.', 'The viewer isn’t available right now — try again shortly.'],
-  network: ['تعذّر الاتصال — تحقّق من الإنترنت وجرّب تاني.', 'Connection failed — check your internet and try again.'],
+  not_ours: ['هذا ليس ملف إعداد من كوش سمارت (.kscfg).', 'This isn’t a KUSH SMART setup file (.kscfg).'],
+  damaged: ['الملف تالف أو جرى تعديله، ولا يمكن فتحه.', 'The file is damaged or was changed — it can’t be opened.'],
+  newer_version: ['هذا الملف من إصدار أحدث — حاول مجددًا بعد تحديث الموقع.', 'This file is from a newer version — try again later.'],
+  too_big: ['حجم الملف أكبر من أن يكون ملف إعداد.', 'The file is too large to be a setup file.'],
+  too_fast: ['محاولات كثيرة متتالية — انتظر دقيقة ثم حاول مجددًا.', 'Too many tries in a row — wait a minute and try again.'],
+  unavailable: ['العارض غير متاح حاليًا — حاول بعد قليل.', 'The viewer isn’t available right now — try again shortly.'],
+  network: ['تعذّر الاتصال — تحقّق من اتصالك بالإنترنت ثم حاول مجددًا.', 'Connection failed — check your internet and try again.'],
 };
 
 export default function ConfigFileViewer() {
@@ -90,7 +90,7 @@ export default function ConfigFileViewer() {
       </label>
 
       <p className={s.privacy}>
-        {t('الملف بيتفتح بس عشان يتعرض هنا — مش بيتحفظ ولا بيتسجّل عندنا.',
+        {t('يُفتح الملف لعرضه هنا فقط، ولا يُحفَظ أو يُسجَّل لدينا.',
           'The file is only opened to show it here — it isn’t stored or logged.')}
       </p>
 
@@ -178,13 +178,13 @@ function Layout({ layout, t, tp, lang }) {
         <dl className={s.facts}>
           <div><dt>{t('البوردة', 'Board')}</dt><dd><bdi dir="ltr">{board}</bdi></dd></div>
           <div><dt>{t('القنوات', 'Channels')}</dt><dd>{used.length}</dd></div>
-          {saved && <div><dt>{t('اتحفظ', 'Saved')}</dt><dd>{saved}</dd></div>}
+          {saved && <div><dt>{t('تاريخ الحفظ', 'Saved')}</dt><dd>{saved}</dd></div>}
         </dl>
       </div>
 
       <h3 className={s.h}>{t('ترتيب القنوات', 'Channel layout')}</h3>
       {!used.length ? (
-        <p className={s.empty}>{t('مفيش قنوات متعرّفة في الملف ده.', 'No channels are defined in this file.')}</p>
+        <p className={s.empty}>{t('لا توجد قنوات معرَّفة في هذا الملف.','No channels are defined in this file.')}</p>
       ) : (
         <div className={s.scroll}>
           <table className={s.table}>
