@@ -44,7 +44,13 @@ export const metadata = {
   creator: 'ATGENX',
   publisher: 'KUSH SMART',
   category: 'technology',
-  icons: { icon: asset('/assets/icon.png'), apple: asset('/assets/icon.png') },
+  icons: {
+    icon: [
+      { url: asset('/brand/favicon.svg'), type: 'image/svg+xml' },
+      { url: asset('/assets/icon.png'), type: 'image/png', sizes: '512x512' },
+    ],
+    apple: asset('/brand/apple-touch-icon.png'),
+  },
   openGraph: {
     siteName: SITE_NAME,
     locale: 'ar_EG',
@@ -58,7 +64,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#0E1620',
+  themeColor: '#0A1826',
 };
 
 // Most pages are Arabic (RTL); a saved English choice flips lang/dir before

@@ -26,7 +26,7 @@ export default function SiteHeader({ links }) {
     <header className="nav">
       <div className="wrap nav-in">
         <Link className="brand" href="/" onClick={() => setOpen(false)}>
-          <img src={asset('/assets/icon.png')} alt="" width="40" height="40" />
+          <img src={asset('/brand/mark.svg')} alt="" width="40" height="40" />
           <span>
             <span data-ar="">كوش سمارت</span>
             <span data-en="">KUSH SMART</span>

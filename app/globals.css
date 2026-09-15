@@ -2,11 +2,12 @@
    KUSH SMART — site design system
 
    The product lives behind the wall switch and inside the breaker panel, so the
-   site borrows that world: a graphite enclosure for the dark bands (with the
-   faint horizontal rails of a distribution board), a cool instrument-grey page,
-   the logo blue for anything you can press, and one warm amber — the lamp of a
-   circuit that's on — used sparingly. The admin console speaks the same
-   language, so the brand reads as one thing.
+   site borrows that world: a deep enclosure for the dark bands (with the faint
+   horizontal rails of a distribution board), a cool page, and every colour taken
+   from the logo — its blue for anything you can press, a darker blue for text
+   and pressed states, and a light "signal" blue (the Wi-Fi arcs in the mark) as
+   the one bright accent. The neutrals lean toward the same hue, so the page and
+   the logo read as one thing.
 
    Arabic is set in Cairo, English in Inter, both self-hosted. Machine values
    (versions, serials, protocols) use the system monospace.
@@ -18,18 +19,18 @@ html[lang="en"] [data-ar]{display:none !important}
 html[lang="ar"] [data-en]{display:none !important}
 
 :root{
-  /* enclosure */
-  --ink:#0E1620; --ink-2:#16212D; --ink-3:#1F2D3B; --ink-line:#25323F;
-  /* brand blue (the logo) */
-  --brand:#1868A8; --brand-2:#2A7EC2; --brand-deep:#0F4C7D;
-  --brand-soft:#E7EFF7; --brand-line:#C9DBEC;
-  /* the lamp */
-  --glow:#F0A53A; --glow-2:#D98A1F; --glow-soft:#FBF0DC;
-  /* surfaces + text */
-  --paper:#F3F5F8; --surface:#FFFFFF; --mist:#EDF1F5;
-  --line:#DDE3EA;
-  --text:#1A2530; --muted:#56636F; --faint:#8A96A3;
-  --on-dark:#C8D3DE; --on-dark-2:#8D9BA9;
+  /* enclosure — navy, on the logo's hue */
+  --ink:#0A1826; --ink-2:#102336; --ink-3:#183049; --ink-line:#1E3852;
+  /* brand blue — sampled from the logo (#1770B4) */
+  --brand:#1770B4; --brand-2:#2C86CC; --brand-deep:#0E5288;
+  --brand-soft:#E6F0F9; --brand-line:#C5DCEF;
+  /* signal — the light blue of the Wi-Fi arcs; the one bright accent */
+  --glow:#5CB8F5; --glow-2:#1F8AD6; --glow-soft:#E3F2FC;
+  /* surfaces + text, neutrals leaning toward the brand hue */
+  --paper:#F2F5F9; --surface:#FFFFFF; --mist:#EAF0F6;
+  --line:#DAE3EC;
+  --text:#14212E; --muted:#52616F; --faint:#8796A4;
+  --on-dark:#C6D4E2; --on-dark-2:#8CA0B3;
   --ok:#1E9E64;
   --radius:14px; --radius-sm:10px;
   --shadow:0 18px 40px rgba(14,22,32,.08);
@@ -112,10 +113,10 @@ header.nav{position:sticky;top:0;z-index:50;background:rgba(243,245,248,.88);
 .hero,.page-head,.dl{position:relative;overflow:hidden;color:var(--on-dark);background-color:var(--ink);
   background-image:
     radial-gradient(720px 440px at 88% -12%,rgba(24,104,168,.34),transparent 62%),
-    radial-gradient(520px 360px at 4% 112%,rgba(240,165,58,.08),transparent 60%),
+    radial-gradient(520px 360px at 4% 112%,rgba(92,184,245,.08),transparent 60%),
     repeating-linear-gradient(0deg,transparent 0 63px,rgba(255,255,255,.03) 63px 64px)}
 .hero .eyebrow,.page-head .eyebrow,.dl .eyebrow{color:#9CC3E6}
-.hero .eyebrow::before,.page-head .eyebrow::before,.dl .eyebrow::before{box-shadow:0 0 0 3px rgba(240,165,58,.22)}
+.hero .eyebrow::before,.page-head .eyebrow::before,.dl .eyebrow::before{box-shadow:0 0 0 3px rgba(92,184,245,.22)}
 /* the accent phrase is one idea ("بين يديك", "in your hand") — never split it */
 .hero .accent,.page-head .accent,.dl .accent{color:var(--glow);white-space:nowrap}
 .hero .btn,.dl .btn,.page-head .btn,.cta-band .btn{background:#fff;color:var(--ink)}
@@ -155,8 +156,8 @@ html[dir="rtl"] .hm-chip{padding:5px 6px 5px 12px}
   box-shadow:inset 0 2px 3px rgba(0,0,0,.15)}
 .hm-mod-sw::after{content:"";position:absolute;inset-inline:3px;top:22px;height:17px;border-radius:4px;background:#fff;
   box-shadow:0 1px 2px rgba(0,0,0,.28)}
-.hm-mod.on .hm-mod-lamp{background:var(--glow);box-shadow:0 0 0 3px rgba(240,165,58,.25),0 0 12px rgba(240,165,58,.9)}
-.hm-mod.on .hm-mod-sw{background:linear-gradient(180deg,#F7C681,var(--glow));border-color:#D9952E}
+.hm-mod.on .hm-mod-lamp{background:var(--glow);box-shadow:0 0 0 3px rgba(92,184,245,.25),0 0 12px rgba(92,184,245,.9)}
+.hm-mod.on .hm-mod-sw{background:linear-gradient(180deg,#A9DAFA,var(--glow));border-color:#2F95DD}
 .hm-mod.on .hm-mod-sw::after{top:3px}
 .hm-mod b{font-size:12.5px;font-weight:700;text-align:center;line-height:1.3}
 .hm-mod small{font-family:var(--mono);font-size:10.5px;color:#66727E;direction:ltr;line-height:1}
@@ -313,8 +314,8 @@ html[dir="rtl"] .hm-chip{padding:5px 6px 5px 12px}
 html[dir="rtl"] .mk-back svg{transform:none}
 .mk-back b{font-size:15px;color:var(--ink)}
 .mk-hero{background:var(--ink);color:#fff;border-radius:18px;padding:18px 16px;text-align:center;margin-bottom:12px}
-.mk-hero-ic{width:52px;height:52px;margin:0 auto 10px;border-radius:50%;background:rgba(240,165,58,.18);color:var(--glow);display:flex;
-  align-items:center;justify-content:center;box-shadow:0 0 26px rgba(240,165,58,.35)}
+.mk-hero-ic{width:52px;height:52px;margin:0 auto 10px;border-radius:50%;background:rgba(92,184,245,.18);color:var(--glow);display:flex;
+  align-items:center;justify-content:center;box-shadow:0 0 26px rgba(92,184,245,.35)}
 .mk-hero-ic svg{width:26px;height:26px}
 .mk-hero b{display:block;font-family:var(--latin);font-size:30px;font-weight:700;line-height:1}
 .mk-hero small{display:block;color:#9AA8B6;font-size:11px;margin:5px 0 12px}
@@ -414,7 +415,7 @@ html[lang="en"] .foot-grid h4{text-transform:uppercase;letter-spacing:.1em;font-
 .foot-grid a:hover{color:#fff}
 .foot-grid p{color:var(--on-dark-2);font-size:14px;margin:0;max-width:340px;line-height:1.75}
 .foot-brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:800;font-size:16px;margin-bottom:14px}
-.foot-brand img{height:40px;width:40px;border-radius:10px;background:#fff;padding:3px}
+.foot-brand img{height:40px;width:40px}
 .foot-grid a.foot-mail{display:inline-flex;align-items:center;gap:8px;margin-top:18px;color:#9CC3E6;font-family:var(--latin)}
 .foot-mail svg{width:16px;height:16px}
 .foot-bottom{border-top:1px solid var(--ink-line);padding-top:22px;display:flex;justify-content:space-between;align-items:center;

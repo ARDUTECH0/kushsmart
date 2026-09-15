@@ -14,7 +14,7 @@ export function SiteFooter() {
         <div className="foot-grid">
           <div>
             <div className="foot-brand">
-              <img src={asset('/assets/icon.png')} alt="" width="40" height="40" />
+              <img src={asset('/brand/mark-white.svg')} alt="" width="40" height="40" />
               <L ar="كوش سمارت" en="KUSH SMART" />
             </div>
             <p>

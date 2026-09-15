@@ -56,7 +56,7 @@ export default function DownloadsPage() {
             </div>
           </div>
           <div className="dlhero-art">
-            <div className="dl-glass"><img src={asset('/assets/icon.png')} alt="" width="132" height="132" /></div>
+            <div className="dl-glass"><img src={asset('/brand/mark.svg')} alt="" width="132" height="132" /></div>
           </div>
         </div>
       </header>

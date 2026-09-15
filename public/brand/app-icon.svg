@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" rx="112" fill="#1770B4"/><g transform="translate(64 60) scale(.75)">
+  <defs>
+    <mask id="k">
+      <rect width="512" height="512" fill="#fff"/>
+      <path d="M205.4 140.5 A92 92 0 0 1 306.6 140.5" fill="none" stroke="#000" stroke-width="46" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 44 L466 380 L256 466 L46 380 Z" stroke-width="24" mask="url(#k)"/>
+    <path d="M225.1 181.3 A48 48 0 0 1 286.9 181.3" stroke-width="18"/>
+    <path d="M205.4 140.5 A92 92 0 0 1 306.6 140.5" stroke-width="18"/>
+    <path d="M160 314 L234 240 M278 240 L352 314" stroke-width="22"/>
+    <path d="M180 294 V430 M332 294 V430" stroke-width="22"/>
+    <g stroke-width="8">
+      <path d="M169 398 L118 374"/>
+      <path d="M343 350 L384 330"/>
+      <path d="M210 424 V330"/>
+      <path d="M302 424 V352"/>
+    </g>
+    <g stroke-width="7">
+      <circle cx="108" cy="369" r="10"/>
+      <circle cx="394" cy="325" r="10"/>
+      <circle cx="210" cy="319" r="10"/>
+      <circle cx="302" cy="341" r="10"/>
+    </g>
+  </g>
+  <circle cx="256" cy="224" r="17" fill="#FFFFFF"/>
+  <rect x="232" y="344" width="48" height="108" rx="6" fill="#FFFFFF"/>
+</g></svg>
